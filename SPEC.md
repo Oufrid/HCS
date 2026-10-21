@@ -1,6 +1,13 @@
-# HCS Specification: version 0.2
+# HCS Specification: version 0.3
 
-**Status:** draft. Feedback is welcome through issues. Changes since 0.1: symbol anchors (§5.2), the `suspect` tag (§3), and certificate fields `ci95`, `informative`, `runs` (§7). Every valid 0.1 file is a valid 0.2 file.
+**Status:** draft. Feedback is welcome through issues.
+
+- Changes in 0.3: probe tags and the `known` tag (§4), the `@known-filter` header (§4), two judges and the
+  certificate fields `novel`, `novel-probes`, `judge-agreement`, `judge-kappa`, `judged` (§7).
+- Changes in 0.2: symbol anchors (§5.2), the `suspect` tag (§3), and certificate fields `ci95`, `informative`, `runs` (§7).
+
+Every valid 0.1 or 0.2 file is a valid 0.3 file. A writer SHOULD emit the oldest version that can express the
+document (for example `HCS/0.2` when no probe has tags), so that older readers keep working.
 
 HCS (Holographic Context Standard) defines a plain-text file, conventionally `*.hcs`, that carries a compressed view of some source material (a codebase, a document set, a conversation) for a language model. It has three properties that summaries and hand-written context files lack:
 
@@ -34,7 +41,7 @@ HCS/0.2                      <- magic line (first non-blank line)
 - Blank lines are ignored everywhere.
 - Lines whose first non-blank characters are `//` are comments and ignored.
 - The blocks `[claims]`, `[probes]` and `[certificates]` are optional. Each MAY appear once, in this order.
-- A reader MUST reject a file whose magic line names a version it does not support. A 0.2 reader MUST accept `HCS/0.1`.
+- A reader MUST reject a file whose magic line names a version it does not support. A 0.3 reader MUST accept `HCS/0.1` and `HCS/0.2`.
 
 ## 2. Headers
 
@@ -93,11 +100,17 @@ Other tags are allowed and MUST be preserved.
   ~ c12
 ```
 
-- A probe starts with `?<id> <question>`.
+- A probe starts with `?<id> <question>`, or `?<id>[tag,tag] <question>` with tags (since 0.3).
 - `= <answer>` (REQUIRED) is the expected answer. Several `=` lines are joined.
 - `> <anchor>` cites the passage that proves the answer.
 - `~ <claim ids>` MAY list related claims. It is informational only.
 - `| text` continues the question.
+
+The tag `known` marks a probe that models answer correctly **without any context**: it measures general
+knowledge rather than what the file conveys. A tool sets it with a *probe quality filter*: it asks each probe,
+with no context, to one or more models, and tags `known` the probes that every one of them answers correctly.
+It records the models used in the header `@known-filter <model>,<model>`. Tools MUST still score `known`
+probes; they are reported separately, never silently removed.
 
 Probes measure the **source**, not the claims. A compiler MUST NOT choose probes according to whether the claims answer them, because that would inflate scores. They SHOULD be spread across the source material.
 
@@ -189,12 +202,17 @@ A certificate records one scoring run:
 | Field | Meaning |
 |---|---|
 | `model` | Model that answered the probes, given only the rendered context. |
-| `judge` | Model that graded answers that were not an exact match. |
+| `judge` | Model that graded answers that were not an exact match. Two judges are written `judge=a,b`: each judged answer is graded by both and the stricter verdict (fewer points) counts. |
 | `fidelity` | Mean points over probes: correct = 1, partial = 0.5, incorrect or abstained = 0. With several runs, a probe's points are its mean over runs. |
 | `ci95` | 95% percentile-bootstrap confidence interval of `fidelity` over probes, as `low-high`. |
 | `baseline` | (optional) The same score with **no** context, to show what the model already knew. |
 | `informative` | (with `baseline`) Fidelity on the probes the model could not answer without context, i.e. what the context taught it. |
 | `informative-probes` | Number of such probes. |
+| `novel` | (when the file has `@known-filter` or `known` probes) Fidelity on the probes not tagged `known`. |
+| `novel-probes` | Number of such probes. |
+| `judge-agreement` | (two judges) Share of judged answers on which both judges gave the same verdict. |
+| `judge-kappa` | (two judges) Cohen's kappa of the two judges over the verdicts correct/partial/incorrect. |
+| `judged` | (two judges) Number of answers both judges graded (exact matches and abstentions are not judged). |
 | `misled` | Share of answers that were wrong rather than abstaining. Lower is better. |
 | `runs` | (optional) Times each probe was asked. Default 1. |
 | `probes` | Number of verified probes used (stale probes are skipped). |
@@ -205,7 +223,7 @@ A certificate records one scoring run:
 
 A certificate is **current** only while recomputing `digest` on the current file and sources gives the same value. A verifier MUST report non-current certificates as outdated.
 
-Certificates are evidence, not guarantees. They depend on the answering model, the judge and the probe set. When `judge` equals `model`, the model graded itself; tools SHOULD warn about it.
+Certificates are evidence, not guarantees. They depend on the answering model, the judge and the probe set. When `judge` equals or includes `model`, the model graded itself; tools SHOULD warn about it.
 
 ## 8. Compiler requirements
 

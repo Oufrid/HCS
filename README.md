@@ -84,6 +84,11 @@ not recovered from the context:
 - **Fidelity** comes with a 95% bootstrap confidence interval. With few probes, the interval is wide, and HCS tells you so.
 - **Informative fidelity** counts only the probes the model could not answer on its own. It isolates what the context actually taught.
 - **`--judge`** grades with a different model family. Without it, HCS warns that the model graded itself.
+  Give `--judge` twice to use two judges: HCS reports how often they agreed (raw rate and Cohen's kappa) and
+  counts the stricter verdict when they disagree.
+- **Novel fidelity.** `compile --filter-known gemini:<m>,groq:<m>` asks every probe without context to those
+  models and tags `[known]` the probes all of them already answer. `score` then also reports fidelity on the
+  other probes, so general knowledge does not inflate the score.
 - **`--runs N`** asks every probe N times, since model output varies even at temperature 0.
 - **`--budget 1000`** scores what a small-context model would see.
 - **`--write`** stores a **certificate** bound to a digest of the exact context that was scored. `hcs check` reports it as outdated as soon as that context changes.
@@ -194,6 +199,16 @@ hcs audit AGENTS.md --probes project.hcs --model M --baseline     # how much doe
 
 This gives you a fidelity number for *any* context file, measured with the same verified probes.
 
+To compare two contexts properly, use a paired comparison on the same probes:
+
+```bash
+hcs compare AGENTS.md project.hcs --model M --judge J     # probes come from the .hcs side, or --probes file.hcs
+hcs compare none project.hcs --model M                    # "none" means no context at all
+```
+
+It prints both scores and the per-probe difference B - A with a 95% paired bootstrap confidence interval, and
+says whether the difference is significant (the interval excludes zero).
+
 ## GitHub Actions
 
 Verify on every push (no LLM, no secrets needed):
@@ -222,7 +237,8 @@ Benchmark with real models: add your API keys as repository secrets (`GEMINI_API
 | `hcs audit <file>` | optional | Broken references; fidelity of any context file |
 | `hcs models <provider>` | no | List model ids your key can use |
 | `hcs compile [paths]` | yes | Sources → anchored claims + verified probes (`--update`, `--anchors lines`) |
-| `hcs score <f>` | yes | Fidelity with CI, baseline, informative fidelity, misled rate; `--write` adds a certificate |
+| `hcs score <f>` | yes | Fidelity with CI, baseline, informative and novel fidelity, misled rate, judge agreement; `--write` adds a certificate |
+| `hcs compare <a> <b>` | yes | Paired comparison of two contexts (.hcs, any text file, or none) on the same probes |
 | `hcs snapshot <conv>` | yes | Conversation → portable, anchored session state |
 
 Models are written `provider:model`:
@@ -273,7 +289,7 @@ See [PRIOR_ART.md](PRIOR_ART.md). In short: drift checkers, prompt compressors, 
 ## Repository layout
 
 ```
-SPEC.md         the format, normative (v0.2)
+SPEC.md         the format, normative (v0.3)
 src/            CLI, MCP server and library (TypeScript, no runtime dependencies)
 test/           node:test suite, including mock OpenAI/Anthropic-compatible servers
 bench/          reproducible benchmark harness

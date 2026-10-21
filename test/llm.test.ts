@@ -219,6 +219,19 @@ test("CLI end to end against a mock OpenAI-compatible server", async () => {
     r = run("check", "project.hcs");
     assert.match(r.out, /certificate openai:fake fidelity=1.000: current/);
 
+    r = await runAsync("compare", "none", "project.hcs", "--model", "openai:fake", "-q");
+    assert.equal(r.code, 0, r.out);
+    assert.match(r.out, /B - A\s+100.0 points \[95% paired CI 100.0 to 100.0\]: B is better/);
+
+    r = await runAsync("compile", "--model", "openai:fake", "-o", "filtered.hcs", "--filter-known", "openai:fake", "-q");
+    assert.equal(r.code, 0, r.out);
+    assert.match(r.out, /probe quality filter: 0\/2 probes tagged \[known\]/);
+    assert.match(readFileSync(join(dir, "filtered.hcs"), "utf8"), /^HCS\/0.2\n[\s\S]*@known-filter openai:fake/);
+    r = await runAsync("score", "filtered.hcs", "--model", "openai:fake", "--judge", "openai:j1", "--judge", "openai:j2", "--write", "-q");
+    assert.equal(r.code, 0, r.out);
+    assert.match(r.out, /novel\s+fidelity 100.0% on the 2 probes not tagged \[known\]/);
+    assert.match(readFileSync(join(dir, "filtered.hcs"), "utf8"), /judge=openai:j1,openai:j2 .*novel=1.000 novel-probes=2/);
+
     writeFileSync(join(dir, "src/rates.ts"), "// moved down\n" + FIXTURE["src/rates.ts"].replace("BASE_FEE = 25", "BASE_FEE = 30"));
     r = run("check", "project.hcs");
     assert.equal(r.code, 1);

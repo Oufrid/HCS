@@ -1,9 +1,12 @@
 // Parser and serializer for the .hcs text format (see SPEC.md).
 
-export const FORMAT_VERSION = "0.2";
+export const FORMAT_VERSION = "0.3";
 export const MAGIC = `HCS/${FORMAT_VERSION}`;
-/** Versions this reader accepts. 0.2 added `path::Symbol` anchors; 0.1 files are valid 0.2 files. */
-export const SUPPORTED_VERSIONS = ["0.1", "0.2"];
+/**
+ * Versions this reader accepts. 0.2 added `path::Symbol` anchors, 0.3 added probe tags (`?id[known] ...`).
+ * Older files are valid newer files. The writer emits the oldest version that can express the document.
+ */
+export const SUPPORTED_VERSIONS = ["0.1", "0.2", "0.3"];
 
 export interface Anchor {
   path: string;
@@ -30,6 +33,8 @@ export interface Probe {
   answer: string;
   anchors: Anchor[];
   claims: string[];
+  /** Optional tags (since 0.3), e.g. `known`: models answer it correctly without any context. */
+  tags?: string[];
 }
 
 export interface Certificate {
@@ -187,11 +192,13 @@ export function parse(text: string): HcsDocument {
     }
 
     // probes
-    const m = /^\?([A-Za-z0-9_.-]+)\s+(.+)$/.exec(t);
+    const m = /^\?([A-Za-z0-9_.-]+)(?:\[([^\]]*)\])?\s+(.+)$/.exec(t);
     if (!m) throw new HcsSyntaxError(n, `expected a probe "?id question", got "${t}"`);
     if (ids.has(m[1])) throw new HcsSyntaxError(n, `duplicate id "${m[1]}"`);
     ids.add(m[1]);
-    const probe: Probe = { id: m[1], question: m[2].trim(), answer: "", anchors: [], claims: [] };
+    const probe: Probe = { id: m[1], question: m[3].trim(), answer: "", anchors: [], claims: [] };
+    const tags = m[2]?.split(",").map((x) => x.trim()).filter(Boolean);
+    if (tags?.length) probe.tags = tags;
     doc.probes.push(probe);
     current = probe;
   }
@@ -203,7 +210,8 @@ export function parse(text: string): HcsDocument {
 }
 
 export function serialize(doc: HcsDocument): string {
-  const out: string[] = [MAGIC];
+  const probeTags = doc.probes.some((p) => p.tags?.length);
+  const out: string[] = [probeTags ? MAGIC : "HCS/0.2"];
   const order = ["title", "root", "created", "updated", "generator", "source-files", "source-tokens"];
   const keys = [...order.filter((k) => k in doc.headers), ...Object.keys(doc.headers).filter((k) => !order.includes(k))];
   for (const k of keys) out.push(`@${k} ${doc.headers[k]}`.trimEnd());
@@ -225,7 +233,7 @@ export function serialize(doc: HcsDocument): string {
   if (doc.probes.length) {
     out.push("", "[probes]");
     for (const p of doc.probes) {
-      out.push(`?${p.id} ${p.question}`, `  = ${p.answer}`);
+      out.push(`?${p.id}${p.tags?.length ? `[${p.tags.join(",")}]` : ""} ${p.question}`, `  = ${p.answer}`);
       for (const a of p.anchors) out.push(`  > ${formatAnchor(a)}`);
       if (p.claims.length) out.push(`  ~ ${p.claims.join(" ")}`);
     }

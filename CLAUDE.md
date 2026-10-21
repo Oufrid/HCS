@@ -5,7 +5,7 @@ Guidance for AI agents (and humans) working on this repository.
 ## What this is
 
 HCS (Holographic Context Standard): a plain-text format (`*.hcs`) whose claims cite hashed sources, plus a
-zero-dependency TypeScript CLI and MCP server. Read `README.md` for the pitch, `SPEC.md` (v0.2) for the
+zero-dependency TypeScript CLI and MCP server. Read `README.md` for the pitch, `SPEC.md` (v0.3) for the
 normative format, `PRIOR_ART.md` for positioning and known limitations. `project.hcs` describes this repo in
 HCS itself and is checked in CI: run `node dist/src/cli.js render project.hcs` for a quick overview.
 

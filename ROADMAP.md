@@ -31,16 +31,11 @@ rejects the injected secret, Gemini gets none), so no compile/score run has happ
 `path::Symbol` with whitespace-insensitive hashes, cross-file move detection, dependency-free locator.
 Optional follow-ups go to C12.
 
-### A3. Statistical rigor `[~]`
-Done: bootstrap CI, `--runs`, informative fidelity, self-judging warning.
-Remaining:
-- **Probe quality filter:** at compile time, optionally ask probes without context to 1–2 models and mark
-  `[known]` the probes every model already answers. Report fidelity on the other probes as well.
-- **Judge agreement:** `--judge` may be given twice. Report the agreement rate (Cohen's kappa or raw) and use
-  the stricter verdict when they disagree.
-- **Paired comparison:** `hcs compare a.hcs b.hcs` (or `audit` vs `.hcs`) on the same probes, with a paired
-  bootstrap CI of the difference.
-- **Done when:** these three features exist with tests and are described in SPEC (certificate fields) and README.
+### A3. Statistical rigor `[x]`
+Done: bootstrap CI, `--runs`, informative fidelity, self-judging warning; probe quality filter
+(`compile --filter-known`, `[known]` probe tags, `novel` fidelity); two judges with agreement and Cohen's kappa,
+stricter verdict counts; `hcs compare` with a paired bootstrap CI. Spec bumped to 0.3 (probe tags). Tested with
+mocks only; real-model behavior is part of A1.
 
 ### A4. Security `[~]`
 Done: injection guard (suspect tag, never rendered), decoder rule, MCP root sandbox, quote verification.

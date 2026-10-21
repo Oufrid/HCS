@@ -52,7 +52,7 @@ test("parse and serialize round-trip", () => {
 });
 
 test("parse rejects malformed files with line numbers", () => {
-  assert.throws(() => parse("[claims]\n"), /missing "HCS\/0.2"/);
+  assert.throws(() => parse("[claims]\n"), /missing "HCS\/0.3"/);
   assert.throws(() => parse("HCS/9.0\n"), /unsupported version/);
   assert.throws(() => parse("HCS/0.1\n[claims]\n#a x\n#a y\n"), (e: unknown) => e instanceof HcsSyntaxError && e.line === 4);
   assert.throws(() => parse("HCS/0.1\n[claims]\n#a x\n  > f.ts:9-3\n"), /invalid line range/);

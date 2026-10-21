@@ -12,7 +12,7 @@ import { compile } from "./compile.js";
 import { emptyDocument, formatAnchor, HcsSyntaxError, parse, serialize, type HcsDocument } from "./format.js";
 import { createLLM, listModels, type LLM } from "./llm.js";
 import { DECODER_PROMPT, estimateTokens, renderContext, selectClaims } from "./render.js";
-import { hashForCertificate, scoreContext, scoreDocument, type ScoreSummary } from "./score.js";
+import { compareContexts, findKnownProbes, hashForCertificate, scoreContext, scoreDocument, type ScoreSummary } from "./score.js";
 import { serveStdio } from "./mcp.js";
 import { parseConversation, toTranscript } from "./snapshot.js";
 
@@ -41,8 +41,14 @@ Deterministic commands (no LLM, no network; except \`models\`, which asks the pr
 LLM commands (--model provider:model, optional --rpm N to stay under free-tier rate limits):
   hcs compile [paths...] --model M [-o project.hcs] [--root DIR] [--title T]
               [--update] [--max-probes N] [--no-synthesize] [--concurrency N]
-              [--anchors symbols|lines]
-  hcs score <file.hcs> --model M [--judge M] [--budget N] [--baseline] [--runs N] [--write] [--json]
+              [--anchors symbols|lines] [--filter-known M1,M2]
+                                              (--filter-known: tag [known] the probes every listed model
+                                              answers without context)
+  hcs score <file.hcs> --model M [--judge M [--judge M2]] [--budget N] [--baseline] [--runs N] [--write] [--json]
+                                              (two judges: agreement is reported, the stricter verdict counts)
+  hcs compare <a> <b> --model M [--probes file.hcs] [--judge M] [--budget N] [--runs N] [--json]
+                                              Paired comparison of two contexts on the same probes; each side
+                                              is an .hcs file (rendered), any text file (AGENTS.md...) or none
   hcs snapshot <conversation.json|.md> --model M [-o session.hcs]
 
 Providers: openai (OPENAI_API_KEY, OPENAI_BASE_URL for any compatible server),
@@ -115,7 +121,8 @@ async function main(argv: string[]): Promise<number> {
       title: { type: "string" },
       root: { type: "string" },
       model: { type: "string", short: "m" },
-      judge: { type: "string" },
+      judge: { type: "string", multiple: true },
+      "filter-known": { type: "string" },
       budget: { type: "string" },
       baseline: { type: "boolean" },
       write: { type: "boolean" },
@@ -152,6 +159,7 @@ async function main(argv: string[]): Promise<number> {
     clients.push(c);
     return c;
   };
+  const judges = () => (o.judge?.length ? o.judge.map(llm) : undefined);
   // Always tell the user what the run consumed, so costs and quotas are never a surprise.
   process.on("exit", () => {
     for (const c of clients) {
@@ -180,7 +188,8 @@ async function main(argv: string[]): Promise<number> {
     case "validate": {
       const file = requireFile(positionals);
       const doc = load(file);
-      console.log(`${file}: valid HCS/${"0.1"} (${doc.claims.length} claims, ${doc.probes.length} probes, ${doc.certificates.length} certificates)`);
+      const version = /^\s*HCS\/(\S+)/m.exec(readFileSync(file, "utf8"))?.[1];
+      console.log(`${file}: valid HCS/${version} (${doc.claims.length} claims, ${doc.probes.length} probes, ${doc.certificates.length} certificates)`);
       return 0;
     }
 
@@ -316,10 +325,25 @@ async function main(argv: string[]): Promise<number> {
         onProgress: progress,
       });
       doc.headers.root = relative(outDir, root).split("\\").join("/") || ".";
+      let knownCount: number | undefined;
+      if (o["filter-known"]) {
+        const specs = o["filter-known"].split(",").map((x) => x.trim()).filter(Boolean);
+        progress?.(`probe quality filter: asking ${doc.probes.length} probes without context to ${specs.join(", ")}`);
+        const known = await findKnownProbes(doc.probes, specs.map(llm), { judge: llm(model), concurrency: num(o.concurrency, "concurrency") });
+        for (const p of doc.probes) {
+          const rest = (p.tags ?? []).filter((t) => t !== "known");
+          if (known.has(p.id)) rest.push("known");
+          if (rest.length) p.tags = rest;
+          else delete p.tags;
+        }
+        doc.headers["known-filter"] = specs.join(",");
+        knownCount = known.size;
+      }
       save(out, doc);
       const ctxTokens = estimateTokens(renderContext(doc));
       console.log(`wrote ${out}: ${doc.claims.length} claims, ${doc.probes.length} probes from ${stats.files} files (${stats.filesCompiled} compiled)`);
       console.log(`  rejected by quote verification: ${stats.claimsRejected}/${stats.claimsProposed} claims, ${stats.probesRejected}/${stats.probesProposed} probes`);
+      if (knownCount !== undefined) console.log(`  probe quality filter: ${knownCount}/${doc.probes.length} probes tagged [known] (answered without context by every filter model)`);
       console.log(`  context ~${ctxTokens} tokens for ~${stats.sourceTokens} tokens of source. Next: hcs score ${out} --model ${model} --baseline --write`);
       return 0;
     }
@@ -330,7 +354,7 @@ async function main(argv: string[]): Promise<number> {
       const reports = checkDocument(doc, new SourceCache(rootDir(doc, file)));
       const result = await scoreDocument(doc, statusMap(reports), {
         answerer: llm(requireModel(o.model)),
-        judge: o.judge ? llm(o.judge) : undefined,
+        judge: judges(),
         budget: num(o.budget, "budget"),
         baseline: o.baseline,
         runs: num(o.runs, "runs"),
@@ -350,6 +374,13 @@ async function main(argv: string[]): Promise<number> {
       if (result.baseline) {
         printScore("without context", result.baseline);
         console.log(`gain             ${((result.withContext.fidelity - result.baseline.fidelity) * 100).toFixed(1)} points`);
+      }
+      const ag = result.withContext.judgeAgreement;
+      if (ag) {
+        console.log(`judges agreed     ${pct(ag.agreement)} of ${ag.judged} judged answers (Cohen's kappa ${ag.kappa.toFixed(2)}); the stricter verdict was used`);
+      }
+      if (result.novel) {
+        console.log(`novel            fidelity ${pct(result.novel.fidelity).padStart(6)} on the ${result.novel.probes} probes not tagged [known]`);
       }
       if (result.informative) {
         console.log(`informative      fidelity ${pct(result.informative.fidelity).padStart(6)} on the ${result.informative.probes} probes the model could not answer without context`);
@@ -411,7 +442,7 @@ async function main(argv: string[]): Promise<number> {
         const probes = probeDoc.probes.filter((p) => ["ok", "moved"].includes(status.get(`probe:${p.id}`) ?? ""));
         const opts = {
           answerer: llm(requireModel(o.model)),
-          judge: o.judge ? llm(o.judge) : undefined,
+          judge: judges(),
           concurrency: num(o.concurrency, "concurrency"),
           onProgress: progress,
         };
@@ -420,6 +451,46 @@ async function main(argv: string[]): Promise<number> {
         if (o.baseline) printScore("without context", await scoreContext(null, probes, { ...opts, onProgress: undefined }));
       }
       return broken.length ? 1 : 0;
+    }
+
+    case "compare": {
+      if (positionals.length !== 2) throw new UsageError("usage: hcs compare <a> <b> --model M [--probes file.hcs] (each side: an .hcs file, any text file, or none)");
+      const probeFile = o.probes ?? positionals.find((p) => extname(p) === ".hcs");
+      if (!probeFile) throw new UsageError("no probes: pass --probes file.hcs, or make one side an .hcs file");
+      const probeDoc = load(probeFile);
+      const status = statusMap(checkDocument(probeDoc, new SourceCache(rootDir(probeDoc, probeFile))));
+      const probes = probeDoc.probes.filter((p) => ["ok", "moved"].includes(status.get(`probe:${p.id}`) ?? ""));
+      if (!probes.length) throw new UsageError(`no verified probes in ${probeFile}`);
+      const contextOf = (side: string): string | null => {
+        if (side === "none") return null;
+        if (!existsSync(side)) throw new UsageError(`file not found: ${side}`);
+        if (extname(side) !== ".hcs") return readFileSync(side, "utf8");
+        const d = load(side);
+        const reports = checkDocument(d, new SourceCache(rootDir(d, side)));
+        return renderContext(d, { status: claimStatus(reports), budget: num(o.budget, "budget") });
+      };
+      const [a, b] = positionals;
+      const answerer = llm(requireModel(o.model));
+      const c = await compareContexts(contextOf(a), contextOf(b), probes, {
+        answerer,
+        judge: judges(),
+        runs: num(o.runs, "runs"),
+        concurrency: num(o.concurrency, "concurrency"),
+        onProgress: progress,
+      });
+      if (o.json) {
+        console.log(JSON.stringify(c, null, 2));
+        return 0;
+      }
+      console.log(`compared on ${c.a.probes} probes from ${probeFile} with ${answerer.id}`);
+      printScore(`A ${basename(a)}`.slice(0, 16), c.a);
+      printScore(`B ${basename(b)}`.slice(0, 16), c.b);
+      const sig = c.ci95[0] > 0 ? "B is better" : c.ci95[1] < 0 ? "A is better" : "no significant difference";
+      console.log(
+        `B - A            ${(c.difference * 100).toFixed(1)} points [95% paired CI ${(c.ci95[0] * 100).toFixed(1)} to ${(c.ci95[1] * 100).toFixed(1)}]: ${sig}`,
+      );
+      console.log(`per probe        B better on ${c.better}, worse on ${c.worse}, same on ${c.same}`);
+      return 0;
     }
 
     case "models": {
