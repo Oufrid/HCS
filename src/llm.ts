@@ -29,9 +29,15 @@ export interface LLM {
 export interface LLMOptions {
   /** Maximum requests per minute for this model; also read from HCS_RPM. Free tiers need this. */
   rpm?: number;
+  /**
+   * Sent as `reasoning_effort` to OpenAI-compatible APIs (also read from HCS_REASONING_EFFORT). Reasoning models
+   * can spend most of the output budget thinking; "low" keeps answers whole. Accepted values depend on the
+   * model (Gemini 3: low/medium/high; Groq gpt-oss: low/medium/high; Groq qwen: none/default), so no default.
+   */
+  reasoningEffort?: string;
 }
 
-type Factory = (model: string, spec: string, usage: Usage) => LLM;
+type Factory = (model: string, spec: string, usage: Usage, opts: LLMOptions) => LLM;
 
 const providers = new Map<string, Factory>();
 
@@ -64,7 +70,8 @@ export function createLLM(spec: string, opts: LLMOptions = {}): LLM {
   const factory = providers.get(name);
   if (!factory) throw new Error(`unknown provider "${name}". Known: ${providerNames().join(", ")}`);
   const usage: Usage = { requests: 0, inputTokens: 0, outputTokens: 0 };
-  const llm = withDebugLog(factory(spec.slice(i + 1), spec, usage));
+  const reasoningEffort = opts.reasoningEffort ?? env("HCS_REASONING_EFFORT");
+  const llm = withDebugLog(factory(spec.slice(i + 1), spec, usage, { ...opts, reasoningEffort }));
   llm.usage = usage;
   const rpm = opts.rpm ?? (env("HCS_RPM") ? Number(env("HCS_RPM")) : undefined);
   if (!rpm || !(rpm > 0)) return llm;
@@ -217,6 +224,7 @@ function openAICompatible(
   usage: Usage,
   apiKey?: string,
   extraHeaders: Record<string, string> = {},
+  opts: LLMOptions = {},
 ): LLM {
   const url = `${baseURL.replace(/\/+$/, "")}/chat/completions`;
   return {
@@ -227,6 +235,7 @@ function openAICompatible(
           model,
           temperature: 0,
           max_tokens: maxTokens,
+          ...(opts.reasoningEffort ? { reasoning_effort: opts.reasoningEffort } : {}),
           messages: [
             { role: "system", content: req.system },
             { role: "user", content: req.prompt },
@@ -251,29 +260,31 @@ function openAICompatible(
   };
 }
 
-registerProvider("openai", (model, spec, usage) =>
-  openAICompatible(spec, model, env("OPENAI_BASE_URL") ?? "https://api.openai.com/v1", usage, env("OPENAI_API_KEY")),
+registerProvider("openai", (model, spec, usage, opts) =>
+  openAICompatible(spec, model, env("OPENAI_BASE_URL") ?? "https://api.openai.com/v1", usage, env("OPENAI_API_KEY"), {}, opts),
 );
 
-registerProvider("ollama", (model, spec, usage) =>
-  openAICompatible(spec, model, `${(env("OLLAMA_HOST") ?? "http://localhost:11434").replace(/\/+$/, "")}/v1`, usage),
+registerProvider("ollama", (model, spec, usage, opts) =>
+  openAICompatible(spec, model, `${(env("OLLAMA_HOST") ?? "http://localhost:11434").replace(/\/+$/, "")}/v1`, usage, undefined, {}, opts),
 );
 
-registerProvider("gemini", (model, spec, usage) =>
+registerProvider("gemini", (model, spec, usage, opts) =>
   openAICompatible(
     spec,
     model,
     env("GEMINI_BASE_URL") ?? "https://generativelanguage.googleapis.com/v1beta/openai",
     usage,
     proxyableKey("GEMINI_API_KEY"),
+    {},
+    opts,
   ),
 );
 
-registerProvider("groq", (model, spec, usage) =>
-  openAICompatible(spec, model, env("GROQ_BASE_URL") ?? "https://api.groq.com/openai/v1", usage, proxyableKey("GROQ_API_KEY")),
+registerProvider("groq", (model, spec, usage, opts) =>
+  openAICompatible(spec, model, env("GROQ_BASE_URL") ?? "https://api.groq.com/openai/v1", usage, proxyableKey("GROQ_API_KEY"), {}, opts),
 );
 
-registerProvider("openrouter", (model, spec, usage) =>
+registerProvider("openrouter", (model, spec, usage, opts) =>
   openAICompatible(
     spec,
     model,
@@ -281,6 +292,7 @@ registerProvider("openrouter", (model, spec, usage) =>
     usage,
     proxyableKey("OPENROUTER_API_KEY"),
     { "x-title": "hcs-cli" },
+    opts,
   ),
 );
 

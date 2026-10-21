@@ -196,6 +196,8 @@ HCS works with free tiers:
   reply had no usable JSON are retried the same way.
 - `--chunk-lines 400` means fewer, larger requests, which matters when a free tier allows 20 requests a day.
 - Reasoning models that use their whole output budget before answering are retried once with more room.
+- `--reasoning-effort low` limits hidden reasoning on models that accept it (Gemini 3, Groq gpt-oss). Without it,
+  `gemini-3-flash-preview` spent most of an 8192-token budget thinking and cut its JSON reply.
 - `HCS_DEBUG_LOG=file.jsonl` records every request and reply, to see exactly what a model returned.
 - `hcs models openrouter --free` lists OpenRouter's free models.
 

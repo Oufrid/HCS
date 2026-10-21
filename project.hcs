@@ -1,7 +1,7 @@
 HCS/0.2
 @title HCS - Holographic Context Standard (reference CLI)
 @root .
-@updated 2026-10-21T11:46:48.922Z
+@updated 2026-10-21T11:50:24.947Z
 @meta license=MIT language=TypeScript
 
 [claims]
@@ -91,9 +91,9 @@ HCS/0.2
 #proxy[manual] Behind HTTPS_PROXY the CLI re-runs itself once with --use-env-proxy so that Node's fetch uses the proxy; auth errors say whether a proxy-injected key was rejected (x-proxy-error header) or no key was sent.
   > src/cli.ts::rerunBehindProxy #865c33840a44
   > src/llm.ts::authHint #ffdcc6547ae0
-#rpm[manual] `--rpm` (or HCS_RPM) spaces requests evenly with one limiter per model spec.
+#rpm[manual] `--rpm` (or HCS_RPM) spaces requests evenly with one limiter per model spec; `--reasoning-effort` (or HCS_REASONING_EFFORT) is sent as `reasoning_effort` only when given.
   > src/llm.ts::RateLimiter #5c815985358a
-  > src/llm.ts::createLLM #3c2ca43571fc
+  > src/llm.ts::createLLM #e1653e3a53e5
 
 [probes]
 ?p1 How many hex characters of the SHA-256 digest does an anchor hash keep?

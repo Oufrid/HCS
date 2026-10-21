@@ -153,6 +153,10 @@ test("openai-compatible and anthropic providers send the right requests", async 
     assert.deepEqual(seen[0].body.messages, [{ role: "system", content: "S" }, { role: "user", content: "P" }]);
     assert.equal(seen[0].body.model, "gpt-test");
     assert.equal(seen[0].body.temperature, 0);
+    assert.equal(seen[0].body.reasoning_effort, undefined, "not sent unless asked: many models reject it");
+    await createLLM("openai:gpt-test", { reasoningEffort: "low" }).complete({ system: "S", prompt: "P" });
+    assert.equal(seen.at(-1)!.body.reasoning_effort, "low");
+    seen.pop();
 
     assert.equal(await createLLM("anthropic:claude-test").complete({ system: "S", prompt: "P", maxTokens: 10 }), "from anthropic");
     assert.equal(seen[1].headers["x-api-key"], "ak-test");

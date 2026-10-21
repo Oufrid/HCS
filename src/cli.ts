@@ -38,7 +38,8 @@ Deterministic commands (no LLM, no network; except \`models\`, which asks the pr
                                               tools: hcs_context, hcs_expand, hcs_search, hcs_verify, hcs_source
   hcs models <provider> [--free]              List the model ids your key can use (--free: OpenRouter ":free" models)
 
-LLM commands (--model provider:model, optional --rpm N to stay under free-tier rate limits):
+LLM commands (--model provider:model, optional --rpm N to stay under free-tier rate limits, optional
+--reasoning-effort low|medium|high to limit hidden reasoning on models that support it):
   hcs compile [paths...] --model M [-o project.hcs] [--root DIR] [--title T]
               [--update] [--max-probes N] [--no-synthesize] [--concurrency N]
               [--anchors symbols|lines] [--filter-known M1,M2]
@@ -149,6 +150,7 @@ async function main(argv: string[]): Promise<number> {
       concurrency: { type: "string" },
       "chunk-lines": { type: "string" },
       rpm: { type: "string" },
+      "reasoning-effort": { type: "string" },
       runs: { type: "string" },
       free: { type: "boolean" },
       anchors: { type: "string" },
@@ -165,7 +167,7 @@ async function main(argv: string[]): Promise<number> {
   const progress = o.quiet ? undefined : (m: string) => process.stderr.write(`${m}\n`);
   const clients: LLM[] = [];
   const llm = (spec: string) => {
-    const c = createLLM(spec, { rpm: num(o.rpm, "rpm") });
+    const c = createLLM(spec, { rpm: num(o.rpm, "rpm"), reasoningEffort: o["reasoning-effort"] });
     clients.push(c);
     return c;
   };
@@ -177,7 +179,7 @@ async function main(argv: string[]): Promise<number> {
       if (u?.requests) {
         const retried =
           (u.retriedForReasoning ? `; ${u.retriedForReasoning} retried with a larger budget because reasoning used all output tokens` : "") +
-          (u.truncated ? `; ${u.truncated} replies cut by the output limit` : "");
+          (u.truncated ? `; ${u.truncated} replies cut by the output limit (reasoning models: try --reasoning-effort low)` : "");
         process.stderr.write(`usage ${c.id}: ${u.requests} requests, ${u.inputTokens} input + ${u.outputTokens} output tokens (as reported by the provider)${retried}\n`);
       }
     }
