@@ -1,7 +1,7 @@
 HCS/0.2
 @title HCS - Holographic Context Standard (reference CLI)
 @root .
-@updated 2026-10-21T14:00:35.443Z
+@updated 2026-10-21T14:15:13.126Z
 @meta license=MIT language=TypeScript
 
 [claims]
@@ -9,8 +9,8 @@ HCS/0.2
 ## Overview
 #purpose[manual] HCS is a plain-text format plus a zero-dependency Node.js CLI and MCP server (`hcs`) that makes LLM context traceable (claims cite sources), verifiable (anchors carry hashes) and measured (probes and fidelity certificates).
   > README.md:3-16 #cddd3cef50fb
-#layers[manual] Deterministic commands (init, validate, check, seal, render, stats, audit, serve, impact) never call an LLM; compile, score, compare and snapshot need a `provider:model` LLM; models only lists a provider's model ids.
-  > src/cli.ts::HELP #af733b7887fa
+#layers[manual] Deterministic commands (init, validate, check, seal, render, stats, audit, serve, impact) never call an LLM; compile, score, curve, compare and snapshot need a `provider:model` LLM; models only lists a provider's model ids.
+  > src/cli.ts::HELP #2de916e10abc
 
 ## Format
 #magic[manual] A file starts with `HCS/0.3` (0.1 and 0.2 are still accepted, and the writer emits 0.2 unless a probe has tags), then `@key value` headers, then optional [claims], [probes] and [certificates] blocks; errors carry line numbers.
@@ -68,7 +68,10 @@ HCS/0.2
   > src/score.ts::POINTS #f5b535d01ef1
 #rigor[manual] Scores report a reproducible 95% bootstrap confidence interval, a no-context baseline, an informative fidelity on probes unanswerable without context, and a warning when the model judged itself.
   > src/score.ts::bootstrapCI #09a88d67acf9
-  > src/score.ts::scoreDocument #57ee03f6734b
+  > src/score.ts::scoreDocument #e1fc83b5ce10
+#curve[manual] `hcs curve` scores the same probes at several token budgets, scoring once the budgets that render the same context, and reports the knee: the smallest budget whose fidelity reaches the lower bound of the best point's 95% CI; each point is a certificate tagged with the curve id and the knee.
+  > src/score.ts::scoreCurve #38d49eb6d252
+  > src/score.ts::kneeOf #c3df37e08eb9
 #judges[manual] `score` accepts two judges: each judged answer is graded by both, the stricter verdict counts, and the raw agreement and Cohen's kappa are reported in the certificate.
   > src/score.ts::scoreContext #9b71d862413b
   > src/score.ts::cohenKappa #2be6be699209

@@ -5,7 +5,8 @@
 - Changes in 0.3: probe tags and the `known` tag (§4), the `@known-filter` header (§4), two judges and the
   certificate fields `novel`, `novel-probes`, `judge-agreement`, `judge-kappa`, `judged` (§7).
   Compilers may ignore Markdown markup when verifying quotes, and may write an `@incomplete` header (§8).
-  The `recorded` tag (§3) marks claims written by an agent.
+  The `recorded` tag (§3) marks claims written by an agent. Certificates may form a fidelity-vs-budget curve
+  (`curve`, `knee`, §7).
 - Changes in 0.2: symbol anchors (§5.2), the `suspect` tag (§3), and certificate fields `ci95`, `informative`, `runs` (§7).
 
 Every valid 0.1 or 0.2 file is a valid 0.3 file. A writer SHOULD emit the oldest version that can express the
@@ -216,6 +217,8 @@ A certificate records one scoring run:
 | `judge-agreement` | (two judges) Share of judged answers on which both judges gave the same verdict. |
 | `judge-kappa` | (two judges) Cohen's kappa of the two judges over the verdicts correct/partial/incorrect. |
 | `judged` | (two judges) Number of answers both judges graded (exact matches and abstentions are not judged). |
+| `curve` | (since 0.3) Identifier shared by the certificates of one fidelity-vs-budget curve: the same probes, models and settings scored at several `budget` values. |
+| `knee` | (with `curve`) The curve's knee: the smallest budget whose fidelity is at least the lower bound of the 95% CI of the best fidelity in the curve. |
 | `misled` | Share of answers that were wrong rather than abstaining. Lower is better. |
 | `runs` | (optional) Times each probe was asked. Default 1. |
 | `probes` | Number of verified probes used (stale probes are skipped). |
@@ -225,6 +228,11 @@ A certificate records one scoring run:
 | `date` | When the score was computed. |
 
 A certificate is **current** only while recomputing `digest` on the current file and sources gives the same value. A verifier MUST report non-current certificates as outdated.
+
+A **curve** is a set of certificates with the same `curve` value, one per budget. Each one is an ordinary
+certificate: it is current only while its own digest matches. Budgets that render the same context have the same
+digest; a tool MAY score them once. The knee summarizes the curve: past it, a larger context does not
+measurably improve fidelity on these probes, for this model.
 
 Certificates are evidence, not guarantees. They depend on the answering model, the judge and the probe set. When `judge` equals or includes `model`, the model graded itself; tools SHOULD warn about it.
 

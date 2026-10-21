@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { parse, serialize, type HcsDocument, type Probe } from "../src/format.js";
 import type { CompletionRequest, LLM } from "../src/llm.js";
-import { cohenKappa, compareContexts, findKnownProbes, scoreContext, scoreDocument } from "../src/score.js";
+import { cohenKappa, compareContexts, findKnownProbes, kneeOf, scoreContext, scoreCurve, scoreDocument } from "../src/score.js";
 
 /** A model scripted by a function of the request. */
 class ScriptedLLM implements LLM {
@@ -122,4 +122,53 @@ test("paired comparison: differences per probe and their bootstrap CI", async ()
   assert.deepEqual(same.ci95, [0, 0]);
   const none = await compareContexts(null, "B", probes, { answerer });
   assert.equal(none.a.fidelity, 0);
+});
+
+test("kneeOf: smallest budget within the 95% CI of the best fidelity", () => {
+  const pts = [
+    { budget: 250, fidelity: 0.2, ci95: [0.1, 0.3] as [number, number] },
+    { budget: 1000, fidelity: 0.62, ci95: [0.5, 0.75] as [number, number] },
+    { budget: 500, fidelity: 0.45, ci95: [0.3, 0.6] as [number, number] },
+    { budget: 2000, fidelity: 0.65, ci95: [0.55, 0.78] as [number, number] },
+  ];
+  assert.deepEqual(kneeOf(pts), { knee: 1000, best: 2000 });
+  assert.deepEqual(kneeOf([]), {});
+  assert.deepEqual(kneeOf([{ budget: 9, fidelity: 0, ci95: [0, 0] }]), { knee: 9, best: 9 });
+});
+
+test("scoreCurve: one score per distinct context, certificates per budget with curve id and knee", async () => {
+  // Ten claims of importance 5..1 (two each); probe pN is answerable only when claim cN is in the context.
+  const doc: HcsDocument = {
+    headers: { title: "t" },
+    meta: {},
+    claims: Array.from({ length: 10 }, (_, i) => ({
+      id: `c${i}`,
+      text: `Fact number ${i} is value${i}.`,
+      tags: [`i${5 - Math.floor(i / 2)}`],
+      anchors: [],
+    })),
+    probes: Array.from({ length: 10 }, (_, i) => probe(`p${i}`, `value${i}`)),
+    certificates: [],
+  };
+  const status = new Map(doc.probes.map((p) => [`probe:${p.id}`, "ok"] as const));
+  let asked = 0;
+  const answerer = new ScriptedLLM("m:a", (req) => {
+    asked++;
+    const i = Number(questionId(req.prompt).slice(1));
+    return req.prompt.includes(`value${i}.`) ? `value${i}` : "UNKNOWN";
+  });
+  const curve = await scoreCurve(doc, new Map(status), [10000, 30, 60, 5000], { answerer, judge: new ScriptedLLM("j:x", () => '{"verdict":"incorrect"}') });
+  assert.deepEqual(curve.points.map((p) => p.budget), [30, 60, 5000, 10000]);
+  assert.equal(curve.points[3].sameAs, 5000, "a budget above the full context reuses its result");
+  assert.equal(asked, 30, "three distinct contexts x ten probes; the fourth budget costs nothing");
+  const fid = curve.points.map((p) => p.score.withContext.fidelity);
+  assert.ok(fid[0] < fid[1] && fid[1] < fid[2] && fid[2] === 1, fid.join(","));
+  assert.equal(curve.best, 5000);
+  assert.equal(curve.knee, 5000);
+  for (const p of curve.points) {
+    assert.equal(p.score.certificate.fields.budget, String(p.budget));
+    assert.equal(p.score.certificate.fields.knee, "5000");
+    assert.equal(p.score.certificate.fields.curve, curve.points[0].score.certificate.fields.curve);
+  }
+  assert.equal(curve.points[3].score.certificate.fields.digest, curve.points[2].score.certificate.fields.digest);
 });

@@ -90,7 +90,9 @@ not recovered from the context:
   models and tags `[known]` the probes all of them already answer. `score` then also reports fidelity on the
   other probes, so general knowledge does not inflate the score.
 - **`--runs N`** asks every probe N times, since model output varies even at temperature 0.
-- **`--budget 1000`** scores what a small-context model would see.
+- **`--budget 1000`** scores what a small-context model would see. `hcs curve project.hcs --model M --judge J`
+  scores several budgets (250 to 4000 by default) on the same probes and reports the knee: the smallest budget
+  within the 95% CI of the best fidelity. Budgets that render the same context are scored once.
 - **`--write`** stores a **certificate** bound to a digest of the exact context that was scored. `hcs check` reports it as outdated as soon as that context changes.
 
 ### 3. Use it with any LLM
@@ -295,6 +297,7 @@ Benchmark with real models: add your API keys as repository secrets (`GEMINI_API
 | `hcs impact <f> --base <ref>` | no | Claims and probes citing code changed since a git ref; `--comment` posts them on the pull request |
 | `hcs compile [paths]` | yes | Sources → anchored claims + verified probes (`--update`, `--anchors lines`) |
 | `hcs score <f>` | yes | Fidelity with CI, baseline, informative and novel fidelity, misled rate, judge agreement; `--write` adds a certificate |
+| `hcs curve <f>` | yes | Fidelity at several token budgets and the knee; `--write` stores one certificate per budget |
 | `hcs compare <a> <b>` | yes | Paired comparison of two contexts (.hcs, any text file, or none) on the same probes |
 | `hcs snapshot <conv>` | yes | Conversation → portable, anchored session state |
 

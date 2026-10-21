@@ -2,7 +2,7 @@
 
 import type { Certificate, HcsDocument, Probe } from "./format.js";
 import { extractJSON, mapLimit, type LLM } from "./llm.js";
-import { contextDigest, DECODER_PROMPT, estimateTokens, renderContext } from "./render.js";
+import { contextDigest, DECODER_PROMPT, estimateTokens, renderContext, selectClaims } from "./render.js";
 import type { AnchorStatus } from "./anchors.js";
 
 export type Verdict = "correct" | "partial" | "incorrect" | "unknown";
@@ -300,7 +300,7 @@ export interface DocumentScore {
 export async function scoreDocument(
   doc: HcsDocument,
   status: Map<string, AnchorStatus>,
-  opts: ScoreOptions & { budget?: number; baseline?: boolean; baselineCache?: ScoreCache },
+  opts: ScoreOptions & { budget?: number; baseline?: boolean; baselineCache?: ScoreCache; baselineResult?: ScoreSummary },
 ): Promise<DocumentScore> {
   const usable = doc.probes.filter((p) => {
     const s = status.get(`probe:${p.id}`);
@@ -310,7 +310,8 @@ export async function scoreDocument(
   const claimStatus = new Map([...status].filter(([k]) => k.startsWith("claim:")).map(([k, v]) => [k.slice(6), v]));
   const context = renderContext(doc, { status: claimStatus, budget: opts.budget });
   const withContext = await scoreContext(context, usable, opts);
-  const baseline = opts.baseline ? await scoreContext(null, usable, { ...opts, onProgress: undefined, cache: opts.baselineCache }) : undefined;
+  const baseline =
+    opts.baselineResult ?? (opts.baseline ? await scoreContext(null, usable, { ...opts, onProgress: undefined, cache: opts.baselineCache }) : undefined);
   const contextTokens = estimateTokens(context);
 
   let informative: DocumentScore["informative"];
@@ -385,3 +386,72 @@ export function hashForCertificate(doc: HcsDocument, claimStatus: Map<string, An
   };
   return contextDigest(filtered, budget);
 }
+
+export interface CurvePoint {
+  budget: number;
+  /** Estimated tokens of the context rendered at this budget, and the claims it keeps. */
+  tokens: number;
+  claims: number;
+  score: DocumentScore;
+  /** Set when this budget renders exactly the same context as a smaller one, whose result is reused. */
+  sameAs?: number;
+}
+
+export interface Curve {
+  points: CurvePoint[];
+  /** Smallest budget whose fidelity reaches the lower bound of the best point's 95% CI. */
+  knee?: number;
+  best?: number;
+}
+
+/** The knee: smallest budget scoring within the 95% confidence interval of the best one (ties: smallest budget). */
+export function kneeOf(points: { budget: number; fidelity: number; ci95: [number, number] }[]): { knee?: number; best?: number } {
+  if (!points.length) return {};
+  const sorted = [...points].sort((a, b) => a.budget - b.budget);
+  const best = sorted.reduce((b, p) => (p.fidelity > b.fidelity ? p : b));
+  const knee = sorted.find((p) => p.fidelity >= best.ci95[0]);
+  return { knee: knee?.budget, best: best.budget };
+}
+
+/**
+ * Fidelity at each token budget, on the same probes. Budgets that render the same context are scored once. With
+ * `baseline`, the no-context score is computed once and shared. Every point gets a certificate tagged with the
+ * curve id and its knee, so `hcs check` verifies each one like any certificate.
+ */
+export async function scoreCurve(
+  doc: HcsDocument,
+  status: Map<string, AnchorStatus>,
+  budgets: number[],
+  opts: ScoreOptions & { baseline?: boolean; cacheFor?: (budget: number) => { context?: ScoreCache; baseline?: ScoreCache } },
+): Promise<Curve> {
+  const claimStatus = new Map([...status].filter(([k]) => k.startsWith("claim:")).map(([k, v]) => [k.slice(6), v]));
+  const curveId = new Date().toISOString();
+  const byDigest = new Map<string, CurvePoint>();
+  const points: CurvePoint[] = [];
+  let baseline: ScoreSummary | undefined;
+  for (const budget of [...new Set(budgets)].sort((a, b) => a - b)) {
+    const context = renderContext(doc, { status: claimStatus, budget });
+    const digest = hashForCertificate(doc, claimStatus, budget);
+    const claims = selectClaims(doc, { status: claimStatus, budget }).length;
+    const earlier = byDigest.get(digest);
+    if (earlier) {
+      const certificate = { fields: { ...earlier.score.certificate.fields, budget: String(budget) } };
+      points.push({ budget, tokens: earlier.tokens, claims: earlier.claims, score: { ...earlier.score, certificate }, sameAs: earlier.budget });
+      continue;
+    }
+    opts.onProgress?.(`budget ${budget}: ~${estimateTokens(context)} tokens, ${claims} claims`);
+    const caches = opts.cacheFor?.(budget) ?? {};
+    const score = await scoreDocument(doc, status, { ...opts, budget, baseline: opts.baseline && !baseline, baselineResult: baseline, cache: caches.context, baselineCache: caches.baseline });
+    baseline ??= score.baseline;
+    const point = { budget, tokens: score.contextTokens, claims, score };
+    byDigest.set(digest, point);
+    points.push(point);
+  }
+  const { knee, best } = kneeOf(points.map((p) => ({ budget: p.budget, fidelity: p.score.withContext.fidelity, ci95: p.score.withContext.ci95 })));
+  for (const p of points) {
+    p.score.certificate.fields.curve = curveId;
+    if (knee !== undefined) p.score.certificate.fields.knee = String(knee);
+  }
+  return { points, knee, best };
+}
+

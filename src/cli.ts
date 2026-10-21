@@ -15,7 +15,7 @@ import { compile } from "./compile.js";
 import { emptyDocument, formatAnchor, HcsSyntaxError, parse, serialize, type HcsDocument } from "./format.js";
 import { createLLM, listModels, QuotaError, type LLM } from "./llm.js";
 import { DECODER_PROMPT, estimateTokens, renderContext, selectClaims } from "./render.js";
-import { compareContexts, findKnownProbes, hashForCertificate, scoreContext, scoreDocument, type ProbeResult, type ScoreCache, type ScoreSummary } from "./score.js";
+import { compareContexts, findKnownProbes, hashForCertificate, scoreContext, scoreCurve, scoreDocument, type ProbeResult, type ScoreCache, type ScoreSummary } from "./score.js";
 import { serveStdio } from "./mcp.js";
 import { parseConversation, toTranscript } from "./snapshot.js";
 
@@ -55,6 +55,9 @@ LLM commands (--model provider:model, optional --rpm N to stay under free-tier r
                                               answers without context)
   hcs score <file.hcs> --model M [--judge M [--judge M2]] [--budget N] [--baseline] [--runs N] [--write] [--json]
                                               (two judges: agreement is reported, the stricter verdict counts)
+  hcs curve <file.hcs> --model M [--judge M] [--budgets 250,500,1000,2000,4000] [--baseline] [--runs N] [--write] [--json]
+                                              Fidelity at each token budget and the knee (smallest budget within the
+                                              95% CI of the best); --write stores one certificate per budget
   hcs compare <a> <b> --model M [--probes file.hcs] [--judge M] [--budget N] [--runs N] [--json]
                                               Paired comparison of two contexts on the same probes; each side
                                               is an .hcs file (rendered), any text file (AGENTS.md...) or none
@@ -195,6 +198,7 @@ async function main(argv: string[]): Promise<number> {
       format: { type: "string" },
       "link-base": { type: "string" },
       comment: { type: "boolean" },
+      budgets: { type: "string" },
       runs: { type: "string" },
       free: { type: "boolean" },
       anchors: { type: "string" },
@@ -491,6 +495,72 @@ async function main(argv: string[]): Promise<number> {
         for (const r of misses) console.log(`  ${r.id} [${r.verdict}] ${r.question}`);
       }
       if (o.write) console.log(`certificate written to ${file}`);
+      return 0;
+    }
+
+    case "curve": {
+      const file = requireFile(positionals);
+      const doc = load(file);
+      const reports = checkDocument(doc, new SourceCache(rootDir(doc, file)));
+      const answerer = llm(requireModel(o.model));
+      const judgeList = judges();
+      const runs = num(o.runs, "runs") ?? 1;
+      const budgets = (o.budgets ?? "250,500,1000,2000,4000").split(",").map((b) => num(b.trim(), "budgets")!);
+      // One resumable result store per budget, like `score`: a quota stop keeps every answered probe.
+      const stores: ReturnType<typeof scoreCacheFile>[] = [];
+      const cacheFor = (budget: number) => {
+        const saved = scoreCacheFile(file, {
+          digest: hashForCertificate(doc, claimStatus(reports), budget),
+          probes: doc.probes.map((p) => [p.id, p.question, p.answer]),
+          answerer: answerer.id,
+          judges: (judgeList ?? [answerer]).map((j) => j.id),
+          budget,
+          runs,
+        });
+        if (saved.count) progress?.(`budget ${budget}: resuming with ${saved.count} saved probe result(s)`);
+        stores.push(saved);
+        return { context: saved.context, baseline: saved.baseline };
+      };
+      let curve;
+      try {
+        curve = await scoreCurve(doc, statusMap(reports), budgets, {
+          answerer,
+          judge: judgeList,
+          runs,
+          baseline: o.baseline,
+          concurrency: num(o.concurrency, "concurrency"),
+          onProgress: progress,
+          cacheFor,
+        });
+      } catch (e) {
+        if (e instanceof QuotaError) throw new Error(`${e.message}\nProbe results are saved; run the same command later to resume.`);
+        throw e;
+      }
+      for (const s of stores) s.remove();
+      if (o.write) {
+        doc.certificates.push(...curve.points.map((p) => p.score.certificate));
+        save(file, doc);
+      }
+      if (o.json) {
+        console.log(JSON.stringify(curve, null, 2));
+        return 0;
+      }
+      const first = curve.points[0]?.score;
+      console.log(`${file}: fidelity by token budget, ${first?.withContext.probes ?? 0} probes, answered by ${answerer.id}, judged by ${first?.certificate.fields.judge}`);
+      console.log("  budget  tokens  claims  fidelity  95% CI           misled  abstained");
+      for (const p of curve.points) {
+        const w = p.score.withContext;
+        const ci = `${pct(w.ci95[0])}-${pct(w.ci95[1])}`;
+        const mark = p.budget === curve.knee ? "  <- knee" : p.sameAs !== undefined ? `  (same context as ${p.sameAs})` : "";
+        console.log(`  ${String(p.budget).padStart(6)}  ${String(p.tokens).padStart(6)}  ${String(p.claims).padStart(6)}  ${pct(w.fidelity).padStart(8)}  ${ci.padEnd(15)}  ${pct(w.misled).padStart(6)}  ${pct(w.abstained).padStart(9)}${mark}`);
+      }
+      if (first?.baseline) console.log(`  no context: fidelity ${pct(first.baseline.fidelity)}`);
+      if (curve.knee !== undefined) {
+        const best = curve.points.find((p) => p.budget === curve.best)!;
+        console.log(`knee: ${curve.knee} tokens, the smallest budget within the 95% CI of the best fidelity (${pct(best.score.withContext.fidelity)} at ${best.budget})`);
+      }
+      if (first?.selfJudged) console.log("note: the answering model also graded itself. Use --judge with a model from another family.");
+      if (o.write) console.log(`${curve.points.length} certificate(s) written to ${file}`);
       return 0;
     }
 

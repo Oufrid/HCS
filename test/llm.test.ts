@@ -223,6 +223,14 @@ test("CLI end to end against a mock OpenAI-compatible server", async () => {
     r = run("check", "project.hcs");
     assert.match(r.out, /certificate openai:fake fidelity=1.000: current/);
 
+    r = await runAsync("curve", "project.hcs", "--model", "openai:fake", "--budgets", "20,100000", "--write", "-q");
+    assert.equal(r.code, 0, r.out);
+    assert.match(r.out, /budget  tokens  claims  fidelity/);
+    assert.match(r.out, /knee: \d+ tokens/);
+    assert.match(r.out, /2 certificate\(s\) written/);
+    r = run("check", "project.hcs");
+    assert.equal((r.out.match(/: current/g) ?? []).length, 3, r.out);
+
     r = await runAsync("compare", "none", "project.hcs", "--model", "openai:fake", "-q");
     assert.equal(r.code, 0, r.out);
     assert.match(r.out, /B - A\s+100.0 points \[95% paired CI 100.0 to 100.0\]: B is better/);
