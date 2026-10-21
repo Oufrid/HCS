@@ -286,6 +286,10 @@ test("free-tier handling: Retry-After, Google retryDelay, quota errors, rpm limi
         res.writeHead(429);
         return res.end('{"error":{"details":[{"retryDelay": "0.1s"}]}}');
       }
+      if (body.model === "overloaded") {
+        res.writeHead(503, { "retry-after": "0" });
+        return res.end('{"error":{"code":503,"message":"This model is currently experiencing high demand."}}');
+      }
       if (body.model === "exhausted") {
         res.writeHead(429, { "retry-after": "86400" });
         return res.end("daily quota");
@@ -311,6 +315,8 @@ test("free-tier handling: Retry-After, Google retryDelay, quota errors, rpm limi
     assert.equal(calls, 2);
 
     await assert.rejects(createLLM("groq:exhausted").complete({ system: "s", prompt: "p" }), QuotaError);
+    // Seen with gemini-3.1-flash-lite: 503 "high demand" on every retry. It must stop like a quota (keeping partial work).
+    await assert.rejects(createLLM("groq:overloaded").complete({ system: "s", prompt: "p" }), (e: Error) => e instanceof QuotaError && /unavailable after 6 attempts: HTTP 503/.test(e.message));
 
     const limited = createLLM("groq:steady", { rpm: 600 }); // one request per 100 ms
     const t0 = Date.now();
@@ -354,4 +360,149 @@ test("auth errors say whether a proxy-injected key was rejected or no key was se
     delete process.env.GROQ_BASE_URL;
     delete process.env.GEMINI_BASE_URL;
   }
+});
+
+test("reasoning models that spend the whole budget on hidden reasoning are retried with more room", async () => {
+  // Seen with groq:openai/gpt-oss-120b: max_tokens 20 gave content "" and finish_reason "length".
+  const budgets: number[] = [];
+  const { url, server } = await mockServer((_path, _headers, body) => {
+    budgets.push(body.max_tokens);
+    return body.max_tokens < 1000
+      ? { choices: [{ message: { content: "", reasoning: "thinking..." }, finish_reason: "length" }], usage: { prompt_tokens: 5, completion_tokens: body.max_tokens } }
+      : { choices: [{ message: { content: "pong" }, finish_reason: "stop" }], usage: { prompt_tokens: 5, completion_tokens: 30 } };
+  });
+  process.env.GROQ_BASE_URL = url;
+  try {
+    const m = createLLM("groq:reasoner");
+    assert.equal(await m.complete({ system: "s", prompt: "p", maxTokens: 50 }), "pong");
+    assert.deepEqual(budgets, [50, 4096]);
+    assert.deepEqual(m.usage, { requests: 2, inputTokens: 10, outputTokens: 80, retriedForReasoning: 1 });
+  } finally {
+    server.close();
+    delete process.env.GROQ_BASE_URL;
+  }
+});
+
+test("compile keeps its work when the quota runs out, and --update finishes it", async () => {
+  const dir = tempProject({ ...FIXTURE, "docs/more.md": "# More\n\nShipping is free above 100 EUR.\n" });
+  const fake = new FakeLLM();
+  let calls = 0;
+  let exhausted = true;
+  // The second extraction request hits a daily quota (Google style), later ones would too until it resets.
+  const { url, server } = await mockServer(() => ({}));
+  server.removeAllListeners("request");
+  server.on("request", (req, res) => {
+    let raw = "";
+    req.on("data", (c) => (raw += c));
+    req.on("end", async () => {
+      const body = JSON.parse(raw);
+      if (exhausted && ++calls >= 2) {
+        res.writeHead(429);
+        return res.end('{"error":{"details":[{"violations":[{"quotaId":"GenerateRequestsPerDayPerProjectPerModel-FreeTier","quotaDimensions":{"location":"global","model":"gemini-3.8-flash"},"quotaValue":"20"}]},{"retryDelay":"70000s"}]}}');
+      }
+      const text = await fake.complete({ system: body.messages[0].content, prompt: body.messages[1].content });
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify({ choices: [{ message: { content: text } }] }));
+    });
+  });
+  const env = { ...process.env, OPENAI_BASE_URL: `${url}/v1`, OPENAI_API_KEY: "x" };
+  const runAsync = (...args: string[]) =>
+    new Promise<{ code: number | null; out: string }>((resolve) => {
+      const p = spawn(process.execPath, [CLI, ...args], { cwd: dir, env });
+      let out = "";
+      p.stdout.on("data", (d: Buffer) => (out += d));
+      p.stderr.on("data", (d: Buffer) => (out += d));
+      p.on("close", (code: number | null) => resolve({ code, out }));
+    });
+  try {
+    let r = await runAsync("compile", "--model", "openai:fake", "-o", "project.hcs", "--concurrency", "1", "-q");
+    assert.equal(r.code, 1, r.out);
+    assert.match(r.out, /INCOMPLETE: .*quota GenerateRequestsPerDayPerProjectPerModel-FreeTier = 20 for model gemini-3.8-flash/);
+    assert.match(r.out, /not compiled yet: 2 chunk\(s\): docs\/policy.md:1-\d+, src\/rates.ts:1-\d+/);
+    const partial = readFileSync(join(dir, "project.hcs"), "utf8");
+    assert.match(partial, /@incomplete docs\/policy.md:1-\d+,src\/rates.ts:1-\d+/);
+    assert.match(partial, /docs\/more.md/, "the chunk compiled before the quota ran out is kept");
+
+    exhausted = false;
+    r = await runAsync("compile", "--model", "openai:fake", "-o", "project.hcs", "--update", "-q");
+    assert.equal(r.code, 0, r.out);
+    assert.match(r.out, /\(2 compiled\)/);
+    assert.match(r.out, /rejected by quote verification: \d+\/\d+ claims/);
+    const done = readFileSync(join(dir, "project.hcs"), "utf8");
+    assert.ok(!done.includes("@incomplete"));
+    assert.match(done, /src\/rates.ts/);
+    assert.match(done, /docs\/more.md/);
+  } finally {
+    server.close();
+    rmSync(dir, { recursive: true });
+  }
+});
+
+test("a quota stop inside a file resumes at the missing chunk, keeping the chunks already compiled", async () => {
+  const lines = Array.from({ length: 12 }, (_, i) => `Fact number ${i + 1} is ${i * 7}.`);
+  const dir = tempProject({ "docs/long.md": `# Long\n\n${lines.join("\n")}\n` });
+  const fake = new FakeLLM();
+  let budget = 1;
+  const llm = {
+    id: "fake:quota",
+    async complete(req: { system: string; prompt: string }) {
+      if (budget-- <= 0) throw new QuotaError("quota exhausted (test)");
+      return fake.complete(req);
+    },
+  };
+  try {
+    const first = await compile({ root: dir, llm, chunkLines: 6, synthesize: false, concurrency: 1 });
+    assert.equal(first.stats.chunks, 3);
+    assert.equal(first.stats.incomplete?.chunks.length, 2);
+    const done = first.doc.claims.map((c) => c.text);
+    assert.ok(done.length > 0, "the first chunk's claims are kept");
+    assert.equal(first.doc.headers.incomplete, first.stats.incomplete!.chunks.join(","));
+
+    budget = 100;
+    const before = fake.calls.length;
+    const second = await compile({ root: dir, llm, chunkLines: 6, synthesize: false, previous: first.doc, concurrency: 1 });
+    assert.equal(fake.calls.length - before, 2, "only the two missing chunks are sent");
+    assert.equal(second.stats.incomplete, undefined);
+    assert.equal(second.doc.headers.incomplete, undefined);
+    for (const t of done) assert.ok(second.doc.claims.some((c) => c.text === t), `kept: ${t}`);
+    assert.ok(second.doc.claims.length > done.length);
+  } finally {
+    rmSync(dir, { recursive: true });
+  }
+});
+
+test("a chunk whose reply has no usable JSON is marked incomplete and retried by --update", async () => {
+  // Seen with gemini 3.x flash: hidden reasoning used most of the output budget and the visible JSON was cut.
+  const dir = tempProject(FIXTURE);
+  const fake = new FakeLLM();
+  let truncate = true;
+  const llm = {
+    id: "fake:truncating",
+    async complete(req: { system: string; prompt: string }) {
+      const reply = await fake.complete(req);
+      return truncate && req.prompt.includes('<source path="src/rates.ts">') ? reply.slice(0, 40) : reply;
+    },
+  };
+  try {
+    const first = await compile({ root: dir, llm, synthesize: false });
+    assert.deepEqual(first.stats.incomplete?.chunks, ["src/rates.ts:1-7"]);
+    assert.match(first.stats.incomplete!.reason, /1 chunk\(s\) returned no usable JSON/);
+    assert.equal(first.doc.headers.incomplete, "src/rates.ts:1-7");
+    truncate = false;
+    const second = await compile({ root: dir, llm, synthesize: false, previous: first.doc });
+    assert.equal(second.stats.incomplete, undefined);
+    assert.ok(second.doc.claims.some((c) => c.anchors[0].path === "src/rates.ts"));
+  } finally {
+    rmSync(dir, { recursive: true });
+  }
+});
+
+test("extractJSON repairs unescaped quotes and backslashes copied from source code", () => {
+  // Real gemini-3.1-flash-lite reply on src/guard.ts: the quote of a line containing === "high" was not escaped.
+  const reply = '{\n  "claims": [\n    {\n      "text": "isHighRisk checks severity.",\n      "quote": "return injectionFindings(text).some((f) => f.severity === "high");",\n      "lines": [53, 55]\n    },\n    {"text": "Regex", "quote": "/\\s+/g and \\d", "lines": [1, 1]}\n  ]\n}';
+  assert.throws(() => JSON.parse(reply));
+  const data = extractJSON<{ claims: { quote: string }[] }>(reply);
+  assert.equal(data.claims[0].quote, 'return injectionFindings(text).some((f) => f.severity === "high");');
+  assert.equal(data.claims[1].quote, "/\\s+/g and \\d");
+  assert.equal(data.claims.length, 2);
 });

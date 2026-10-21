@@ -189,8 +189,17 @@ HCS works with free tiers:
 
 - `--rpm N` (or `HCS_RPM`) spaces requests evenly.
 - `Retry-After` headers and Google's `retryDelay` are honored.
-- An exhausted daily quota stops the run with a clear message instead of retrying forever.
+- An exhausted daily quota stops the run with a clear message (which quota, which model is billed) instead of
+  retrying forever. A provider still overloaded after every retry stops the same way.
+- `compile` keeps its work when that happens: the chunks not compiled yet go into an `@incomplete` header, and
+  rerunning with `--update` (the next day, or with another model) compiles only those chunks. Chunks whose
+  reply had no usable JSON are retried the same way.
+- `--chunk-lines 400` means fewer, larger requests, which matters when a free tier allows 20 requests a day.
+- Reasoning models that use their whole output budget before answering are retried once with more room.
+- `HCS_DEBUG_LOG=file.jsonl` records every request and reply, to see exactly what a model returned.
 - `hcs models openrouter --free` lists OpenRouter's free models.
+
+What real free tiers allowed on 2026-10-21 is logged in [bench/REPORT.md](bench/REPORT.md).
 
 ## Session hand-off between LLMs
 

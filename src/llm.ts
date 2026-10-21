@@ -1,5 +1,7 @@
 // Minimal, dependency-free LLM clients. Any OpenAI-compatible server works through the `openai` provider.
 
+import { appendFileSync } from "node:fs";
+
 export interface CompletionRequest {
   system: string;
   prompt: string;
@@ -10,6 +12,10 @@ export interface Usage {
   requests: number;
   inputTokens: number;
   outputTokens: number;
+  /** Requests repeated because a reasoning model's hidden reasoning used the whole output budget. */
+  retriedForReasoning?: number;
+  /** Replies cut by the output limit (finish_reason "length") that were still returned. */
+  truncated?: number;
 }
 
 export interface LLM {
@@ -58,7 +64,7 @@ export function createLLM(spec: string, opts: LLMOptions = {}): LLM {
   const factory = providers.get(name);
   if (!factory) throw new Error(`unknown provider "${name}". Known: ${providerNames().join(", ")}`);
   const usage: Usage = { requests: 0, inputTokens: 0, outputTokens: 0 };
-  const llm = factory(spec.slice(i + 1), spec, usage);
+  const llm = withDebugLog(factory(spec.slice(i + 1), spec, usage));
   llm.usage = usage;
   const rpm = opts.rpm ?? (env("HCS_RPM") ? Number(env("HCS_RPM")) : undefined);
   if (!rpm || !(rpm > 0)) return llm;
@@ -71,6 +77,30 @@ export function createLLM(spec: string, opts: LLMOptions = {}): LLM {
     async complete(req) {
       await limiter.wait();
       return llm.complete(req);
+    },
+  };
+}
+
+/**
+ * With HCS_DEBUG_LOG=<file>, append every request and reply (or error) as one JSON line, to see exactly what a
+ * real model returned. Never contains keys: headers are not logged.
+ */
+function withDebugLog(llm: LLM): LLM {
+  const file = env("HCS_DEBUG_LOG");
+  if (!file) return llm;
+  return {
+    ...llm,
+    async complete(req) {
+      const t0 = Date.now();
+      const log = (entry: object) => appendFileSync(file, `${JSON.stringify({ model: llm.id, ms: Date.now() - t0, ...entry })}\n`);
+      try {
+        const reply = await llm.complete(req);
+        log({ request: req, reply });
+        return reply;
+      } catch (e) {
+        log({ request: req, error: e instanceof Error ? e.message : String(e) });
+        throw e;
+      }
     },
   };
 }
@@ -129,6 +159,7 @@ export function retryDelayMs(headers: Headers, body: string): number | undefined
   return undefined;
 }
 
+/** The provider cannot serve more requests for now (quota exhausted, or still unavailable after retries). */
 export class QuotaError extends Error {}
 
 async function postJSON(url: string, headers: Record<string, string>, body: unknown, attempts = 6): Promise<any> {
@@ -150,15 +181,28 @@ async function postJSON(url: string, headers: Record<string, string>, body: unkn
     if (res.status === 429 || res.status === 503) {
       const suggested = retryDelayMs(res.headers, text);
       if (suggested !== undefined && suggested > MAX_RETRY_WAIT_MS) {
-        throw new QuotaError(`rate limit or quota exhausted at ${url} (server asks to wait ${Math.round(suggested / 1000)}s). Try later, lower --rpm, or use another model.`);
+        const quota = /"quotaId"\s*:\s*"([^"]+)"/.exec(text)?.[1];
+        const limit = /"quotaValue"\s*:\s*"?(\d+)/.exec(text)?.[1];
+        // The billed model can differ from the requested one (Google serves some aliases with another model).
+        const billed = /"quotaDimensions"\s*:\s*\{[^}]*"model"\s*:\s*"([^"]+)"/.exec(text)?.[1];
+        const which = quota ? `; quota ${quota}${limit ? ` = ${limit}` : ""}${billed ? ` for model ${billed}` : ""}` : "";
+        throw new QuotaError(`rate limit or quota exhausted at ${url} (server asks to wait ${Math.round(suggested / 1000)}s${which}). Try later, lower --rpm, or use another model.`);
       }
       wait = suggested;
       continue;
     }
     if (res.status < 500) break;
   }
+  // Still overloaded or failing after every retry: stop like a quota so that callers keep their partial work.
+  const message = lastErr instanceof Error ? lastErr.message : String(lastErr);
+  if (!/^HTTP 4\d\d /.test(message) || /^HTTP 429 /.test(message)) {
+    throw new QuotaError(`provider unavailable after ${attempts} attempts: ${message.slice(0, 300)}`);
+  }
   throw lastErr;
 }
+
+/** Output budget for the retry when a reasoning model used all its tokens before answering. */
+export const REASONING_BUDGET = 4096;
 
 function countUsage(usage: Usage, input: unknown, output: unknown): void {
   usage.requests++;
@@ -178,18 +222,30 @@ function openAICompatible(
   return {
     id,
     async complete(req) {
-      const data = await postJSON(url, { ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}), ...extraHeaders }, {
-        model,
-        temperature: 0,
-        max_tokens: req.maxTokens ?? 2048,
-        messages: [
-          { role: "system", content: req.system },
-          { role: "user", content: req.prompt },
-        ],
-      });
-      countUsage(usage, data?.usage?.prompt_tokens, data?.usage?.completion_tokens);
+      const call = async (maxTokens: number) => {
+        const data = await postJSON(url, { ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}), ...extraHeaders }, {
+          model,
+          temperature: 0,
+          max_tokens: maxTokens,
+          messages: [
+            { role: "system", content: req.system },
+            { role: "user", content: req.prompt },
+          ],
+        });
+        countUsage(usage, data?.usage?.prompt_tokens, data?.usage?.completion_tokens);
+        return data;
+      };
+      const maxTokens = req.maxTokens ?? 2048;
+      let data = await call(maxTokens);
+      // Reasoning models spend output tokens on hidden reasoning first. When that uses the whole budget the
+      // visible answer is empty (finish_reason "length"): retry once with room for the reasoning.
+      if (!data?.choices?.[0]?.message?.content && data?.choices?.[0]?.finish_reason === "length" && maxTokens < REASONING_BUDGET) {
+        usage.retriedForReasoning = (usage.retriedForReasoning ?? 0) + 1;
+        data = await call(REASONING_BUDGET);
+      }
       const content = data?.choices?.[0]?.message?.content;
       if (typeof content !== "string") throw new Error(`unexpected response from ${url}: ${JSON.stringify(data).slice(0, 300)}`);
+      if (data?.choices?.[0]?.finish_reason === "length") usage.truncated = (usage.truncated ?? 0) + 1;
       return content;
     },
   };
@@ -317,7 +373,54 @@ export function extractJSON<T = any>(text: string): T {
       }
     }
   }
+  // Models often copy source code into string values without escaping it. Try once more after repairing.
+  for (const c of candidates) {
+    const start = c.indexOf("{");
+    const end = c.lastIndexOf("}");
+    if (start === -1 || end <= start) continue;
+    try {
+      return JSON.parse(repairJSON(c.slice(start, end + 1)));
+    } catch {
+      // next candidate
+    }
+  }
   throw new Error(`model reply did not contain valid JSON: ${text.slice(0, 200)}`);
+}
+
+/**
+ * Best-effort repair of JSON written by a model: escapes double quotes inside strings (a quote is taken as
+ * closing only when the next non-blank character is , : } ] or the end), raw control characters, and invalid
+ * backslash escapes such as the `\s` of a copied regex.
+ */
+export function repairJSON(text: string): string {
+  let out = "";
+  let inStr = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (!inStr) {
+      if (ch === '"') inStr = true;
+      out += ch;
+      continue;
+    }
+    if (ch === "\\") {
+      const next = text[i + 1];
+      if (next !== undefined && '"\\/bfnrtu'.includes(next)) {
+        out += ch + next;
+        i++;
+      } else out += "\\\\";
+    } else if (ch === '"') {
+      let j = i + 1;
+      while (j < text.length && /\s/.test(text[j])) j++;
+      if (j === text.length || ",:}]".includes(text[j])) {
+        inStr = false;
+        out += ch;
+      } else out += '\\"';
+    } else if (ch === "\n") out += "\\n";
+    else if (ch === "\r") out += "\\r";
+    else if (ch === "\t") out += "\\t";
+    else out += ch;
+  }
+  return out;
 }
 
 /** Run async jobs with bounded concurrency, preserving input order in the result. */

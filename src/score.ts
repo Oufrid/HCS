@@ -83,13 +83,13 @@ async function answer(llm: LLM, question: string, context: string | null): Promi
     return llm.complete({
       system: "Answer the question from your own knowledge. Do not guess.",
       prompt: `${question}\n\n${instructions}`,
-      maxTokens: 300,
+      maxTokens: 1024,
     });
   }
   return llm.complete({
     system: DECODER_PROMPT,
     prompt: `${context}\n\nQuestion: ${question}\n\n${instructions} Answer only from the context above; do not read or assume anything else.`,
-    maxTokens: 300,
+    maxTokens: 1024,
   });
 }
 
@@ -106,7 +106,7 @@ Candidate answer: ${candidate}
 "incorrect": contradicts the reference, or the essential fact is wrong or missing.
 
 Return {"verdict":"correct"|"partial"|"incorrect"}`,
-    maxTokens: 50,
+    maxTokens: 1024,
   });
   try {
     const v = extractJSON<{ verdict?: string }>(reply).verdict;

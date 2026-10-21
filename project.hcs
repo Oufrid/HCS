@@ -1,14 +1,14 @@
 HCS/0.2
 @title HCS - Holographic Context Standard (reference CLI)
 @root .
-@updated 2026-10-21T10:46:08.107Z
+@updated 2026-10-21T11:46:48.922Z
 @meta license=MIT language=TypeScript
 
 [claims]
 
 ## Overview
 #purpose[manual] HCS is a plain-text format plus a zero-dependency Node.js CLI and MCP server (`hcs`) that makes LLM context traceable (claims cite sources), verifiable (anchors carry hashes) and measured (probes and fidelity certificates).
-  > README.md::"HCS: Holographic Context Standard" #41ca045f9b80
+  > README.md:3-16 #cddd3cef50fb
 #layers[manual] Deterministic commands (init, validate, check, seal, render, stats, audit, serve) never call an LLM; compile, score and snapshot need a `provider:model` LLM; models only lists a provider's model ids.
   > src/cli.ts::HELP #8d7d06d557a3
 
@@ -40,7 +40,14 @@ HCS/0.2
   > src/compile.ts::anchorFor #5e3194b4874f
   > src/sources.ts::locateQuote #f12f16ff2c54
 #incremental[manual] `compile --update` keeps items whose anchors are ok or moved, re-reads only dirty or uncovered files, never drops manual claims, regenerates overview claims and clears certificates.
-  > src/compile.ts::compile #ad45e5c0bbfe
+  > src/compile.ts::compile #d4321a0aa0bc
+#resume[manual] When the quota runs out, or a reply has no usable JSON, compile keeps what it extracted and lists the missing chunks in the `@incomplete` header; `compile --update` then compiles only those chunks.
+  > src/compile.ts::compile #d4321a0aa0bc
+#reasoning[manual] Reasoning models that spend the whole output budget before answering are retried once with a 4096-token budget, replies cut by the limit are counted, and JSON replies with unescaped quotes or backslashes are repaired before parsing.
+  > src/llm.ts::REASONING_BUDGET #c657d5bd2296
+  > src/llm.ts::repairJSON #14b284eb41cd
+#debug-log[manual] With HCS_DEBUG_LOG set, every model request and reply is appended to that file as one JSON line, without headers or keys.
+  > src/llm.ts::withDebugLog #3b77fdca4cf6
 #probe-spread[manual] Probes are picked round-robin across chunks, independently of which claims were kept, so that scores measure the source rather than the summary.
   > src/compile.ts::spreadProbes #fe14d197cc5a
 
@@ -77,8 +84,8 @@ HCS/0.2
   > test/fuzz.test.ts::assertWellBehaved #13847c57eb6e
 
 ## Providers
-#providers[manual] Providers are openai (any compatible API), ollama, gemini, groq, openrouter and anthropic, called at temperature 0 with usage accounting; Bearer keys may be absent when a proxy injects them; 429/503 retries honor Retry-After and Google's retryDelay, and waits over 120 s raise a quota error.
-  > src/llm.ts::postJSON #f31614ec7616
+#providers[manual] Providers are openai (any compatible API), ollama, gemini, groq, openrouter and anthropic, called at temperature 0 with usage accounting; Bearer keys may be absent when a proxy injects them; 429/503 retries honor Retry-After and Google's retryDelay, and waits over 120 s, or a provider still failing after every retry, raise a quota error.
+  > src/llm.ts::postJSON #d1a90aeac977
   > src/llm.ts::retryDelayMs #53c59bd9ac2f
   > src/llm.ts::MAX_RETRY_WAIT_MS #ffea888e2d7e
 #proxy[manual] Behind HTTPS_PROXY the CLI re-runs itself once with --use-env-proxy so that Node's fetch uses the proxy; auth errors say whether a proxy-injected key was rejected (x-proxy-error header) or no key was sent.
@@ -86,7 +93,7 @@ HCS/0.2
   > src/llm.ts::authHint #ffdcc6547ae0
 #rpm[manual] `--rpm` (or HCS_RPM) spaces requests evenly with one limiter per model spec.
   > src/llm.ts::RateLimiter #5c815985358a
-  > src/llm.ts::createLLM #063c3c08564d
+  > src/llm.ts::createLLM #3c2ca43571fc
 
 [probes]
 ?p1 How many hex characters of the SHA-256 digest does an anchor hash keep?
@@ -115,7 +122,7 @@ HCS/0.2
   > src/mcp.ts::TOOLS #fdf64141fd1e
 ?p9 What tag do claims with high-risk injection patterns receive?
   = suspect
-  > src/compile.ts::extractChunk #d809d65bd89f
+  > src/compile.ts::extractChunk #b8d51ae71481
 ?p10 How many bootstrap resamples does the confidence interval use by default?
   = 2000
   > src/score.ts::bootstrapCI #09a88d67acf9

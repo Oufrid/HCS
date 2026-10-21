@@ -174,7 +174,12 @@ async function main(argv: string[]): Promise<number> {
   process.on("exit", () => {
     for (const c of clients) {
       const u = c.usage;
-      if (u?.requests) process.stderr.write(`usage ${c.id}: ${u.requests} requests, ${u.inputTokens} input + ${u.outputTokens} output tokens (as reported by the provider)\n`);
+      if (u?.requests) {
+        const retried =
+          (u.retriedForReasoning ? `; ${u.retriedForReasoning} retried with a larger budget because reasoning used all output tokens` : "") +
+          (u.truncated ? `; ${u.truncated} replies cut by the output limit` : "");
+        process.stderr.write(`usage ${c.id}: ${u.requests} requests, ${u.inputTokens} input + ${u.outputTokens} output tokens (as reported by the provider)${retried}\n`);
+      }
     }
   });
 
@@ -355,6 +360,12 @@ async function main(argv: string[]): Promise<number> {
       console.log(`  rejected by quote verification: ${stats.claimsRejected}/${stats.claimsProposed} claims, ${stats.probesRejected}/${stats.probesProposed} probes`);
       printSourceFindings(stats.sourceFindings);
       if (knownCount !== undefined) console.log(`  probe quality filter: ${knownCount}/${doc.probes.length} probes tagged [known] (answered without context by every filter model)`);
+      if (stats.incomplete) {
+        console.log(`  INCOMPLETE: ${stats.incomplete.reason}`);
+        if (stats.incomplete.chunks.length) console.log(`  not compiled yet: ${stats.incomplete.chunks.length} chunk(s): ${stats.incomplete.chunks.join(", ")}`);
+        console.log(`  the partial file was saved; run the same command with --update later to finish it`);
+        return 1;
+      }
       console.log(`  context ~${ctxTokens} tokens for ~${stats.sourceTokens} tokens of source. Next: hcs score ${out} --model ${model} --baseline --write`);
       return 0;
     }
