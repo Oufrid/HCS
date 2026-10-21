@@ -164,7 +164,9 @@ function proxyableKey(name: string): string | undefined {
 export function authHint(res: Response, headers: Record<string, string>, body: string): string {
   const proxy = res.headers.get("x-proxy-error");
   if (proxy) return ` (egress proxy: ${proxy}; the network secret for this host is set but was not accepted: check its value and format)`;
-  const authFailure = [401, 403, 404].includes(res.status) || /authorization header|api key|unregistered callers/i.test(body);
+  // Some APIs answer 404 to unauthenticated calls; a 404 that names a model is about the model, not the key.
+  const authFailure =
+    [401, 403].includes(res.status) || (res.status === 404 && !/model/i.test(body)) || /authorization header|api key|unregistered callers/i.test(body);
   if (authFailure && !headers.authorization && !headers["x-api-key"]) {
     return " (no API key was sent: set the provider's *_API_KEY variable, or a network secret for this host)";
   }

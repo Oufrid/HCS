@@ -356,8 +356,16 @@ test("auth errors say whether a proxy-injected key was rejected or no key was se
       res.writeHead(401, { "x-proxy-error": 'upstream auth failed: connection "api.groq.com"' });
       return res.end('{"error":{"message":"Invalid API Key"}}');
     }
-    res.writeHead(400);
-    res.end('[{"error":{"code":400,"message":"Missing or invalid Authorization header."}}]');
+    let body = "";
+    req.on("data", (c) => (body += c));
+    req.on("end", () => {
+      if (body.includes("old-model")) {
+        res.writeHead(404);
+        return res.end('[{"error":{"code":404,"message":"This model models/old-model is no longer available to new users."}}]');
+      }
+      res.writeHead(400);
+      res.end('[{"error":{"code":400,"message":"Missing or invalid Authorization header."}}]');
+    });
   });
   await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
   const url = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
@@ -367,6 +375,10 @@ test("auth errors say whether a proxy-injected key was rejected or no key was se
     await assert.rejects(listModels("groq"), /egress proxy: upstream auth failed.*network secret for this host is set but was not accepted/);
     await assert.rejects(listModels("gemini"), /HTTP 400.*no API key was sent/);
     await assert.rejects(createLLM("gemini:m").complete({ system: "s", prompt: "p" }), /no API key was sent/);
+    // A retired model is a 404 about the model: no misleading key hint.
+    const retired = (await createLLM("gemini:old-model").complete({ system: "s", prompt: "p" }).then(() => new Error("no error"), (e) => e)) as Error;
+    assert.match(retired.message, /HTTP 404.*no longer available/);
+    assert.doesNotMatch(retired.message, /no API key/);
   } finally {
     server.close();
     delete process.env.GROQ_BASE_URL;

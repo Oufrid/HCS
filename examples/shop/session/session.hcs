@@ -1,0 +1,54 @@
+HCS/0.2
+@title conversation
+@root .
+@created 2026-10-21T23:25:01.984Z
+@updated 2026-10-21T23:25:08.060Z
+@generator hcs-cli compile (groq:openai/gpt-oss-120b)
+@source-files 1
+@source-tokens 368
+
+[claims]
+
+## Overview
+#c1[overview,i5] The refund system currently uses a 14‑day window defined in worker/refunds.py and documented in docs/policy.md.
+  > conversation.transcript.md::"[2] assistant" #e56fc451dcce
+#c2[overview,i5] The proposal adds a 30‑day refund window for orders over $100 by introducing LONG_WINDOW_DAYS = 30 and LONG_WINDOW_FROM = 10000 in worker/refunds.py.
+  > conversation.transcript.md::"[3] user" #c931b253edce
+  > conversation.transcript.md::"[4] assistant" #961bd6eac0b7
+#c3[overview,i5] The refundable() function will be modified to take the order total into account, enabling the conditional longer window.
+  > conversation.transcript.md::"[4] assistant" #961bd6eac0b7
+#c4[overview,i5] Documentation will be updated: the Refunds section of docs/policy.md will reflect the new window and AGENTS.md will be corrected.
+  > conversation.transcript.md::"[4] assistant" #961bd6eac0b7
+#c5[overview,i5] The restocking fee percent remains unchanged at 0.
+  > conversation.transcript.md::"[6] assistant" #e76a627301d0
+#c6[overview,i5] All changes must be shipped before 1 December.
+  > conversation.transcript.md::"[5] user" #b043f194213a
+
+## (root)
+#c7[i5] The refund window is set to 14 days in worker/refunds.py and documented in docs/policy.md.
+  > conversation.transcript.md::"[2] assistant" #e56fc451dcce
+#c8[i5] The user proposes extending the refund window to 30 days, but only for orders over $100.00.
+  > conversation.transcript.md::"[3] user" #c931b253edce
+#c9[i5] The plan adds LONG_WINDOW_DAYS = 30 and LONG_WINDOW_FROM = 10000 to worker/refunds.py.
+  > conversation.transcript.md::"[4] assistant" #961bd6eac0b7
+#c10[i4] The refundable() function will be modified to take the order total into account.
+  > conversation.transcript.md::"[4] assistant" #961bd6eac0b7
+#c11[i4] The Refunds section of docs/policy.md will be updated to reflect the new window.
+  > conversation.transcript.md::"[4] assistant" #961bd6eac0b7
+#c12[i3] AGENTS.md, which incorrectly states a 30‑day window for everyone, will be corrected.
+  > conversation.transcript.md::"[4] assistant" #961bd6eac0b7
+#c13[i4] The restocking fee percent remains at 0.
+  > conversation.transcript.md::"[6] assistant" #e76a627301d0
+#c14[i4] The change must be shipped before 1 December.
+  > conversation.transcript.md::"[5] user" #b043f194213a
+
+[probes]
+?p1 What constant defines the default refund window days?
+  = REFUND_WINDOW_DAYS
+  > conversation.transcript.md::"[2] assistant" #e56fc451dcce
+?p2 What cent value is the threshold for applying the long refund window?
+  = 10000
+  > conversation.transcript.md::"[4] assistant" #961bd6eac0b7
+?p3 By what date must the change be shipped?
+  = 1 December
+  > conversation.transcript.md::"[5] user" #b043f194213a

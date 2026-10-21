@@ -1,7 +1,7 @@
 HCS/0.2
 @title HCS - Holographic Context Standard (reference CLI)
 @root .
-@updated 2026-10-21T23:17:58.001Z
+@updated 2026-10-21T23:29:31.707Z
 @meta license=MIT language=TypeScript
 
 [claims]
@@ -133,7 +133,7 @@ HCS/0.2
   > src/llm.ts::MAX_RETRY_WAIT_MS #ffea888e2d7e
 #proxy[manual] Behind HTTPS_PROXY the CLI re-runs itself once with --use-env-proxy so that Node's fetch uses the proxy; auth errors say whether a proxy-injected key was rejected (x-proxy-error header) or no key was sent.
   > src/cli.ts::rerunBehindProxy #865c33840a44
-  > src/llm.ts::authHint #ffdcc6547ae0
+  > src/llm.ts::authHint #093e8811c1e1
 #rpm[manual] `--rpm` (or HCS_RPM) spaces requests evenly with one limiter per model spec; `--reasoning-effort` (or HCS_REASONING_EFFORT) is sent as `reasoning_effort` only when given.
   > src/llm.ts::RateLimiter #5c815985358a
   > src/llm.ts::createLLM #3e324be51ea7

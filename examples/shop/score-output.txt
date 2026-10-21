@@ -1,0 +1,22 @@
+[1/12] p1 correct
+[2/12] p2 correct
+[3/12] p3 unknown
+[4/12] p4 correct
+[5/12] p5 correct
+[6/12] p6 unknown
+[7/12] p7 correct
+[8/12] p8 correct
+[9/12] p9 correct
+[10/12] p10 unknown
+[11/12] p11 correct
+[12/12] p12 correct
+shop.hcs scored with gemini:gemini-3.1-flash-lite (judge groq:openai/gpt-oss-120b), context ~1804 tokens
+with context     fidelity  75.0% [95% CI 50.0%-100.0%]   misled   0.0%   abstained  25.0%   (12 probes)
+note: only 12 probes; the confidence interval is wide. Compile with more probes for a tighter estimate.
+not recovered from the context:
+  p3 [unknown] What error message is thrown when a parcel exceeds the maximum weight?
+  p6 [unknown] From the "paid" status, which next statuses are permitted?
+  p10 [unknown] What literal types are allowed for the Order.status property?
+certificate written to shop.hcs
+usage gemini:gemini-3.1-flash-lite: 12 requests, 24091 input + 268 output tokens (as reported by the provider)
+usage groq:openai/gpt-oss-120b: 1 requests, 210 input + 102 output tokens (as reported by the provider)
