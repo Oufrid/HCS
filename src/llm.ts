@@ -192,7 +192,9 @@ async function postJSON(url: string, headers: Record<string, string>, body: unkn
         const limit = /"quotaValue"\s*:\s*"?(\d+)/.exec(text)?.[1];
         // The billed model can differ from the requested one (Google serves some aliases with another model).
         const billed = /"quotaDimensions"\s*:\s*\{[^}]*"model"\s*:\s*"([^"]+)"/.exec(text)?.[1];
-        const which = quota ? `; quota ${quota}${limit ? ` = ${limit}` : ""}${billed ? ` for model ${billed}` : ""}` : "";
+        // Without a Google quota id, keep the provider's own explanation (Groq names the limit in its message).
+        const said = /"message"\s*:\s*"([^"]{1,240})/.exec(text)?.[1];
+        const which = quota ? `; quota ${quota}${limit ? ` = ${limit}` : ""}${billed ? ` for model ${billed}` : ""}` : said ? `; ${said}` : "";
         throw new QuotaError(`rate limit or quota exhausted at ${url} (server asks to wait ${Math.round(suggested / 1000)}s${which}). Try later, lower --rpm, or use another model.`);
       }
       wait = suggested;

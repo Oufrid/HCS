@@ -296,7 +296,7 @@ test("free-tier handling: Retry-After, Google retryDelay, quota errors, rpm limi
       }
       if (body.model === "exhausted") {
         res.writeHead(429, { "retry-after": "86400" });
-        return res.end("daily quota");
+        return res.end('{"error":{"message":"Rate limit reached for model `x` on tokens per day (TPD): Limit 200000, Used 199000","type":"tokens"}}');
       }
       res.writeHead(200, { "content-type": "application/json" });
       res.end(JSON.stringify({ choices: [{ message: { content: `ok:${req.url}` } }], usage: { prompt_tokens: 7, completion_tokens: 3 } }));
@@ -318,7 +318,7 @@ test("free-tier handling: Retry-After, Google retryDelay, quota errors, rpm limi
     assert.match(await createLLM("openrouter:google-flaky").complete({ system: "s", prompt: "p" }), /^ok:/);
     assert.equal(calls, 2);
 
-    await assert.rejects(createLLM("groq:exhausted").complete({ system: "s", prompt: "p" }), QuotaError);
+    await assert.rejects(createLLM("groq:exhausted").complete({ system: "s", prompt: "p" }), (e: Error) => e instanceof QuotaError && /tokens per day \(TPD\): Limit 200000/.test(e.message));
     // Seen with gemini-3.1-flash-lite: 503 "high demand" on every retry. It must stop like a quota (keeping partial work).
     await assert.rejects(createLLM("groq:overloaded").complete({ system: "s", prompt: "p" }), (e: Error) => e instanceof QuotaError && /unavailable after 6 attempts: HTTP 503/.test(e.message));
 
