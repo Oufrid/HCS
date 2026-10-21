@@ -159,12 +159,17 @@ on 470 of 474 common symbols, every difference being a heuristic error.
   naive summary.
 - **Done when:** the report is published and every number in README links to it.
 
-### D2. Spec 1.0 and governance `[ ]`
+### D2. Spec 1.0 and governance `[~]`
 - `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, issue and PR templates.
 - A lightweight RFC process (`rfcs/`) for spec changes.
 - Freeze SPEC 1.0 once B2 passes in two implementations and D1 is published: stable anchor syntax and hashing,
   and a versioning policy.
 - **Done when:** these documents exist and SPEC 1.0 is tagged.
+
+Done: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), issue templates (bug, spec change,
+benchmark result, private security link), a pull-request template, and `rfcs/` (process, template, and the
+pre-1.0 versioning policy). Remaining: SPEC 1.0 is **not** tagged, on purpose: its condition is not met, since
+D1 (public benchmark) is not published. Tagging is also a release, which needs the maintainer's approval.
 
 ### D3. Documentation and examples `[ ]`
 - `examples/`: a small project in several languages with its `.hcs` file, a conversation snapshot, an audited

@@ -383,14 +383,15 @@ conformance/    language-agnostic test cases both implementations pass in CI
 test/           node:test suite, including mock OpenAI/Anthropic-compatible servers
 docs/           MCP client setup and a recorded session
 bench/          reproducible benchmark harness
+rfcs/           the RFC process for spec changes, and its template
 project.hcs     HCS describing itself (checked in CI)
 action.yml      GitHub Action (verification)
-.github/        CI and the manual benchmark workflow
+.github/        CI, the impact workflow, issue and pull-request templates
 ```
 
 ## Contributing
 
-Issues and PRs are welcome, especially benchmark results on real projects and models, symbol-locator cases for more languages, and spec feedback. Run `npm test` before submitting. If your change affects a claim in `project.hcs`, `npm run check:self` will tell you.
+Issues and PRs are welcome, especially benchmark results on real projects and models, symbol-locator cases for more languages, and spec feedback. [CONTRIBUTING.md](CONTRIBUTING.md) has the setup and the rules for a change; changes to the format go through a short RFC ([rfcs/](rfcs/README.md)). Everyone follows the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## License
 
