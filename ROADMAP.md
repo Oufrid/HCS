@@ -58,16 +58,15 @@ a real client: a recorded Claude Code 2.1.306 session used every tool, a resourc
 Code, Claude Desktop, Cursor and VS Code in `docs/mcp.md`, with example configs in `examples/mcp/`; only Claude
 Code was actually tested.
 
-### B2. Conformance suite and second implementation `[ ]`
-A format with one implementation is a tool, not a standard.
-- `conformance/`: language-agnostic cases as files, each a directory with sources, an `.hcs` file and
-  `expected.json`. Cover parse results and errors, hashes for every anchor form, symbol ranges per language,
-  verification statuses (ok/moved/stale/missing/unsealed, cross-file moves), render output with budgets,
-  certificate digests.
-- The TypeScript implementation runs the suite in CI (`npm run conformance`).
-- `python/`: a Python package (`hcs`, zero dependencies, Python ≥ 3.9) implementing parse, serialize, hash,
-  symbol location, check, seal and render. It passes the same suite in CI.
-- **Done when:** both implementations pass 100% of the conformance cases in CI.
+### B2. Conformance suite and second implementation `[x]`
+Done: `conformance/` has 36 language-agnostic cases (parse and its errors, serialization, symbol ranges for
+TypeScript, Python, Markdown, YAML, JSON, Go, Rust and Java, anchor hashes, check statuses including moves within
+and across files and a missing root, seal, render with budgets, certificate digests), documented in
+`conformance/README.md` and SPEC section 10. `python/` is a dependency-free implementation (Python >= 3.9) of
+parse, serialize, hashing, symbol location, check, seal and render, with a small CLI. Both pass 100% of the cases in
+CI (Node 18/20/22, Python 3.9/3.13), and `conformance/cross_check.py` also compares them on every file of this
+repository, its real `.hcs` files and 3,000 mutated inputs. The suite found two bugs in the reference (`fn new` not
+located; a missing `@root` crashed `check`), both fixed. Publishing on PyPI is part of B4.
 
 ### B3. Pull-request bot `[ ]`
 - `hcs impact <file.hcs> --base <ref>`: claims and probes whose anchors are affected by the diff between
