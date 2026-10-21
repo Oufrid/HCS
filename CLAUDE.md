@@ -41,9 +41,14 @@ node dist/src/cli.js help
 
 ## Current status and next steps
 
-v0.2 is complete and tested against mocks only. **The full plan is in `ROADMAP.md`**: phases A–D, each item's
-status, its "Done when" criterion, and the working rules (order, commits, honesty, what needs the
-maintainer's approval). Start with the first unfinished item in the order it gives (A1: real-model
-validation), and update `ROADMAP.md` in the same commit that changes an item's status.
+A1, A3 and A4 are done: the CLI has run end to end on real free-tier models (see `bench/REPORT.md`). **The full
+plan is in `ROADMAP.md`**: phases A–D, each item's status, its "Done when" criterion, and the working rules
+(order, commits, honesty, what needs the maintainer's approval). Continue with the first unfinished item in the
+order it gives (B1 next), and update `ROADMAP.md` in the same commit that changes an item's status.
+
+Free-tier facts learned in A1: Gemini allows about 20 requests per day per model (some aliases share a quota),
+Groq 8,000 tokens per minute and 200,000 tokens per day per model. Use `--chunk-lines 600`, `--reasoning-effort
+low` for reasoning models, and `HCS_DEBUG_LOG` to keep the raw replies; `compile` and `score` resume after a stop.
+Compile benchmark material from a frozen worktree (`git worktree add bench/.work/<name> <commit>`).
 
 The maintainer communicates in French; answer in French, keep repository content in English.

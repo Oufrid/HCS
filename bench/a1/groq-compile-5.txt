@@ -1,0 +1,10 @@
+incremental: 13 files unchanged, 2 to compile
+[1/3] src/sources.ts:1-193 -> 7 claims, 3 probes
+[2/3] src/symbols.ts:1-233 -> not compiled: quota exhausted
+wrote groq.hcs: 151 claims, 40 probes from 15 files (2 compiled)
+  rejected by quote verification: 1/8 claims, 0/3 probes
+  INCOMPLETE: rate limit or quota exhausted at https://api.groq.com/openai/v1/chat/completions (server asks to wait 1034s; Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kq6dek8kf3ptkrbhwjhgsk0f` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 198227, Requested 4165. Please try again in 17m13.344s. Need more token). Try later, lower --rpm, or use another model.
+  not compiled yet: 2 chunk(s): src/symbols.ts:1-233, src/symbols.ts:234-302
+  the partial file was saved; run the same command with --update later to finish it
+usage groq:openai/gpt-oss-120b: 1 requests, 2735 input + 5404 output tokens (as reported by the provider)
+exit=1

@@ -54,4 +54,74 @@ What real providers did, and what it broke in HCS:
 | 6 | `gemini-3.1-flash-lite` copied `=== "high"` from `src/guard.ts` into a JSON string without escaping the quotes. | Chunk dropped as unparsable. | `extractJSON` repairs unescaped quotes, raw control characters and invalid backslash escapes; the real reply now yields 6 claims and 3 probes. |
 | 7 | `gemini-3.1-flash-lite` answered 503 "high demand" on all 6 attempts at the 15th chunk. | Unhandled error: the run crashed and lost 14 chunks of work. | A provider still failing after every retry raises the same stop as a quota, so the partial work is saved. |
 
-No fidelity number yet: see the next sections.
+
+More fixes from the runs below (same rules: each with a mock regression test):
+
+| # | Observation | Effect in HCS before the fix | Fix |
+|---|---|---|---|
+| 8 | `gemini-3-flash-preview` cut its JSON at about 300 visible tokens out of an 8192 budget: hidden reasoning used the rest. With `reasoning_effort: "low"` the same request ends normally (922 output tokens). | Chunk retried forever by `--update`. | `--reasoning-effort` (or `HCS_REASONING_EFFORT`), sent only when given, since accepted values differ per model. |
+| 9 | Groq answers 413 when prompt + `max_tokens` exceeds the 8000 tokens-per-minute limit, and its "Requested" count varies between calls. | Crash; all compiled chunks lost. | Shrink `max_tokens` by the reported excess plus a margin, up to three times. |
+| 10 | Any provider error other than a quota (the 413 above) crashed `compile`. | Lost work. | `compile` saves partial work on any provider failure. |
+| 11 | Models quote Markdown without its markup (`` `hcs serve` `` quoted as `hcs serve`, `**Fidelity**` as `Fidelity`). | On `gemini-3-flash-preview`, only 18.2% of quotes from Markdown chunks were accepted. | Quote matching ignores Markdown inline markup and typographic quotes on both sides (SPEC 0.3 allows it). Same replies: 77.3% to 90.9% accepted overall, docs 18.2% to 72.7%, code unchanged at 97.0% (`bench/quote-rate.mjs`). |
+| 12 | `gpt-oss-20b` returned an empty overview reply (4096 tokens of hidden reasoning); the retry did not trigger because its threshold was 4096. | Overview silently missing. | Retry budget 16384; a failed overview step is reported and retried by `--update`. |
+| 13 | Groq limits each model to 200,000 tokens per day (rolling). One score at a ~4,000-token context needs about 160,000 tokens; the second score stopped after 10 probes. | `score` lost all results. | `score` saves each probe result in `.hcs-cache/` and resumes with the same command; no certificate from a partial score. |
+| 14 | Groq's quota body names the limit, but HCS only printed "wait 1062s". | Unclear stop. | Quota messages keep the provider's explanation ("tokens per day (TPD): Limit 200000, Used 193664"). |
+
+### 2026-10-21: end-to-end runs on a frozen commit
+
+Sources: commit `681f82e` (`src/`, `SPEC.md`, `README.md`: 15 files, ~57,630 estimated tokens), checked out in a
+separate worktree so that fixes made during the runs could not change the material being compiled. The CLI
+was the current build at each step (fixes were added between runs). Reproduce the sources with
+`git worktree add bench/.work/a1 681f82e`. Artifacts: `bench/a1/` (CLI outputs, the two `.hcs` files with their
+certificates, `quote-rate.txt`) and `bench/a1/logs/*.jsonl.gz` (every request and reply, from
+`HCS_DEBUG_LOG`; no keys; `gunzip` them before `bench/quote-rate.mjs`).
+
+**Compile** (`--rpm 8 --concurrency 1`):
+
+| File | Models (in order, as quotas ran out) | Chunks | Claims | Probes | Quotes accepted | Rendered context |
+|---|---|---|---|---|---|---|
+| `gemini.hcs` | `gemini-3-flash-preview` with `--reasoning-effort low --chunk-lines 600` (8 chunks, then the daily quota), finished with `gemini-flash-lite-latest` (7 chunks + overview) | 15 | 95 (8 overview) | 37 | 124/145 = **85.5%** as compiled (93.8% with the current matcher on the same replies) | ~4,259 tokens (7.4% of the source) |
+| `groq.hcs` | `groq:openai/gpt-oss-120b` (22 chunks over four runs, stopped by a 413 crash, then twice by the tokens-per-day limit), finished with `groq:openai/gpt-oss-20b` (2 chunks + overview) | 24 | 173 (8 overview) | 40 | 236/264 = **89.4%** | ~9,109 tokens (15.8%) |
+
+Two claims in `gemini.hcs` are tagged `suspect`: they describe the injection guard and quote its examples. This is
+an expected false positive of a guard that does not know whether text is about attacks or is one.
+
+**Score** (`--baseline --runs 1`, answering model and judge from different families):
+
+| File | Answers | Judge | Budget | Fidelity [95% CI] | Without context | Informative | Misled | Abstained |
+|---|---|---|---|---|---|---|---|---|
+| `gemini.hcs` | `groq:qwen/qwen3.8-27b` | `groq:openai/gpt-oss-20b` | full (~4,259) | **44.6%** [31.1%-60.8%] | 0.0% | 44.6% (37 probes) | 2.7% | 48.6% |
+| `groq.hcs` | `groq:openai/gpt-oss-20b` | `gemini:gemini-flash-lite-latest` | 4000 (~3,918) | **16.3%** [5.0%-28.7%] | 20.0% | 17.2% (32 probes) | 0.0% | 82.5% |
+
+The second line uses another answering model because Qwen's daily token quota was spent by the first score
+(`score-groq-1-qwen-quota.txt`). The full `groq.hcs` context (~9,100 tokens) cannot be scored on Groq's free tier at
+all: a single request would exceed the 8,000 tokens-per-minute limit, hence `--budget 4000`.
+
+**What this shows, without polishing:**
+
+- The pipeline runs end to end on real models from three families (Gemini, OpenAI-oss, Qwen), on free tiers,
+  after the fourteen fixes above. Quote verification keeps 85-89% of what the models propose.
+- Fidelity is low. Most misses are abstentions, and the abstentions are correct: checking the misses by hand,
+  the expected answers (exit codes, default limits, regexes, constants) are not in the rendered context. The
+  probes ask about details of the source; a context of 7-16% of the source keeps the main behavior and drops
+  those details. With a 4,000-token budget, `groq.hcs` scores below the no-context baseline: the answering model
+  guesses some general facts correctly without context (SHA-256, Node versions), while the decoder rule makes
+  it abstain when the context does not state them.
+- So the context rarely misleads (0-2.7%), but it answers less than half of the probes. Two levers to test
+  later, with numbers: the probe quality filter (`--filter-known`, A3) and gap-driven refinement (C2).
+- The two lines are not a comparison: different probes, different answering models, different budgets. Each is
+  one run with 37-40 probes, so the intervals are wide.
+
+### 2026-10-21: local models (CPU only), as a complement
+
+Ollama 0.40.7 in the cloud container (4 CPUs, 15 GB RAM, no GPU), compiling single files of the same sources:
+
+| Model | Time per chunk | Replies with usable JSON | Quotes accepted |
+|---|---|---|---|
+| `ollama:qwen2.5:3b` | 88 s (48 lines), 188-213 s (193 lines) | 1 of 3 | 8/11 = 72.7% |
+| `ollama:qwen2.5:7b` | 279 s (48 lines), 583 s (193 lines) | 2 of 2 | 12/22 = 54.5% |
+
+Ollama's default 4,096-token context window cut the first 193-line reply; serve with `OLLAMA_CONTEXT_LENGTH=16384`.
+A full compile of this repository would take several hours on this machine, with lower quote fidelity than the
+hosted models. Local models are useful to exercise the pipeline without quotas, not to produce the published
+numbers.

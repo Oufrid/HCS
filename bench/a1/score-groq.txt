@@ -1,0 +1,84 @@
+[1/40] p1 unknown
+[2/40] p2 correct
+[3/40] p3 unknown
+[4/40] p4 unknown
+[5/40] p5 unknown
+[6/40] p6 unknown
+[7/40] p7 unknown
+[8/40] p8 correct
+[9/40] p9 unknown
+[10/40] p10 unknown
+[11/40] p11 unknown
+[12/40] p12 unknown
+[13/40] p13 unknown
+[14/40] p14 correct
+[15/40] p15 unknown
+[16/40] p16 partial
+[17/40] p17 unknown
+[18/40] p18 unknown
+[19/40] p19 unknown
+[20/40] p20 unknown
+[21/40] p21 unknown
+[22/40] p22 unknown
+[23/40] p23 correct
+[24/40] p24 unknown
+[25/40] p25 unknown
+[26/40] p26 unknown
+[27/40] p27 unknown
+[28/40] p28 correct
+[29/40] p29 unknown
+[30/40] p30 unknown
+[31/40] p31 unknown
+[32/40] p32 unknown
+[33/40] p33 unknown
+[34/40] p34 correct
+[35/40] p35 unknown
+[36/40] p36 unknown
+[37/40] p37 unknown
+[38/40] p38 unknown
+[39/40] p39 unknown
+[40/40] p40 unknown
+groq.hcs scored with groq:openai/gpt-oss-20b (judge gemini:gemini-flash-lite-latest), context ~3918 tokens
+with context     fidelity  16.3% [95% CI 5.0%-28.7%]   misled   0.0%   abstained  82.5%   (40 probes)
+without context  fidelity  20.0% [95% CI 7.5%-32.5%]   misled  22.5%   abstained  57.5%   (40 probes)
+gain             -3.8 points
+informative      fidelity  17.2% on the 32 probes the model could not answer without context
+not recovered from the context:
+  p1 [unknown] What version status is indicated for HCS in the README?
+  p3 [unknown] What is the default importance value for a claim without an explicit importance tag?
+  p4 [unknown] What error message is thrown by insideRoot when a path escapes the project root?
+  p5 [unknown] What regular expression is used to detect URLs in looksLikePath?
+  p6 [unknown] What is the minimum required Node.js version for HCS?
+  p7 [unknown] What environment variable sets the HTTP proxy for hcs?
+  p9 [unknown] Which hash algorithm is used to compute anchor hashes?
+  p10 [unknown] Which characters cause looksLikePath to reject a string according to the code?
+  p11 [unknown] How many claims were rejected by quote verification in the example compile output?
+  p12 [unknown] What is the default host for the ollama provider?
+  p13 [unknown] If any anchor of a claim has status `missing`, what status does the claim receive?
+  p15 [unknown] Which filesystem function is used to determine if a candidate path exists?
+  p16 [partial] What exit codes does the CLI define and what do they mean?
+  p17 [unknown] When the --json flag is used, what exit code does the check command return if there are failing items?
+  p18 [unknown] What exit code does the "audit" command return when broken references are present?
+  p19 [unknown] What is the default maximum number of lines an anchor may cover?
+  p20 [unknown] Under what conditions is a file added to the `resume` map?
+  p21 [unknown] Which function creates an empty HcsDocument with default headers?
+  p22 [unknown] What transformation does the `quote` function apply to double‑quote characters in the input string?
+  p24 [unknown] Which environment variable enables request/response logging in `withDebugLog`?
+  p25 [unknown] Which HTTP header carries the OpenAI API key in requests made by openAICompatible?
+  p26 [unknown] What default maximum number of lines does hcs_expand use when max_lines is not provided?
+  p27 [unknown] What condition ends the line‑reading loop in serveStdio?
+  p29 [unknown] What numeric point value is assigned to a "partial" verdict?
+  p30 [unknown] What error message is thrown if no usable probes are found?
+  p31 [unknown] What error message does parseConversation throw for an unrecognized conversation format?
+  p32 [unknown] Which environment variables are used for provider authentication according to the HELP text?
+  p33 [unknown] What console hint is printed when any report has status "moved" or "unsealed"?
+  p35 [unknown] Which function returns the section name derived from a file path?
+  p36 [unknown] What is the default maximum number of concurrent extractions if `opts.concurrency` is not set?
+  p37 [unknown] What error is thrown when a probe lacks an "= answer" line?
+  p38 [unknown] When does `quote` wrap the processed string in double quotes?
+  p39 [unknown] Which exported constant is used to tag suspect claims?
+  p40 [unknown] What is the maximum retry wait time constant used to decide quota exhaustion?
+certificate written to groq.hcs
+usage groq:openai/gpt-oss-20b: 80 requests, 154182 input + 4693 output tokens (as reported by the provider)
+usage gemini:gemini-flash-lite-latest: 15 requests, 2276 input + 170 output tokens (as reported by the provider)
+exit=0

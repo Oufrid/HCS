@@ -30,7 +30,7 @@ FAIL: 1 item(s) no longer match their sources. ...
 ```
 *(Example output.)*
 
-> **Status: v0.2, early.** The format, the deterministic engine (`check`, `seal`, `render`, `audit`) and the MCP server are complete and tested. The LLM features (`compile`, `score`, `snapshot`) are implemented and tested against mock OpenAI/Anthropic-compatible servers. **They have not yet been benchmarked on real models.** Benchmark numbers will be published from `bench/` with their raw results, never as bare claims in this README.
+> **Status: v0.2, early.** The format, the deterministic engine (`check`, `seal`, `render`, `audit`) and the MCP server are complete and tested. The LLM features (`compile`, `score`, `snapshot`) are tested against mock OpenAI/Anthropic-compatible servers, and `compile` and `score` have run end to end on real free-tier models (Gemini, Groq); what broke and what was measured is in [bench/REPORT.md](bench/REPORT.md). **There is no benchmark yet.** Benchmark numbers will be published from `bench/` with their raw results, never as bare claims in this README.
 
 ---
 

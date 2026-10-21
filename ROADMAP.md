@@ -13,19 +13,17 @@ integration paths** (B), **capabilities nobody else has** (C), and **an ecosyste
 
 ## Phase A: Reliability (blocks everything else)
 
-### A1. Validate on real models `[~]`
-Every LLM path is tested only against mocks so far.
-Done (2026-10-21): key check in the cloud sandbox; fixed two proxy bugs it revealed (Node fetch ignored
-`HTTPS_PROXY`; misleading auth errors), see `bench/REPORT.md`. Blocked: neither key authenticates yet (Groq
-rejects the injected secret, Gemini gets none), so no compile/score run has happened.
-- Check that the keys work (`hcs models gemini`, `hcs models groq`) without printing them.
-- `compile src SPEC.md README.md --rpm 8` with a Gemini model, then `score --baseline --judge groq:<model> --runs 1`.
-- Fix whatever real outputs break: JSON extraction, quote matching rates, judge verdict parsing, abstention
-  detection, rate limits and quota errors, long or truncated outputs, chunks with no claims.
-- Record what happened in `bench/REPORT.md`: models, dates, commands, numbers, failures. No polishing.
-- **Done when:** compile and score run end to end on this repo with two model families. At least 80% of
-  proposed claims pass quote verification, or the reasons they do not are documented and addressed. Every bug
-  found has a regression test with a mock.
+### A1. Validate on real models `[x]`
+Done (2026-10-21, details and raw artifacts in `bench/REPORT.md` and `bench/a1/`):
+- Keys checked; compile and score ran end to end on this repository with three model families (Gemini compiles
+  and judges, OpenAI-oss compiles, answers and judges, Qwen answers), on free tiers with `--rpm 8`.
+- Quote verification kept 85.5% (Gemini) and 89.4% (Groq gpt-oss) of proposed quotes.
+- Fourteen problems found on real outputs and fixed, each with a mock regression test: reasoning models
+  (empty or cut replies, `--reasoning-effort`), free-tier quotas and outages (compile and score now save and
+  resume their work), Groq's 413, unescaped JSON, Markdown-stripped quotes, silent failures, proxy routing.
+- Honest result: fidelity is low (44.6% and 16.3%), because probes ask about details that a 7-16% context
+  drops; the context rarely misleads (0-2.7%). Follow-ups: A3's probe filter and C2's refinement, measured.
+- Local CPU models (Ollama) work but are slow and less faithful: a complement for testing, not for results.
 
 ### A2. Symbol anchors `[x]`
 `path::Symbol` with whitespace-insensitive hashes, cross-file move detection, dependency-free locator.
