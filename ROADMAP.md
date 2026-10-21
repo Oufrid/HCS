@@ -49,16 +49,14 @@ model-based classifier), measured on a new held-out set.
 
 ## Phase B: Standard and integration (the path to adoption)
 
-### B1. MCP server `[~]`
-Done: `hcs serve` with 5 tools, root sandbox, tests over stdio.
-Remaining:
-- Verify with a real client: add a `.mcp.json` example and check it works with Claude Code. Document steps for
-  Claude Desktop, Cursor and VS Code.
-- Expose the rendered context and the claims as MCP *resources* (`hcs://context`, `hcs://claim/<id>`).
-- `hcs_record` tool (opt-in flag `--allow-write`): lets an agent add a hand-written claim with an anchor, sealed
-  automatically. This is the write path that keeps the context alive during agent work.
-- **Done when:** a documented, reproduced session with a real MCP client exists, and resources plus
-  `hcs_record` are tested.
+### B1. MCP server `[x]`
+Done: `hcs serve` with 5 tools, root sandbox, tests over stdio; MCP resources `hcs://context` and
+`hcs://claim/<id>` (plus a resource template); `hcs_record` behind `--allow-write`, which validates the text and
+every anchor, seals the claim (tags `manual,recorded`, specified in SPEC 0.3) and writes atomically. Verified with
+a real client: a recorded Claude Code 2.1.306 session used every tool, a resource and `hcs_record`
+(`docs/mcp-session-2026-10-21.md`); `claude mcp list` reports the server connected. Setup documented for Claude
+Code, Claude Desktop, Cursor and VS Code in `docs/mcp.md`, with example configs in `examples/mcp/`; only Claude
+Code was actually tested.
 
 ### B2. Conformance suite and second implementation `[ ]`
 A format with one implementation is a tool, not a standard.

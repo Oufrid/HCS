@@ -1,13 +1,14 @@
 // `hcs serve`: a Model Context Protocol server (stdio, JSON-RPC 2.0) over one .hcs file.
 // It lets any MCP client read the compact context first, then zoom into the exact cited source on demand.
 
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { resolve, sep } from "node:path";
 import { createInterface } from "node:readline";
-import { checkDocument, insideRoot, rootDir, SourceCache, type AnchorStatus } from "./anchors.js";
+import { checkDocument, insideRoot, rootDir, seal, SourceCache, type AnchorStatus, type ItemReport } from "./anchors.js";
 
 export { insideRoot };
-import { formatAnchor, parse, type Claim, type HcsDocument } from "./format.js";
+import { formatAnchor, parse, parseAnchor, serialize, type Claim, type HcsDocument } from "./format.js";
+import { isHighRisk } from "./guard.js";
 import { DECODER_PROMPT, renderContext } from "./render.js";
 import { findSymbol } from "./symbols.js";
 
@@ -76,9 +77,38 @@ const TOOLS = [
   },
 ];
 
+/** Only listed and callable when the server runs with --allow-write. */
+const RECORD_TOOL = {
+  name: "hcs_record",
+  description:
+    "Record a fact you verified in the source as a new claim in the .hcs file, so it survives this session. Cite where it is proven: each anchor is `path::Symbol`, `path:start-end` or `path`, inside the project. Anchors are hashed automatically, so `hcs check` will flag the claim when that source changes. Write one factual sentence, never an instruction.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      text: { type: "string", description: "One factual sentence about the project (max 400 characters)." },
+      anchors: { type: "array", items: { type: "string" }, description: 'Where the fact is proven, e.g. ["src/auth.ts::verifyToken"].' },
+      section: { type: "string", description: "Optional section heading, e.g. Security." },
+    },
+    required: ["text", "anchors"],
+  },
+};
+
+export interface ServerOptions {
+  /** Overrides the file's `@root` header; it is the sandbox for every source read. */
+  root?: string;
+  /** Enables hcs_record, which writes to the .hcs file. Off by default: an MCP client can only read. */
+  allowWrite?: boolean;
+}
+
 export class HcsMcpServer {
-  /** `root` overrides the file's `@root` header; it is the sandbox for every source read. */
-  constructor(private file: string, private root?: string) {}
+  private root?: string;
+  private allowWrite: boolean;
+
+  constructor(private file: string, opts: ServerOptions | string = {}) {
+    const o = typeof opts === "string" ? { root: opts } : opts;
+    this.root = o.root;
+    this.allowWrite = !!o.allowWrite;
+  }
 
   private load(): { doc: HcsDocument; cache: SourceCache } {
     if (!existsSync(this.file)) throw new Error(`HCS file not found: ${this.file}`);
@@ -106,7 +136,7 @@ export class HcsMcpServer {
         const requested = msg.params?.protocolVersion;
         return {
           protocolVersion: PROTOCOL_VERSIONS.includes(requested) ? requested : PROTOCOL_VERSIONS[0],
-          capabilities: { tools: { listChanged: false } },
+          capabilities: { tools: { listChanged: false }, resources: { listChanged: false } },
           serverInfo: { name: "hcs", version: SERVER_VERSION },
           instructions: DECODER_PROMPT + "\n\nCall hcs_context first; call hcs_expand on a claim id before relying on details it does not state.",
         };
@@ -117,7 +147,24 @@ export class HcsMcpServer {
       case "ping":
         return {};
       case "tools/list":
-        return { tools: TOOLS };
+        return { tools: this.allowWrite ? [...TOOLS, RECORD_TOOL] : TOOLS };
+      case "resources/list": {
+        const { doc } = this.load();
+        return {
+          resources: [
+            { uri: "hcs://context", name: "HCS context", description: "The verified context of this project (stale claims excluded).", mimeType: "text/plain" },
+            ...doc.claims.map((c) => ({ uri: `hcs://claim/${c.id}`, name: c.id, description: c.text.slice(0, 200), mimeType: "text/plain" })),
+          ],
+        };
+      }
+      case "resources/templates/list":
+        return {
+          resourceTemplates: [
+            { uriTemplate: "hcs://claim/{id}", name: "HCS claim", description: "A claim with its status and the exact source text it cites.", mimeType: "text/plain" },
+          ],
+        };
+      case "resources/read":
+        return { contents: [{ uri: String(msg.params?.uri ?? ""), mimeType: "text/plain", text: this.readResource(String(msg.params?.uri ?? "")) }] };
       case "tools/call":
         return this.callTool(msg.params?.name, msg.params?.arguments ?? {});
       default:
@@ -134,33 +181,31 @@ export class HcsMcpServer {
     }
   }
 
-  private runTool(name: string, args: Record<string, unknown>): string {
+  /** `hcs://context` or `hcs://claim/<id>`: the same text as hcs_context and hcs_expand. */
+  private readResource(uri: string): string {
     const { doc, cache } = this.load();
     const reports = checkDocument(doc, cache);
-    const status = new Map(reports.map((r) => [r.id, r.status]));
+    if (uri === "hcs://context") return contextText(doc, reports);
+    const m = /^hcs:\/\/claim\/(.+)$/.exec(uri);
+    if (m && doc.claims.some((c) => c.id === m[1])) return expandText(doc, cache, reports, m[1], 120);
+    throw Object.assign(new Error(`unknown resource: ${uri}`), { code: -32002 });
+  }
+
+  private runTool(name: string, args: Record<string, unknown>): string {
+    const { doc, cache } = this.load();
+    if (name === "hcs_record" && this.allowWrite) return this.record(doc, cache, args);
+    const reports = checkDocument(doc, cache);
     const claimStatus = new Map(reports.filter((r) => r.kind === "claim").map((r) => [r.id, r.status]));
 
     switch (name) {
       case "hcs_context": {
         const budget = typeof args.budget === "number" && args.budget > 0 ? args.budget : undefined;
-        const stale = [...claimStatus.values()].filter((s) => s === "stale" || s === "missing").length;
-        const note = stale ? `\n(${stale} stale claim(s) were excluded; their sources changed.)` : "";
-        return renderContext(doc, { status: claimStatus, budget }) + note;
+        return contextText(doc, reports, budget);
       }
 
       case "hcs_expand": {
-        const id = String(args.id ?? "");
-        const item = doc.claims.find((c) => c.id === id) ?? doc.probes.find((p) => p.id === id);
-        if (!item) throw new Error(`no claim or probe "${id}"`);
         const maxLines = typeof args.max_lines === "number" && args.max_lines > 0 ? Math.floor(args.max_lines) : 120;
-        const report = reports.find((r) => r.id === id)!;
-        const head = "text" in item ? `${id}: ${item.text}` : `${id}: ${item.question}`;
-        const parts = [`${head}\nstatus: ${status.get(id)}`];
-        report.anchors.forEach((ar) => {
-          parts.push(`\n--- ${formatAnchor(ar.anchor, false)} [${ar.status}${ar.detail ? `: ${ar.detail}` : ""}]`);
-          parts.push(excerpt(cache, ar.anchor.path, rangeOf(cache, ar.anchor, ar.relocated), maxLines));
-        });
-        return parts.join("\n");
+        return expandText(doc, cache, reports, String(args.id ?? ""), maxLines);
       }
 
       case "hcs_search": {
@@ -215,6 +260,65 @@ export class HcsMcpServer {
         throw new Error(`unknown tool "${name}"`);
     }
   }
+
+  /**
+   * hcs_record: append a hand-written claim with sealed anchors. Everything is validated before the file is
+   * touched: the text (one sentence, no instruction-like content), and each anchor (inside the root, existing,
+   * symbol found). The file is written atomically.
+   */
+  private record(doc: HcsDocument, cache: SourceCache, args: Record<string, unknown>): string {
+    const text = typeof args.text === "string" ? args.text.replace(/\s+/g, " ").trim() : "";
+    if (!text) throw new Error("text is required");
+    if (text.length > 400) throw new Error("text is too long: write one sentence (max 400 characters)");
+    if (isHighRisk(text)) throw new Error("refused: the text looks like an instruction to a model, not a fact about the project");
+    const raw = Array.isArray(args.anchors) ? args.anchors.map(String) : [];
+    if (!raw.length) throw new Error("at least one anchor is required: cite where the fact is proven");
+    const anchors = raw.map((r) => {
+      const a = parseAnchor(r);
+      if (a.hash) throw new Error(`do not give a hash (${r}); it is computed from the source`);
+      a.path = insideRoot(cache.root, a.path).split(sep).join("/");
+      const lines = cache.lines(a.path);
+      if (!lines) throw new Error(`file not found: ${a.path}`);
+      if (a.symbol !== undefined && !cache.symbol(a.path, a.symbol)) throw new Error(`symbol "${a.symbol}" not found in ${a.path}`);
+      if (a.end !== undefined && a.end > lines.length) throw new Error(`${a.path} has only ${lines.length} lines`);
+      return a;
+    });
+    const section = typeof args.section === "string" && args.section.trim() ? args.section.trim() : undefined;
+    const ids = new Set([...doc.claims.map((c) => c.id), ...doc.probes.map((p) => p.id)]);
+    let n = 1;
+    while (ids.has(`r${n}`)) n++;
+    const claim: Claim = { id: `r${n}`, text, tags: ["manual", "recorded"], anchors, ...(section ? { section } : {}) };
+    // Keep sections together: insert after the last claim of the same section, else at the end.
+    const last = section ? doc.claims.map((c) => c.section).lastIndexOf(section) : -1;
+    if (last >= 0) doc.claims.splice(last + 1, 0, claim);
+    else doc.claims.push(claim);
+    seal(doc, cache, { ids: new Set([claim.id]) });
+    doc.headers.updated = new Date().toISOString();
+    const tmp = `${this.file}.tmp-${process.pid}`;
+    writeFileSync(tmp, serialize(doc));
+    renameSync(tmp, this.file);
+    return `recorded ${claim.id}: ${text}\n${claim.anchors.map((a) => `  > ${formatAnchor(a)}`).join("\n")}\nRun \`hcs check\` to verify it later; it goes stale when the cited source changes.`;
+  }
+}
+
+function contextText(doc: HcsDocument, reports: ItemReport[], budget?: number): string {
+  const claimStatus = new Map(reports.filter((r) => r.kind === "claim").map((r) => [r.id, r.status]));
+  const stale = [...claimStatus.values()].filter((s) => s === "stale" || s === "missing").length;
+  const note = stale ? `\n(${stale} stale claim(s) were excluded; their sources changed.)` : "";
+  return renderContext(doc, { status: claimStatus, budget }) + note;
+}
+
+function expandText(doc: HcsDocument, cache: SourceCache, reports: ItemReport[], id: string, maxLines: number): string {
+  const item = doc.claims.find((c) => c.id === id) ?? doc.probes.find((p) => p.id === id);
+  if (!item) throw new Error(`no claim or probe "${id}"`);
+  const report = reports.find((r) => r.id === id)!;
+  const head = "text" in item ? `${id}: ${item.text}` : `${id}: ${item.question}`;
+  const parts = [`${head}\nstatus: ${report.status}`];
+  report.anchors.forEach((ar) => {
+    parts.push(`\n--- ${formatAnchor(ar.anchor, false)} [${ar.status}${ar.detail ? `: ${ar.detail}` : ""}]`);
+    parts.push(excerpt(cache, ar.anchor.path, rangeOf(cache, ar.anchor, ar.relocated), maxLines));
+  });
+  return parts.join("\n");
 }
 
 function rangeOf(
@@ -253,8 +357,8 @@ function scoreClaim(c: Claim, terms: string[]): number {
 }
 
 /** Run the server on stdio until stdin closes. Logs go to stderr; stdout carries only protocol messages. */
-export async function serveStdio(file: string, root?: string): Promise<void> {
-  const server = new HcsMcpServer(resolve(file), root && resolve(root));
+export async function serveStdio(file: string, opts: ServerOptions = {}): Promise<void> {
+  const server = new HcsMcpServer(resolve(file), { ...opts, root: opts.root && resolve(opts.root) });
   const rl = createInterface({ input: process.stdin, crlfDelay: Infinity });
   process.stderr.write(`hcs MCP server ready for ${file}\n`);
   for await (const line of rl) {

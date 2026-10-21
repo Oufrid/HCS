@@ -120,6 +120,9 @@ hcs compile --model ... --update   # re-read only changed files; keep everything
 | `hcs_search` | Find claims by keywords. |
 | `hcs_verify` | Check whether claims still match their sources. |
 | `hcs_source` | Read a file, line range or named symbol, strictly inside the project root (symlinks included). |
+| `hcs_record` | Only with `serve --allow-write`: the agent records a fact it verified, as a claim with sealed anchors (tagged `manual,recorded`). |
+
+The context and each claim are also MCP resources: `hcs://context` and `hcs://claim/<id>`.
 
 Typical client configuration:
 
@@ -130,6 +133,9 @@ Typical client configuration:
   }
 }
 ```
+
+Setup for Claude Code, Claude Desktop, Cursor and VS Code, and a recorded session with Claude Code (the only
+client tested so far), are in [docs/mcp.md](docs/mcp.md).
 
 The model reads a few hundred tokens of claims, then zooms into the exact cited code only when it needs a detail. It never has to read the whole repository, and it never has to guess.
 

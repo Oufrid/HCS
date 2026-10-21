@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "hcs": {
+      "command": "hcs",
+      "args": ["serve", "/absolute/path/to/project/project.hcs", "--root", "/absolute/path/to/project"]
+    }
+  }
+}

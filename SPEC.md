@@ -5,6 +5,7 @@
 - Changes in 0.3: probe tags and the `known` tag (§4), the `@known-filter` header (§4), two judges and the
   certificate fields `novel`, `novel-probes`, `judge-agreement`, `judge-kappa`, `judged` (§7).
   Compilers may ignore Markdown markup when verifying quotes, and may write an `@incomplete` header (§8).
+  The `recorded` tag (§3) marks claims written by an agent.
 - Changes in 0.2: symbol anchors (§5.2), the `suspect` tag (§3), and certificate fields `ci95`, `informative`, `runs` (§7).
 
 Every valid 0.1 or 0.2 file is a valid 0.3 file. A writer SHOULD emit the oldest version that can express the
@@ -85,7 +86,8 @@ Unknown headers MUST be preserved by tools that rewrite the file.
 | Tag | Meaning |
 |---|---|
 | `i1` … `i5` | Importance (5 = essential). Used to select claims under a token budget. Default 3. |
-| `manual` | Written by a human. Tools MUST NOT delete it automatically. Default importance 5. |
+| `manual` | Written by hand rather than compiled (by a person, or by an agent through `recorded`). Tools MUST NOT delete it automatically. Default importance 5. |
+| `recorded` | (since 0.3) Written by an agent during its work, through a tool such as the MCP `hcs_record`, together with `manual`. Its anchors MUST be sealed when it is written. Reviewers SHOULD check these claims like any other contribution. |
 | `overview` | Synthesized from other claims; its anchors are the union of theirs. |
 | `suspect` | Flagged by an injection guard as text addressed to a model (§6.1). MUST NOT be rendered by default. |
 

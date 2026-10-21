@@ -1,0 +1,9 @@
+{
+  "servers": {
+    "hcs": {
+      "type": "stdio",
+      "command": "hcs",
+      "args": ["serve", "${workspaceFolder}/project.hcs", "--root", "${workspaceFolder}"]
+    }
+  }
+}

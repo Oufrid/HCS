@@ -36,7 +36,9 @@ Deterministic commands (no LLM, no network; except \`models\`, which asks the pr
   hcs audit <context-file> [--root DIR]       Find broken file references in AGENTS.md, CLAUDE.md...
             [--probes file.hcs --model M]     ...and score it against an .hcs probe set
   hcs serve <file.hcs> [--root DIR]           MCP server (stdio) for any MCP client; source reads stay in the root
-                                              tools: hcs_context, hcs_expand, hcs_search, hcs_verify, hcs_source
+            [--allow-write]                   tools: hcs_context, hcs_expand, hcs_search, hcs_verify, hcs_source
+                                              (+ hcs_record with --allow-write); resources: hcs://context,
+                                              hcs://claim/<id>
   hcs models <provider> [--free]              List the model ids your key can use (--free: OpenRouter ":free" models)
 
 LLM commands (--model provider:model, optional --rpm N to stay under free-tier rate limits, optional
@@ -183,6 +185,7 @@ async function main(argv: string[]): Promise<number> {
       "chunk-lines": { type: "string" },
       rpm: { type: "string" },
       "reasoning-effort": { type: "string" },
+      "allow-write": { type: "boolean" },
       runs: { type: "string" },
       free: { type: "boolean" },
       anchors: { type: "string" },
@@ -601,7 +604,7 @@ async function main(argv: string[]): Promise<number> {
           throw new UsageError(`${file} sets @root to ${root}, outside the working directory; pass --root ${root} to serve it anyway`);
         }
       }
-      await serveStdio(file, root);
+      await serveStdio(file, { root, allowWrite: o["allow-write"] });
       return 0;
     }
 
