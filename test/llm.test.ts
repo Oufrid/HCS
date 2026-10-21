@@ -307,7 +307,8 @@ test("free-tier handling: Retry-After, Google retryDelay, quota errors, rpm limi
     server.close();
     for (const k of ["GROQ_BASE_URL", "GROQ_API_KEY", "OPENROUTER_BASE_URL", "OPENROUTER_API_KEY"]) delete process.env[k];
   }
-  assert.throws(() => createLLM("groq:x"), /GROQ_API_KEY/);
+  // Without a key, no Authorization header is sent (a proxy may inject it).
+  assert.equal(createLLM("groq:x").id, "groq:x");
 });
 
 test("retryDelayMs reads headers and Google bodies", () => {

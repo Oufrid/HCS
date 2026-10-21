@@ -1,7 +1,7 @@
 HCS/0.2
 @title HCS - Holographic Context Standard (reference CLI)
 @root .
-@updated 2026-10-21T08:29:00.670Z
+@updated 2026-10-21T09:21:04.096Z
 @meta license=MIT language=TypeScript
 
 [claims]
@@ -64,8 +64,8 @@ HCS/0.2
   > src/mcp.ts::insideRoot #6a318161a761
 
 ## Providers
-#providers[manual] Providers are openai (any compatible API), ollama, gemini, groq, openrouter and anthropic, called at temperature 0 with usage accounting; 429/503 retries honor Retry-After and Google's retryDelay, and waits over 120 s raise a quota error.
-  > src/llm.ts::postJSON #fdbe55596be7
+#providers[manual] Providers are openai (any compatible API), ollama, gemini, groq, openrouter and anthropic, called at temperature 0 with usage accounting; Bearer keys may be absent when a proxy injects them; 429/503 retries honor Retry-After and Google's retryDelay, and waits over 120 s raise a quota error.
+  > src/llm.ts::postJSON #2c3d9859e23a
   > src/llm.ts::retryDelayMs #53c59bd9ac2f
   > src/llm.ts::MAX_RETRY_WAIT_MS #ffea888e2d7e
 #rpm[manual] `--rpm` (or HCS_RPM) spaces requests evenly with one limiter per model spec.

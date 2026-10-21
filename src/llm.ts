@@ -86,6 +86,15 @@ function requireEnv(name: string, provider: string): string {
   return v;
 }
 
+/**
+ * Keys for Bearer-token APIs may be absent from the environment on purpose: an egress proxy (for example a
+ * cloud sandbox's "network secret") can attach the Authorization header after the request leaves. Without a
+ * key we send no header; if nothing adds one, the provider answers 401 and the error says which variable to set.
+ */
+function proxyableKey(name: string): string | undefined {
+  return env(name);
+}
+
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** Longest wait we accept before retrying; anything longer means a daily quota is exhausted. */
@@ -122,7 +131,11 @@ async function postJSON(url: string, headers: Record<string, string>, body: unkn
     }
     if (res.ok) return res.json();
     const text = await res.text();
-    lastErr = new Error(`HTTP ${res.status} from ${url}: ${text.slice(0, 500)}`);
+    const hint =
+      (res.status === 401 || res.status === 403) && !headers.authorization && !headers["x-api-key"]
+        ? " (no API key was sent: set the provider's *_API_KEY variable, or a network secret for this host)"
+        : "";
+    lastErr = new Error(`HTTP ${res.status} from ${url}: ${text.slice(0, 500)}${hint}`);
     if (res.status === 429 || res.status === 503) {
       const suggested = retryDelayMs(res.headers, text);
       if (suggested !== undefined && suggested > MAX_RETRY_WAIT_MS) {
@@ -185,12 +198,12 @@ registerProvider("gemini", (model, spec, usage) =>
     model,
     env("GEMINI_BASE_URL") ?? "https://generativelanguage.googleapis.com/v1beta/openai",
     usage,
-    requireEnv("GEMINI_API_KEY", "gemini"),
+    proxyableKey("GEMINI_API_KEY"),
   ),
 );
 
 registerProvider("groq", (model, spec, usage) =>
-  openAICompatible(spec, model, env("GROQ_BASE_URL") ?? "https://api.groq.com/openai/v1", usage, requireEnv("GROQ_API_KEY", "groq")),
+  openAICompatible(spec, model, env("GROQ_BASE_URL") ?? "https://api.groq.com/openai/v1", usage, proxyableKey("GROQ_API_KEY")),
 );
 
 registerProvider("openrouter", (model, spec, usage) =>
@@ -199,7 +212,7 @@ registerProvider("openrouter", (model, spec, usage) =>
     model,
     env("OPENROUTER_BASE_URL") ?? "https://openrouter.ai/api/v1",
     usage,
-    requireEnv("OPENROUTER_API_KEY", "openrouter"),
+    proxyableKey("OPENROUTER_API_KEY"),
     { "x-title": "hcs-cli" },
   ),
 );
@@ -236,10 +249,10 @@ function endpoint(provider: string): { url: string; headers: Record<string, stri
     case "gemini":
       return {
         url: `${env("GEMINI_BASE_URL") ?? "https://generativelanguage.googleapis.com/v1beta/openai"}/models`,
-        headers: bearer(requireEnv("GEMINI_API_KEY", "gemini")),
+        headers: bearer(proxyableKey("GEMINI_API_KEY")),
       };
     case "groq":
-      return { url: `${env("GROQ_BASE_URL") ?? "https://api.groq.com/openai/v1"}/models`, headers: bearer(requireEnv("GROQ_API_KEY", "groq")) };
+      return { url: `${env("GROQ_BASE_URL") ?? "https://api.groq.com/openai/v1"}/models`, headers: bearer(proxyableKey("GROQ_API_KEY")) };
     case "openrouter":
       return { url: `${env("OPENROUTER_BASE_URL") ?? "https://openrouter.ai/api/v1"}/models`, headers: bearer(env("OPENROUTER_API_KEY")) };
     case "anthropic":
@@ -257,7 +270,10 @@ export async function listModels(provider: string): Promise<string[]> {
   const { url, headers } = endpoint(provider);
   const res = await fetch(url, { headers });
   const text = await res.text();
-  if (!res.ok) throw new Error(`HTTP ${res.status} from ${url}: ${text.slice(0, 300)}`);
+  if (!res.ok) {
+    const hint = (res.status === 401 || res.status === 403) && !headers.authorization && !headers["x-api-key"] ? " (no API key was sent)" : "";
+    throw new Error(`HTTP ${res.status} from ${url}: ${text.slice(0, 300)}${hint}`);
+  }
   const data = JSON.parse(text);
   const list: any[] = Array.isArray(data?.data) ? data.data : Array.isArray(data?.models) ? data.models : [];
   return list
