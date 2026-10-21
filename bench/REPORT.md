@@ -218,3 +218,36 @@ files of this repository at the C5 commit (conformance case sources excluded).
 On `bench/a1/gemini.hcs`, compiled and sealed with the heuristic (104 symbol anchors in TS/JS/Python), all 132
 items still check `ok` with `--parser tree-sitter`. Every difference found is a heuristic error, but the sample
 is one repository written in one style, by the same author as the heuristic.
+
+### 2026-10-21: two candidate refinements, measured (not adopted)
+
+`bench/c3/history.mjs --variant types,keys` recomputes the review events with two changes to the dependency rule,
+in the benchmark only (SPEC 5.5 is unchanged): ignore dependencies on TypeScript interfaces and type aliases
+(`types`), and ignore names the body uses only as object keys or as another object's property (`keys`; `this.x`
+and `self.x` still count).
+
+On the same 27 commits as above (outputs `bench/c3/events.json` and `bench/c3/events-types-keys.json`):
+
+| Rule | Review events | Needed | Dropped |
+|---|---|---|---|
+| SPEC 5.5 | 18 | 1 | |
+| `types` | 15 | 1 | 3 (`format.ts::Probe`, an interface) |
+| `keys` | 16 | 1 | 2 (`judge` used as an object key) |
+| `types,keys` | 13 | 1 | 5, all judged not needed |
+
+On the whole history up to the C5 commit, 33 commits (`events-head.json`, `events-head-types-keys.json`): 38
+events with the current rule, 24 with both refinements. The 20 events after the first 27 commits were judged the
+same way (same bias). Two were needed: `statuses` when `checkSymbolAnchor` gained the `review` status (the claim
+was edited by hand in that commit), and `magic` when `parseAnchor` accepted `#hash/deps` (the claim, about which
+version the writer emits, stayed out of date until the C5 commit). Both are kept by the refinements; every dropped
+event was judged not needed.
+
+| Rule, 33 commits | Review events | Needed | False-positive rate |
+|---|---|---|---|
+| SPEC 5.5 | 38 | 3 | 35/38 (92%) |
+| `types,keys` | 24 | 3 | 21/24 (88%) |
+
+The refinements remove about a third of the reviews without losing a needed one on this history, but most reviews
+remain unneeded: the main source left is classes used as parameter types (`cache: SourceCache`), which a regex
+cannot tell from a use. Three needed events is too few to claim recall is preserved in general. Proposed as a draft
+RFC (`rfcs/0000-deps-ignore-types-and-keys.md`), since it changes the normative dependency hash.

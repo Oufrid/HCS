@@ -1,0 +1,401 @@
+{
+  "variant": [],
+  "last": "787595a",
+  "commits": 33,
+  "anchors": 72,
+  "pairs": 1661,
+  "stale": 86,
+  "events": [
+    {
+      "commit": "3068590",
+      "subject": "A3: probe quality filter, two-judge agreement, paired comparison",
+      "claim": "incremental",
+      "anchor": "src/compile.ts::compile",
+      "text": "`compile --update` keeps items whose anchors are ok or moved, re-reads only dirty or uncovered files, never drops manual claims, regenerates overview claims and clears certificates.",
+      "changed": [
+        "src/format.ts::Probe"
+      ]
+    },
+    {
+      "commit": "3068590",
+      "subject": "A3: probe quality filter, two-judge agreement, paired comparison",
+      "claim": "resume",
+      "anchor": "src/compile.ts::compile",
+      "text": "When the quota runs out, the provider fails, or a reply has no usable JSON, compile keeps what it extracted and lists the missing chunks in the `@incomplete` header; `compile --update` then compiles only those chunks.",
+      "changed": [
+        "src/format.ts::Probe"
+      ]
+    },
+    {
+      "commit": "3068590",
+      "subject": "A3: probe quality filter, two-judge agreement, paired comparison",
+      "claim": "probe-spread",
+      "anchor": "src/compile.ts::spreadProbes",
+      "text": "Probes are picked round-robin across chunks, independently of which claims were kept, so that scores measure the source rather than the summary.",
+      "changed": [
+        "src/format.ts::Probe"
+      ]
+    },
+    {
+      "commit": "3068590",
+      "subject": "A3: probe quality filter, two-judge agreement, paired comparison",
+      "claim": "mcp-record",
+      "anchor": "src/mcp.ts::HcsMcpServer",
+      "text": "With `serve --allow-write`, the hcs_record tool appends a claim tagged manual,recorded after checking its text (at most 400 characters, not instruction-like) and each anchor (inside the root, existing file and symbol, valid range), then seals it and writes the file atomically.",
+      "changed": [
+        "src/format.ts::parse"
+      ]
+    },
+    {
+      "commit": "07eec06",
+      "subject": "A4: injection corpus, source scan, SECURITY.md, parser fuzzing, root sandbox fix",
+      "claim": "statuses",
+      "anchor": "src/anchors.ts::checkAnchor",
+      "text": "checkAnchor returns ok, moved (same text elsewhere in the file, or the same symbol in another file), review (symbol unchanged, a dependency changed), stale, missing or unsealed; an item takes the worst status of its anchors.",
+      "changed": [
+        "src/anchors.ts::SourceCache"
+      ]
+    },
+    {
+      "commit": "07eec06",
+      "subject": "A4: injection corpus, source scan, SECURITY.md, parser fuzzing, root sandbox fix",
+      "claim": "statuses",
+      "anchor": "src/anchors.ts::checkSymbolAnchor",
+      "text": "checkAnchor returns ok, moved (same text elsewhere in the file, or the same symbol in another file), review (symbol unchanged, a dependency changed), stale, missing or unsealed; an item takes the worst status of its anchors.",
+      "changed": [
+        "src/anchors.ts::SourceCache"
+      ]
+    },
+    {
+      "commit": "07eec06",
+      "subject": "A4: injection corpus, source scan, SECURITY.md, parser fuzzing, root sandbox fix",
+      "claim": "statuses",
+      "anchor": "src/anchors.ts::findMovedSymbol",
+      "text": "checkAnchor returns ok, moved (same text elsewhere in the file, or the same symbol in another file), review (symbol unchanged, a dependency changed), stale, missing or unsealed; an item takes the worst status of its anchors.",
+      "changed": [
+        "src/anchors.ts::SourceCache"
+      ]
+    },
+    {
+      "commit": "07eec06",
+      "subject": "A4: injection corpus, source scan, SECURITY.md, parser fuzzing, root sandbox fix",
+      "claim": "deps",
+      "anchor": "src/anchors.ts::checkSymbolAnchor",
+      "text": "With `seal --deps`, JS/TS and Python symbol anchors also store a hash of the symbols they use directly (same-file symbols and class siblings found by identifier matching, plus names imported from project files), and check reports `review`, a non-failing status, when that hash changes while the symbol itself does not.",
+      "changed": [
+        "src/anchors.ts::SourceCache"
+      ]
+    },
+    {
+      "commit": "07eec06",
+      "subject": "A4: injection corpus, source scan, SECURITY.md, parser fuzzing, root sandbox fix",
+      "claim": "seal",
+      "anchor": "src/anchors.ts::seal",
+      "text": "`hcs seal` hashes unsealed anchors and follows moved ones (new lines, file or symbol); `--rehash` accepts stale content and drops certificates; `--rehash` also accepts `review` anchors, and `--deps` adds dependency hashes.",
+      "changed": [
+        "src/anchors.ts::SourceCache"
+      ]
+    },
+    {
+      "commit": "c1069d6",
+      "subject": "A1: fixes from the first real compiles on Gemini and Groq free tiers",
+      "claim": "score",
+      "anchor": "src/score.ts::scoreContext",
+      "text": "Each probe is answered from the rendered context only: UNKNOWN is an abstention, a reply containing the expected answer is correct without a judge, otherwise a judge grades correct, partial or incorrect (1, 0.5, 0), optionally over several runs.",
+      "changed": [
+        "src/score.ts::answer",
+        "src/score.ts::judge"
+      ]
+    },
+    {
+      "commit": "c1069d6",
+      "subject": "A1: fixes from the first real compiles on Gemini and Groq free tiers",
+      "claim": "rigor",
+      "anchor": "src/score.ts::scoreDocument",
+      "text": "Scores report a reproducible 95% bootstrap confidence interval, a no-context baseline, an informative fidelity on probes unanswerable without context, and a warning when the model judged itself.",
+      "changed": [
+        "src/score.ts::judge"
+      ]
+    },
+    {
+      "commit": "c1069d6",
+      "subject": "A1: fixes from the first real compiles on Gemini and Groq free tiers",
+      "claim": "judges",
+      "anchor": "src/score.ts::scoreContext",
+      "text": "`score` accepts two judges: each judged answer is graded by both, the stricter verdict counts, and the raw agreement and Cohen's kappa are reported in the certificate.",
+      "changed": [
+        "src/score.ts::answer",
+        "src/score.ts::judge"
+      ]
+    },
+    {
+      "commit": "c1069d6",
+      "subject": "A1: fixes from the first real compiles on Gemini and Groq free tiers",
+      "claim": "known",
+      "anchor": "src/score.ts::findKnownProbes",
+      "text": "`compile --filter-known` asks every probe without context to the listed models and tags `[known]` the probes all of them answer correctly; `score` then reports a novel fidelity on the other probes.",
+      "changed": [
+        "src/score.ts::judge"
+      ]
+    },
+    {
+      "commit": "c1069d6",
+      "subject": "A1: fixes from the first real compiles on Gemini and Groq free tiers",
+      "claim": "tokenizer",
+      "anchor": "src/score.ts::scoreDocument",
+      "text": "`--tokenizer M` counts the rendered context with M's tokenizer (Anthropic count_tokens, Gemini native countTokens when GEMINI_API_KEY is set, otherwise the prompt size of a 1-token completion minus the chat framing measured once); `score` and `curve` then write `tokens` from that count and `tokenizer=M`, while budgets and digests keep the estimate.",
+      "changed": [
+        "src/score.ts::judge"
+      ]
+    },
+    {
+      "commit": "cc1433c",
+      "subject": "A1: Markdown-insensitive quote matching, Groq 413 handling, safe stop on any provider error",
+      "claim": "quote-guard",
+      "anchor": "src/compile.ts::anchorFor",
+      "text": "The compiler discards any claim or probe whose quote is not found verbatim (ignoring whitespace, case and Markdown markup such as backticks, emphasis and link syntax) in the cited chunk, then anchors it to the smallest enclosing symbol under 80 lines, or to the quoted lines.",
+      "changed": [
+        "src/sources.ts::locateQuote"
+      ]
+    },
+    {
+      "commit": "c9a5fc9",
+      "subject": "A1: score saves per-probe results and resumes after a quota stop",
+      "claim": "known",
+      "anchor": "src/score.ts::findKnownProbes",
+      "text": "`compile --filter-known` asks every probe without context to the listed models and tags `[known]` the probes all of them answer correctly; `score` then reports a novel fidelity on the other probes.",
+      "changed": [
+        "src/score.ts::scoreContext"
+      ]
+    },
+    {
+      "commit": "1e0c565",
+      "subject": "B2: conformance suite and a second implementation in Python",
+      "claim": "symbols",
+      "anchor": "src/symbols.ts::listSymbols",
+      "text": "Symbols are located without dependencies for brace languages, Python, Markdown headings, YAML and JSON, ignoring strings, regex literals and comments; unresolvable symbols are reported missing, never guessed.",
+      "changed": [
+        "src/symbols.ts::braceSymbols"
+      ]
+    },
+    {
+      "commit": "f91523f",
+      "subject": "Fix: a missing @root directory made check crash instead of reporting missing",
+      "claim": "incremental",
+      "anchor": "src/compile.ts::compile",
+      "text": "`compile --update` keeps items whose anchors are ok or moved, re-reads only dirty or uncovered files, never drops manual claims, regenerates overview claims and clears certificates.",
+      "changed": [
+        "src/sources.ts::collectSources"
+      ]
+    },
+    {
+      "commit": "f91523f",
+      "subject": "Fix: a missing @root directory made check crash instead of reporting missing",
+      "claim": "resume",
+      "anchor": "src/compile.ts::compile",
+      "text": "When the quota runs out, the provider fails, or a reply has no usable JSON, compile keeps what it extracted and lists the missing chunks in the `@incomplete` header; `compile --update` then compiles only those chunks.",
+      "changed": [
+        "src/sources.ts::collectSources"
+      ]
+    },
+    {
+      "commit": "f91523f",
+      "subject": "Fix: a missing @root directory made check crash instead of reporting missing",
+      "claim": "sandbox",
+      "anchor": "src/anchors.ts::SourceCache",
+      "text": "Every source read goes through SourceCache, which refuses paths outside the project root (relative escapes, absolute paths, symlinks): such anchors are reported missing, and `hcs serve` refuses an @root outside the working directory unless --root is given.",
+      "changed": [
+        "src/sources.ts::collectSources"
+      ]
+    },
+    {
+      "commit": "8d0511b",
+      "subject": "C3: dependency hashes and the review status, measured on this repository's history",
+      "claim": "magic",
+      "anchor": "src/format.ts::parse",
+      "text": "A file starts with `HCS/0.3` (0.1 and 0.2 are still accepted, and the writer emits 0.2 unless a 0.3 feature is used: probe tags, dependency hashes or the `@parser` header), then `@key value` headers, then optional [claims], [probes] and [certificates] blocks; errors carry line numbers.",
+      "changed": [
+        "src/format.ts::parseAnchor"
+      ]
+    },
+    {
+      "commit": "8d0511b",
+      "subject": "C3: dependency hashes and the review status, measured on this repository's history",
+      "claim": "statuses",
+      "anchor": "src/anchors.ts::checkAnchor",
+      "text": "checkAnchor returns ok, moved (same text elsewhere in the file, or the same symbol in another file), review (symbol unchanged, a dependency changed), stale, missing or unsealed; an item takes the worst status of its anchors.",
+      "changed": [
+        "src/anchors.ts::checkSymbolAnchor",
+        "src/format.ts::Anchor"
+      ]
+    },
+    {
+      "commit": "8d0511b",
+      "subject": "C3: dependency hashes and the review status, measured on this repository's history",
+      "claim": "statuses",
+      "anchor": "src/anchors.ts::findMovedSymbol",
+      "text": "checkAnchor returns ok, moved (same text elsewhere in the file, or the same symbol in another file), review (symbol unchanged, a dependency changed), stale, missing or unsealed; an item takes the worst status of its anchors.",
+      "changed": [
+        "src/format.ts::Anchor"
+      ]
+    },
+    {
+      "commit": "8d0511b",
+      "subject": "C3: dependency hashes and the review status, measured on this repository's history",
+      "claim": "quote-guard",
+      "anchor": "src/compile.ts::anchorFor",
+      "text": "The compiler discards any claim or probe whose quote is not found verbatim (ignoring whitespace, case and Markdown markup such as backticks, emphasis and link syntax) in the cited chunk, then anchors it to the smallest enclosing symbol under 80 lines, or to the quoted lines.",
+      "changed": [
+        "src/format.ts::Anchor"
+      ]
+    },
+    {
+      "commit": "8d0511b",
+      "subject": "C3: dependency hashes and the review status, measured on this repository's history",
+      "claim": "curve",
+      "anchor": "src/score.ts::scoreCurve",
+      "text": "`hcs curve` scores the same probes at several token budgets, scoring once the budgets that render the same context, and reports the knee: the smallest budget whose fidelity reaches the lower bound of the best point's 95% CI; each point is a certificate tagged with the curve id and the knee, and a curve whose smallest budget is already within that interval is reported as flat.",
+      "changed": [
+        "src/anchors.ts::AnchorStatus",
+        "src/score.ts::hashForCertificate",
+        "src/score.ts::scoreDocument"
+      ]
+    },
+    {
+      "commit": "8d0511b",
+      "subject": "C3: dependency hashes and the review status, measured on this repository's history",
+      "claim": "mcp-record",
+      "anchor": "src/mcp.ts::HcsMcpServer",
+      "text": "With `serve --allow-write`, the hcs_record tool appends a claim tagged manual,recorded after checking its text (at most 400 characters, not instruction-like) and each anchor (inside the root, existing file and symbol, valid range), then seals it and writes the file atomically.",
+      "changed": [
+        "src/anchors.ts::AnchorStatus",
+        "src/anchors.ts::seal",
+        "src/format.ts::formatAnchor",
+        "src/format.ts::parseAnchor",
+        "src/format.ts::serialize"
+      ]
+    },
+    {
+      "commit": "8d0511b",
+      "subject": "C3: dependency hashes and the review status, measured on this repository's history",
+      "claim": "sandbox",
+      "anchor": "src/anchors.ts::SourceCache",
+      "text": "Every source read goes through SourceCache, which refuses paths outside the project root (relative escapes, absolute paths, symlinks): such anchors are reported missing, and `hcs serve` refuses an @root outside the working directory unless --root is given.",
+      "changed": [
+        "src/format.ts::Anchor"
+      ]
+    },
+    {
+      "commit": "8d0511b",
+      "subject": "C3: dependency hashes and the review status, measured on this repository's history",
+      "claim": "fuzz",
+      "anchor": "test/fuzz.test.ts::assertWellBehaved",
+      "text": "Fuzz tests feed thousands of mutated and random files to the parser: each must parse and round-trip stably, or raise HcsSyntaxError.",
+      "changed": [
+        "src/format.ts::serialize"
+      ]
+    },
+    {
+      "commit": "b55e41e",
+      "subject": "C5: optional real tokenizer and tree-sitter symbol back-end",
+      "claim": "statuses",
+      "anchor": "src/anchors.ts::findMovedSymbol",
+      "text": "checkAnchor returns ok, moved (same text elsewhere in the file, or the same symbol in another file), review (symbol unchanged, a dependency changed), stale, missing or unsealed; an item takes the worst status of its anchors.",
+      "changed": [
+        "src/symbols.ts::listSymbols"
+      ]
+    },
+    {
+      "commit": "b55e41e",
+      "subject": "C5: optional real tokenizer and tree-sitter symbol back-end",
+      "claim": "deps",
+      "anchor": "src/deps.ts::dependencies",
+      "text": "With `seal --deps`, JS/TS and Python symbol anchors also store a hash of the symbols they use directly (same-file symbols and class siblings found by identifier matching, plus names imported from project files), and check reports `review`, a non-failing status, when that hash changes while the symbol itself does not.",
+      "changed": [
+        "src/symbols.ts::listSymbols"
+      ]
+    },
+    {
+      "commit": "b55e41e",
+      "subject": "C5: optional real tokenizer and tree-sitter symbol back-end",
+      "claim": "debug-log",
+      "anchor": "src/llm.ts::withDebugLog",
+      "text": "With HCS_DEBUG_LOG set, every model request and reply is appended to that file as one JSON line, without headers or keys.",
+      "changed": [
+        "src/llm.ts::LLM"
+      ]
+    },
+    {
+      "commit": "b55e41e",
+      "subject": "C5: optional real tokenizer and tree-sitter symbol back-end",
+      "claim": "score",
+      "anchor": "src/score.ts::scoreContext",
+      "text": "Each probe is answered from the rendered context only: UNKNOWN is an abstention, a reply containing the expected answer is correct without a judge, otherwise a judge grades correct, partial or incorrect (1, 0.5, 0), optionally over several runs.",
+      "changed": [
+        "src/score.ts::ScoreOptions"
+      ]
+    },
+    {
+      "commit": "b55e41e",
+      "subject": "C5: optional real tokenizer and tree-sitter symbol back-end",
+      "claim": "curve",
+      "anchor": "src/score.ts::scoreCurve",
+      "text": "`hcs curve` scores the same probes at several token budgets, scoring once the budgets that render the same context, and reports the knee: the smallest budget whose fidelity reaches the lower bound of the best point's 95% CI; each point is a certificate tagged with the curve id and the knee, and a curve whose smallest budget is already within that interval is reported as flat.",
+      "changed": [
+        "src/score.ts::ScoreOptions",
+        "src/score.ts::scoreDocument"
+      ]
+    },
+    {
+      "commit": "b55e41e",
+      "subject": "C5: optional real tokenizer and tree-sitter symbol back-end",
+      "claim": "judges",
+      "anchor": "src/score.ts::scoreContext",
+      "text": "`score` accepts two judges: each judged answer is graded by both, the stricter verdict counts, and the raw agreement and Cohen's kappa are reported in the certificate.",
+      "changed": [
+        "src/score.ts::ScoreOptions"
+      ]
+    },
+    {
+      "commit": "b55e41e",
+      "subject": "C5: optional real tokenizer and tree-sitter symbol back-end",
+      "claim": "known",
+      "anchor": "src/score.ts::findKnownProbes",
+      "text": "`compile --filter-known` asks every probe without context to the listed models and tags `[known]` the probes all of them answer correctly; `score` then reports a novel fidelity on the other probes.",
+      "changed": [
+        "src/llm.ts::LLM"
+      ]
+    },
+    {
+      "commit": "b55e41e",
+      "subject": "C5: optional real tokenizer and tree-sitter symbol back-end",
+      "claim": "compare",
+      "anchor": "src/score.ts::compareContexts",
+      "text": "`hcs compare a b` scores two contexts (an .hcs render, any text file, or none) on the same probes and reports the mean per-probe difference with a paired bootstrap CI.",
+      "changed": [
+        "src/score.ts::ScoreOptions"
+      ]
+    },
+    {
+      "commit": "b55e41e",
+      "subject": "C5: optional real tokenizer and tree-sitter symbol back-end",
+      "claim": "mcp-record",
+      "anchor": "src/mcp.ts::HcsMcpServer",
+      "text": "With `serve --allow-write`, the hcs_record tool appends a claim tagged manual,recorded after checking its text (at most 400 characters, not instruction-like) and each anchor (inside the root, existing file and symbol, valid range), then seals it and writes the file atomically.",
+      "changed": [
+        "src/anchors.ts::seal",
+        "src/format.ts::serialize"
+      ]
+    },
+    {
+      "commit": "b55e41e",
+      "subject": "C5: optional real tokenizer and tree-sitter symbol back-end",
+      "claim": "fuzz",
+      "anchor": "test/fuzz.test.ts::assertWellBehaved",
+      "text": "Fuzz tests feed thousands of mutated and random files to the parser: each must parse and round-trip stably, or raise HcsSyntaxError.",
+      "changed": [
+        "src/format.ts::serialize"
+      ]
+    }
+  ]
+}

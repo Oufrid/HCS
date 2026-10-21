@@ -119,8 +119,9 @@ Done: `hcs seal --deps` stores, on JS/TS and Python symbol anchors, a hash of th
 `seal --rehash` accepts it. Specified in SPEC 0.3 (section 5.5), implemented in TypeScript and Python, covered by
 conformance cases and by the cross-check (785 dependency edges of this repository identical in both). Measured on
 this repository's history (`bench/c3/`): 18 review events over 26 commits, 1 needed, so a false-positive rate of
-17/18 (94%), reported in `bench/REPORT.md`. Possible follow-ups: ignore type-only dependencies and object keys,
-measured the same way.
+17/18 (94%), reported in `bench/REPORT.md`. Follow-up measured: ignoring type-only dependencies and key-only
+names cuts reviews from 38 to 24 over 33 commits and keeps the 3 needed ones; proposed as a draft RFC
+(`rfcs/0000-deps-ignore-types-and-keys.md`), not adopted, since it changes the normative hash.
 
 ### C4. Signed certificates `[x]`
 Done: `hcs keygen`; `score --sign` and `curve --sign` sign certificates with Ed25519 (`node:crypto`) over a
