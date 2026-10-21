@@ -309,6 +309,27 @@ case("seal-deps", "seal", "seal with deps records dependency hashes on JS/TS/Pyt
      {"input.hcs": "HCS/0.2\n@root src\n[claims]\n#a Fee.\n  > rates.ts::fee\n#b Base.\n  > rates.ts::base\n#c Lines.\n  > util.ts:1-3\n", **DEP_TS},
      {"deps": True})
 
+# ---------- signed certificates (since 0.3) ----------
+# Signed here with the Python implementation (deterministic Ed25519), verified by both implementations.
+import hashlib, sys
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "python"))
+from hcs import ed25519 as _ed
+from hcs.format import serialize as _serialize
+from hcs.sign import sign_certificate as _sign
+
+_secret = {n: hashlib.sha256(("hcs-conformance-" + n).encode()).digest() for n in ("alice", "bob", "mallory")}
+_pub = {n: "ed25519:" + __import__("base64").urlsafe_b64encode(_ed.public_key(s)).decode().rstrip("=") for n, s in _secret.items()}
+def _cert(signer=None, **fields):
+    c = {"fields": dict(model="m:x", judge="j:y", fidelity="0.500", digest="abc123abc123", **fields)}
+    if signer:
+        _sign(c, _secret[signer])
+    return c
+_certs = [_cert("alice"), _cert("alice", note='quoted "words" and spaces'), _cert("alice"), _cert("mallory"), _cert(), _cert("bob")]
+_certs[2]["fields"]["fidelity"] = "0.990"  # edited after signing
+_doc = {"headers": {"title": "signed", "keys": "alice=%s bob=%s" % (_pub["alice"], _pub["bob"])}, "meta": {}, "claims": [], "probes": [], "certificates": _certs}
+case("verify-signatures", "verify", "Ed25519 certificate signatures: trusted, edited after signing, unknown key, unsigned, and a key declared only in the file (untrusted).",
+     {"input.hcs": _serialize(_doc), "trusted.txt": "# keys this verifier trusts\nalice %s\n" % _pub["alice"]}, {"trusted": "trusted.txt"})
+
 # ---------- seal ----------
 case("seal-basic", "seal", "Sealing hashes unsealed anchors and follows moved ones; stale anchors stay unless rehash.",
      {"input.hcs": "HCS/0.2\n@root src\n[claims]\n#a New.\n  > x.txt:2\n#b Shifted.\n  > x.txt:1 #HASH_LINE_TWO\n#c Stale.\n  > x.txt:3 #000000000000\n",

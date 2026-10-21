@@ -122,12 +122,15 @@ this repository's history (`bench/c3/`): 18 review events over 26 commits, 1 nee
 17/18 (94%), reported in `bench/REPORT.md`. Possible follow-ups: ignore type-only dependencies and object keys,
 measured the same way.
 
-### C4. Signed certificates `[ ]`
-- `score --sign` signs the certificate with an Ed25519 key (`node:crypto`, no dependency). `check` verifies the
-  signature against keys listed in the file or in a trusted keys file.
-- A "verified by" badge generator (SVG) for READMEs, showing fidelity and model, only for signed and current
-  certificates.
-- **Done when:** signing and verification are implemented, specified and tested, including tampering cases.
+### C4. Signed certificates `[x]`
+Done: `hcs keygen`; `score --sign` and `curve --sign` sign certificates with Ed25519 (`node:crypto`) over a
+canonical payload, adding `key` and `sig` and declaring the public key in the `@keys` header; `check` verifies
+against `--trusted` keys (or `HCS_TRUSTED_KEYS`) and reports trusted, untrusted (key only declared in the file),
+invalid (edited after signing, a failure) or unknown-key; `hcs badge` draws an SVG only from a current certificate
+signed by a trusted key. Specified in SPEC 0.3 (section 7.1). Tests cover tampering (edited, added and forged
+fields, a re-signature by another key, garbage signatures, outdated certificates). The Python package verifies
+signatures with a pure-Python Ed25519 that produces byte-identical signatures to `node:crypto`; a conformance case
+signed in Python is verified by both implementations.
 
 ### C5. Better tokens and parsing (optional back-ends) `[ ]`
 - An optional real tokenizer when a provider exposes token counting, keeping the estimate as fallback.

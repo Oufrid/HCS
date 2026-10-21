@@ -1,0 +1,7 @@
+{
+  "op": "verify",
+  "description": "Ed25519 certificate signatures: trusted, edited after signing, unknown key, unsigned, and a key declared only in the file (untrusted).",
+  "args": {
+    "trusted": "trusted.txt"
+  }
+}

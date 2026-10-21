@@ -10,6 +10,7 @@ import { HcsSyntaxError, parse, parseAnchor, serialize } from "../dist/src/forma
 import { renderContext } from "../dist/src/render.js";
 import { hashForCertificate } from "../dist/src/score.js";
 import { findSymbol, listSymbols } from "../dist/src/symbols.js";
+import { checkSignature, documentKeys, parseTrustedKeys } from "../dist/src/sign.js";
 
 /** Drop undefined fields so the JSON is canonical. */
 const plain = (x) => JSON.parse(JSON.stringify(x));
@@ -69,6 +70,11 @@ export function runCase(dir) {
           return { dependencies: dependencies(a, cache), hash: depsHash(a, cache) ?? null };
         }),
       };
+    }
+    case "verify": {
+      const doc = load();
+      const trusted = parseTrustedKeys(readFileSync(join(dir, args.trusted), "utf8"));
+      return { certificates: doc.certificates.map((c) => checkSignature(c, trusted, documentKeys(doc))) };
     }
     case "check": {
       const { doc, cache } = docAndCache();

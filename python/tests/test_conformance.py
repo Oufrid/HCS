@@ -14,6 +14,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(HERE))
 
 from hcs.deps import dependencies, deps_hash  # noqa: E402
+from hcs.sign import check_signature, document_keys, parse_trusted_keys  # noqa: E402
 from hcs import (  # noqa: E402
     HcsSyntaxError,
     SourceCache,
@@ -75,6 +76,10 @@ def run_case(d):
             a = parse_anchor(raw)
             out.append({"dependencies": dependencies(a, cache), "hash": deps_hash(a, cache)})
         return {"results": out}
+    if op == "verify":
+        doc = parse(_read(hcs_file))
+        trusted = parse_trusted_keys(_read(os.path.join(d, args["trusted"])))
+        return {"certificates": [check_signature(c, trusted, document_keys(doc)) for c in doc["certificates"]]}
     if op == "check":
         doc, cache = doc_and_cache()
         items = []

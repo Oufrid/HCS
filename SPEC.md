@@ -6,7 +6,7 @@
   certificate fields `novel`, `novel-probes`, `judge-agreement`, `judge-kappa`, `judged` (§7).
   Compilers may ignore Markdown markup when verifying quotes, and may write an `@incomplete` header (§8).
   The `recorded` tag (§3) marks claims written by an agent. Certificates may form a fidelity-vs-budget curve
-  (`curve`, `knee`, §7).
+  (`curve`, `knee`, §7). Certificates may be signed with Ed25519 (`key`, `sig`, the `@keys` header, §7.1).
 - Changes in 0.2: symbol anchors (§5.2), the `suspect` tag (§3), and certificate fields `ci95`, `informative`, `runs` (§7).
 
 Every valid 0.1 or 0.2 file is a valid 0.3 file. A writer SHOULD emit the oldest version that can express the
@@ -243,6 +243,8 @@ A certificate records one scoring run:
 | `judged` | (two judges) Number of answers both judges graded (exact matches and abstentions are not judged). |
 | `curve` | (since 0.3) Identifier shared by the certificates of one fidelity-vs-budget curve: the same probes, models and settings scored at several `budget` values. |
 | `knee` | (with `curve`) The curve's knee: the smallest budget whose fidelity is at least the lower bound of the 95% CI of the best fidelity in the curve. |
+| `key` | (since 0.3, signed certificates) Id of the signing key: first 12 hex characters of the SHA-256 of its raw 32-byte Ed25519 public key. |
+| `sig` | (since 0.3) Ed25519 signature, base64url without padding, over the payload defined in §7.1. |
 | `misled` | Share of answers that were wrong rather than abstaining. Lower is better. |
 | `runs` | (optional) Times each probe was asked. Default 1. |
 | `probes` | Number of verified probes used (stale probes are skipped). |
@@ -257,6 +259,29 @@ A **curve** is a set of certificates with the same `curve` value, one per budget
 certificate: it is current only while its own digest matches. Budgets that render the same context have the same
 digest; a tool MAY score them once. The knee summarizes the curve: past it, a larger context does not
 measurably improve fidelity on these probes, for this model.
+
+### 7.1 Signed certificates (since 0.3)
+
+A certificate MAY be signed with Ed25519 (RFC 8032). The signed payload is the UTF-8 encoding of these lines joined
+with LF: first `hcs-certificate-v1`, then one `name=value` line for every field except `sig`, sorted by name, with
+each value as the file stores it (double quotes replaced by single quotes). The signature is stored in `sig`, the
+key id in `key` (which is part of the payload).
+
+Public keys are written `ed25519:<base64url of the 32 raw bytes>`. A file MAY declare keys in the header
+`@keys name=ed25519:... name2=ed25519:...`; a verifier MAY also be given trusted keys (one `name ed25519:...` per
+line). A verifier classifies each certificate:
+
+| Status | Meaning |
+|---|---|
+| `unsigned` | No `sig`. |
+| `trusted` | The signature verifies with a trusted key. |
+| `untrusted` | It verifies with a key declared only in the file: the certificate was not edited since that key signed it, but anyone can declare a key, so this proves integrity, not origin. |
+| `invalid` | The signature does not verify with the key `key` names: the certificate was edited after signing (or the signature is malformed). A verifier MUST report it as a failure. |
+| `unknown-key` | `key` names neither a trusted nor a declared key. |
+
+Signing says who scored and that the numbers were not edited; it says nothing about whether the scoring was
+sound. A badge or summary that presents a score as verified SHOULD only use a certificate that is both current and
+`trusted`.
 
 Certificates are evidence, not guarantees. They depend on the answering model, the judge and the probe set. When `judge` equals or includes `model`, the model graded itself; tools SHOULD warn about it.
 

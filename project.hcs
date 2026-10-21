@@ -1,7 +1,7 @@
 HCS/0.2
 @title HCS - Holographic Context Standard (reference CLI)
 @root .
-@updated 2026-10-21T15:05:06.677Z
+@updated 2026-10-21T15:11:49.880Z
 @meta license=MIT language=TypeScript
 
 [claims]
@@ -9,8 +9,8 @@ HCS/0.2
 ## Overview
 #purpose[manual] HCS is a plain-text format plus a zero-dependency Node.js CLI and MCP server (`hcs`) that makes LLM context traceable (claims cite sources), verifiable (anchors carry hashes) and measured (probes and fidelity certificates).
   > README.md:3-16 #cddd3cef50fb
-#layers[manual] Deterministic commands (init, validate, check, seal, render, stats, audit, serve, impact) never call an LLM; compile, score, curve, compare and snapshot need a `provider:model` LLM; models only lists a provider's model ids.
-  > src/cli.ts::HELP #c3849c0160c3
+#layers[manual] Deterministic commands (init, validate, check, seal, render, stats, audit, serve, impact, keygen, badge) never call an LLM; compile, score, curve, compare and snapshot need a `provider:model` LLM; models only lists a provider's model ids.
+  > src/cli.ts::HELP #2b11aa8922f8
 
 ## Format
 #magic[manual] A file starts with `HCS/0.3` (0.1 and 0.2 are still accepted, and the writer emits 0.2 unless a probe has tags), then `@key value` headers, then optional [claims], [probes] and [certificates] blocks; errors carry line numbers.
@@ -40,11 +40,11 @@ HCS/0.2
   > src/anchors.ts::seal #ec2904d70807
 
 ## Conformance
-#conformance[manual] conformance/ holds language-agnostic cases (case.json, input.hcs, src/, expected.json) for parse, serialize, symbols, find, hash, deps, check, seal, render and digest; the TypeScript reference runs them with `npm run conformance`, on a copy outside any git repository.
-  > conformance/reference.mjs::runCase #c1f35a4a699b
+#conformance[manual] conformance/ holds language-agnostic cases (case.json, input.hcs, src/, expected.json) for parse, serialize, symbols, find, hash, deps, check, seal, render, digest and verify (signatures); the TypeScript reference runs them with `npm run conformance`, on a copy outside any git repository.
+  > conformance/reference.mjs::runCase #b53ebb38bd87
   > conformance/reference.mjs::withCopy #74a6c5ab0693
-#python-impl[manual] python/ is a dependency-free Python (>= 3.9) implementation of parse, serialize, hashing, symbol location, check, seal and render that passes the same cases, and cross_check.py compares it with the reference on this repository's files and on mutated .hcs inputs.
-  > python/tests/test_conformance.py::run_case #c918a3dbb5ef
+#python-impl[manual] python/ is a dependency-free Python (>= 3.9) implementation of parse, serialize, hashing, symbol location, dependency hashes, check, seal, render and signature verification (pure-Python Ed25519) that passes the same cases, and cross_check.py compares it with the reference on this repository's files and on mutated .hcs inputs.
+  > python/tests/test_conformance.py::run_case #f67aa0d0e85f
   > conformance/cross_check.py::main #0af4ce68132d
 
 ## Compilation
@@ -76,6 +76,11 @@ HCS/0.2
 #curve[manual] `hcs curve` scores the same probes at several token budgets, scoring once the budgets that render the same context, and reports the knee: the smallest budget whose fidelity reaches the lower bound of the best point's 95% CI; each point is a certificate tagged with the curve id and the knee, and a curve whose smallest budget is already within that interval is reported as flat.
   > src/score.ts::scoreCurve #ffc5613318bc
   > src/score.ts::kneeOf #cca6ea2cbcd4
+#signatures[manual] Certificates can be signed with Ed25519 (node:crypto) over a canonical payload of their sorted fields; check reports each signature as trusted (key from --trusted or HCS_TRUSTED_KEYS), untrusted (key only declared in the file's @keys header), invalid or unknown-key, and fails when a signed certificate was edited after signing.
+  > src/sign.ts::certificatePayload #d93d25315be9
+  > src/sign.ts::checkSignature #38b06ee80645
+#badge[manual] `hcs badge` draws an SVG badge only from a certificate that is current and signed by a trusted key, and refuses to run without trusted keys.
+  > src/badge.ts::badgeSvg #cdf1bf5d9a51
 #judges[manual] `score` accepts two judges: each judged answer is graded by both, the stricter verdict counts, and the raw agreement and Cohen's kappa are reported in the certificate.
   > src/score.ts::scoreContext #9b71d862413b
   > src/score.ts::cohenKappa #2be6be699209

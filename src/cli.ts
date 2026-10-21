@@ -10,6 +10,8 @@ import { checkDocument, insideRoot, rootDir, seal, SourceCache, type AnchorStatu
 import { findPathReferences } from "./audit.js";
 import { baseDocument, COMMENT_MARKER, gitChanges, gitPrefix, impact, impactMarkdown } from "./impact.js";
 import { githubContext, upsertComment } from "./github.js";
+import { badgeSvg } from "./badge.js";
+import { checkSignature, documentKeys, generateKeys, keyId, loadPrivateKey, loadTrustedKeys, signCertificate, type SignatureStatus } from "./sign.js";
 import { injectionFindings, type SourceFinding } from "./guard.js";
 import { compile } from "./compile.js";
 import { emptyDocument, formatAnchor, HcsSyntaxError, parse, serialize, type HcsDocument } from "./format.js";
@@ -29,7 +31,8 @@ Deterministic commands (no LLM, no network; except \`models\`, which asks the pr
   hcs init [-o project.hcs] [--title T]       Create an empty .hcs file to write claims by hand
   hcs validate <file.hcs>                     Check syntax
   hcs check <file.hcs> [--strict] [--json]    Verify every anchor against the sources; exit 1 if stale
-                                              (--strict: also unsealed anchors and suspect claims)
+            [--trusted <keys file>]           (--strict: also unsealed anchors and suspect claims; signed
+                                              certificates are verified, and fail when edited after signing)
   hcs seal <file.hcs> [--rehash] [--ids a,b]  Fill missing hashes, follow moved anchors
             [--deps]                          (--rehash: accept current content of stale or review anchors;
                                               --deps: also hash what each JS/TS/Python symbol uses, so that
@@ -46,6 +49,9 @@ Deterministic commands (no LLM, no network; except \`models\`, which asks the pr
   hcs impact <file.hcs> --base <ref>          Claims and probes citing code changed since a git ref
              [--json | --format markdown | --comment] [--link-base URL]
                                               (--comment: post or update the pull-request comment, in Actions)
+  hcs keygen [name]                           Create an Ed25519 key pair (name.key, name.pub) to sign certificates
+  hcs badge <file.hcs> --trusted <keys> [-o f.svg]   README badge, only from a current certificate signed by a
+                                              trusted key
   hcs models <provider> [--free]              List the model ids your key can use (--free: OpenRouter ":free" models)
 
 LLM commands (--model provider:model, optional --rpm N to stay under free-tier rate limits, optional
@@ -56,8 +62,9 @@ LLM commands (--model provider:model, optional --rpm N to stay under free-tier r
                                               (--filter-known: tag [known] the probes every listed model
                                               answers without context)
   hcs score <file.hcs> --model M [--judge M [--judge M2]] [--budget N] [--baseline] [--runs N] [--write] [--json]
+             [--sign key-file] [--key-name NAME]  (sign the certificate with an Ed25519 key from hcs keygen)
                                               (two judges: agreement is reported, the stricter verdict counts)
-  hcs curve <file.hcs> --model M [--judge M] [--budgets 250,500,1000,2000,4000] [--baseline] [--runs N] [--write] [--json]
+  hcs curve <file.hcs> --model M [--judge M] [--budgets 250,500,1000,2000,4000] [--baseline] [--runs N] [--write] [--json] [--sign key-file]
                                               Fidelity at each token budget and the knee (smallest budget within the
                                               95% CI of the best); --write stores one certificate per budget
   hcs compare <a> <b> --model M [--probes file.hcs] [--judge M] [--budget N] [--runs N] [--json]
@@ -147,6 +154,27 @@ function scoreCacheFile(file: string, key: object) {
   };
 }
 
+const SIGNATURE_LABEL: Record<SignatureStatus, (signer?: string) => string> = {
+  unsigned: () => "",
+  trusted: (s) => `, signed by trusted key ${s}`,
+  untrusted: (s) => `, signed by ${s} (key declared in this file, not in your trusted keys: proves integrity, not origin)`,
+  invalid: (s) => `, SIGNATURE INVALID (edited after ${s} signed it)`,
+  "unknown-key": () => ", signed by an unknown key (pass --trusted to verify)",
+};
+
+/** Sign new certificates and declare the signer's public key in the file's @keys header. */
+function signAll(doc: HcsDocument, certs: { fields: Record<string, string> }[], keyFile: string, name?: string): void {
+  if (!existsSync(keyFile)) throw new UsageError(`signing key not found: ${keyFile}`);
+  const pem = readFileSync(keyFile, "utf8");
+  const { publicKey } = loadPrivateKey(pem);
+  for (const c of certs) signCertificate(c, pem);
+  const declared = documentKeys(doc);
+  if (!declared.has(keyId(publicKey))) {
+    const label = name ?? basename(keyFile).replace(/\.key$/, "");
+    doc.headers.keys = [doc.headers.keys, `${label}=${publicKey}`].filter(Boolean).join(" ");
+  }
+}
+
 function printSourceFindings(found: SourceFinding[]): void {
   if (!found.length) return;
   const high = found.filter((f) => f.severity === "high");
@@ -197,6 +225,9 @@ async function main(argv: string[]): Promise<number> {
       "reasoning-effort": { type: "string" },
       "allow-write": { type: "boolean" },
       deps: { type: "boolean" },
+      sign: { type: "string" },
+      "key-name": { type: "string" },
+      trusted: { type: "string" },
       base: { type: "string" },
       format: { type: "string" },
       "link-base": { type: "string" },
@@ -268,18 +299,22 @@ async function main(argv: string[]): Promise<number> {
       const reports = checkDocument(doc, cache);
       const count = (k: "claim" | "probe", s: AnchorStatus) => reports.filter((r) => r.kind === k && r.status === s).length;
       const cs = claimStatus(reports);
+      const trusted = loadTrustedKeys([o.trusted, process.env.HCS_TRUSTED_KEYS]);
+      const declared = documentKeys(doc);
       const certs = doc.certificates.map((c) => {
         const budget = c.fields.budget ? Number(c.fields.budget) : undefined;
-        return { fields: c.fields, current: hashForCertificate(doc, cs, budget) === c.fields.digest };
+        return { fields: c.fields, current: hashForCertificate(doc, cs, budget) === c.fields.digest, signature: checkSignature(c, trusted, declared) };
       });
+      // An edited signed certificate is a failure; a signature by an unknown key cannot be checked, so it is reported.
+      const tampered = certs.filter((c) => c.signature.status === "invalid").length;
       const suspect = new Set(doc.claims.filter((c) => c.tags.includes("suspect") || injectionFindings(c.text).some((f) => f.severity === "high")).map((c) => c.id));
       const failing = reports.filter(
         (r) => r.status === "stale" || r.status === "missing" || (o.strict && (r.status === "unsealed" || suspect.has(r.id))),
       );
 
       if (o.json) {
-        console.log(JSON.stringify({ file, items: reports, certificates: certs, ok: failing.length === 0 }, null, 2));
-        return failing.length ? 1 : 0;
+        console.log(JSON.stringify({ file, items: reports, certificates: certs, ok: failing.length === 0 && !tampered }, null, 2));
+        return failing.length || tampered ? 1 : 0;
       }
       console.log(`${file}: ${doc.claims.length} claims, ${doc.probes.length} probes`);
       for (const k of ["claim", "probe"] as const) {
@@ -308,7 +343,8 @@ async function main(argv: string[]): Promise<number> {
         console.log(`  ${high ? "SUSPECT " : "review  "} ${c.id.padEnd(6)} ${f.map((x) => x.reason).join("; ") || "tagged suspect"}${high ? " (not rendered)" : ""}`);
       }
       for (const c of certs) {
-        console.log(`  certificate ${c.fields.model} fidelity=${c.fields.fidelity}: ${c.current ? "current" : "OUTDATED (context changed since it was scored)"}`);
+        const sig = SIGNATURE_LABEL[c.signature.status](c.signature.signer);
+        console.log(`  certificate ${c.fields.model} fidelity=${c.fields.fidelity}: ${c.current ? "current" : "OUTDATED (context changed since it was scored)"}${sig}`);
       }
       if (reports.some((r) => r.status === "review")) {
         console.log(`  hint: "review" claims cite unchanged code that uses changed code; re-read them, then \`hcs seal ${file} --rehash --ids ...\``);
@@ -317,10 +353,12 @@ async function main(argv: string[]): Promise<number> {
       if (doc.headers.incomplete) {
         console.log(`  note: partial file, ${doc.headers.incomplete.split(",").length} source chunk(s) not compiled yet (@incomplete); finish with \`hcs compile --update\``);
       }
+      if (tampered) console.log(`FAIL: ${tampered} signed certificate(s) were edited after signing.`);
       if (failing.length) {
         console.log(`FAIL: ${failing.length} item(s) no longer match their sources. Review them, then fix or \`hcs seal --rehash --ids ...\`, or recompile with --update.`);
         return 1;
       }
+      if (tampered) return 1;
       const unsealed = reports.filter((r) => r.status === "unsealed").length;
       console.log(unsealed ? `OK, but ${unsealed} item(s) are unsealed and were not verified.` : "OK: every claim still matches its sources.");
       return 0;
@@ -468,6 +506,7 @@ async function main(argv: string[]): Promise<number> {
         throw e;
       }
       saved.remove();
+      if (o.sign) signAll(doc, [result.certificate], o.sign, o["key-name"]);
       if (o.write) {
         doc.certificates.push(result.certificate);
         save(file, doc);
@@ -543,6 +582,7 @@ async function main(argv: string[]): Promise<number> {
         throw e;
       }
       for (const s of stores) s.remove();
+      if (o.sign) signAll(doc, curve.points.map((p) => p.score.certificate), o.sign, o["key-name"]);
       if (o.write) {
         doc.certificates.push(...curve.points.map((p) => p.score.certificate));
         save(file, doc);
@@ -695,6 +735,44 @@ async function main(argv: string[]): Promise<number> {
         const delta = [["added", report.claimsAdded], ["edited", report.claimsEdited], ["removed", report.claimsRemoved]].filter(([, l]) => l.length);
         if (delta.length) console.log(`  claims ${delta.map(([k, l]) => `${k}: ${(l as string[]).join(", ")}`).join("; ")}`);
       }
+      return 0;
+    }
+
+    case "keygen": {
+      const name = o.output ?? positionals[0] ?? "hcs-signing";
+      const keyFile = `${name}.key`;
+      if (existsSync(keyFile)) throw new UsageError(`${keyFile} already exists`);
+      const { privatePem, publicKey } = generateKeys();
+      writeFileSync(keyFile, privatePem, { mode: 0o600 });
+      writeFileSync(`${name}.pub`, `${publicKey}\n`);
+      console.log(`private key: ${keyFile} (keep it secret, for example as a CI secret; never commit it)`);
+      console.log(`public key:  ${name}.pub  ${publicKey}  (key id ${keyId(publicKey)})`);
+      console.log(`sign:   hcs score <file.hcs> --model M --judge J --write --sign ${keyFile}`);
+      console.log(`trust:  add "${basename(name)} ${publicKey}" to a trusted keys file, then hcs check <file.hcs> --trusted <that file>`);
+      return 0;
+    }
+
+    case "badge": {
+      const file = requireFile(positionals);
+      const doc = load(file);
+      const reports = checkDocument(doc, new SourceCache(rootDir(doc, file)));
+      const trusted = loadTrustedKeys([o.trusted, process.env.HCS_TRUSTED_KEYS]);
+      if (!trusted.size) throw new UsageError("a badge is only drawn from a certificate signed by a trusted key: pass --trusted <keys file>");
+      const cs = claimStatus(reports);
+      const eligible = doc.certificates.filter((c) => {
+        const budget = c.fields.budget ? Number(c.fields.budget) : undefined;
+        return hashForCertificate(doc, cs, budget) === c.fields.digest && checkSignature(c, trusted, new Map()).status === "trusted";
+      });
+      const cert = eligible.at(-1);
+      if (!cert) {
+        console.error(`hcs: no certificate in ${file} is both current and signed by a trusted key; no badge written`);
+        return 1;
+      }
+      const ci = cert.fields.ci95 ? (cert.fields.ci95.split("-").map(Number) as [number, number]) : undefined;
+      const svg = badgeSvg({ fidelity: Number(cert.fields.fidelity), model: cert.fields.model ?? "?", ci95: ci });
+      const out = o.output ?? "hcs-badge.svg";
+      writeFileSync(out, svg);
+      console.log(`wrote ${out}: fidelity ${cert.fields.fidelity} (${cert.fields.model}), signed by ${trusted.get(cert.fields.key)!.name}`);
       return 0;
     }
 

@@ -94,6 +94,9 @@ not recovered from the context:
   scores several budgets (250 to 4000 by default) on the same probes and reports the knee: the smallest budget
   within the 95% CI of the best fidelity. Budgets that render the same context are scored once.
 - **`--write`** stores a **certificate** bound to a digest of the exact context that was scored. `hcs check` reports it as outdated as soon as that context changes.
+- **`--sign team.key`** signs it with Ed25519 (`hcs keygen team` creates the key pair). `hcs check --trusted keys.txt`
+  then says who signed each certificate, and fails if one was edited after signing. `hcs badge project.hcs --trusted
+  keys.txt` draws a README badge, only from a certificate that is current and signed by a trusted key.
 
 ### 3. Use it with any LLM
 
@@ -307,6 +310,8 @@ Benchmark with real models: add your API keys as repository secrets (`GEMINI_API
 | `hcs compile [paths]` | yes | Sources → anchored claims + verified probes (`--update`, `--anchors lines`) |
 | `hcs score <f>` | yes | Fidelity with CI, baseline, informative and novel fidelity, misled rate, judge agreement; `--write` adds a certificate |
 | `hcs curve <f>` | yes | Fidelity at several token budgets and the knee; `--write` stores one certificate per budget |
+| `hcs keygen [name]` | no | Ed25519 key pair to sign certificates |
+| `hcs badge <f> --trusted <keys>` | no | SVG badge from a current certificate signed by a trusted key |
 | `hcs compare <a> <b>` | yes | Paired comparison of two contexts (.hcs, any text file, or none) on the same probes |
 | `hcs snapshot <conv>` | yes | Conversation → portable, anchored session state |
 

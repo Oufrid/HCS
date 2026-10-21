@@ -1,0 +1,13 @@
+HCS/0.2
+@title signed
+@keys alice=ed25519:HTZT3ipoo7BPCh-OmvlAzmu8g-1KvgTlmKUCv7wGty8 bob=ed25519:6RcIzywN0yel_UQMOhXos3S_9jgakKP5MCgk9Ia7a_c
+
+[claims]
+
+[certificates]
+!score model=m:x judge=j:y fidelity=0.500 digest=abc123abc123 key=c28a32330adf sig=kDrputIw6OvVeK0Gggu_A5qxq0ylMvh0j2W884cxuVsY6OU7HtWsQSVMxMOytz1k6Cgv0htJMn2orUlEvKCSAg
+!score model=m:x judge=j:y fidelity=0.500 digest=abc123abc123 note="quoted 'words' and spaces" key=c28a32330adf sig=VUJzYSu-hePQiKwnctiPHc4yCOaf9EmP1KZEocJ3yHPhqqrtGeHO-0ubPY1ze3ru6yq2bloon6nNNIakxIwIDQ
+!score model=m:x judge=j:y fidelity=0.990 digest=abc123abc123 key=c28a32330adf sig=kDrputIw6OvVeK0Gggu_A5qxq0ylMvh0j2W884cxuVsY6OU7HtWsQSVMxMOytz1k6Cgv0htJMn2orUlEvKCSAg
+!score model=m:x judge=j:y fidelity=0.500 digest=abc123abc123 key=f20d7eb675e1 sig=susVl95HEM-oSEzR0te_dmjhqVKDJ-M84xsJEzdDCtWwcHHzLztm-dUyXU-DCkpEc5cbg0Su99RuI-x0W1xHAQ
+!score model=m:x judge=j:y fidelity=0.500 digest=abc123abc123
+!score model=m:x judge=j:y fidelity=0.500 digest=abc123abc123 key=9cd0cd02fc9e sig=dk2C8zs4uynReBpt2nHPTVKXg2MZBuo-iqTTz48GX6wyD7gi1QT45wrIW44bbL_E3LthmiVHn-gR8CrKHv_QCA

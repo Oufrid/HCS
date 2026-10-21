@@ -13,6 +13,7 @@ from .anchors import SourceCache, check_document, root_dir, seal
 from .format import HcsSyntaxError, format_anchor, parse, serialize
 from .guard import injection_findings
 from .render import DECODER_PROMPT, hash_for_certificate, render_context
+from .sign import check_signature, document_keys, parse_trusted_keys
 
 
 def _load(path):
@@ -30,14 +31,23 @@ def _check(args):
     failing = [
         r for r in reports if r["status"] in ("stale", "missing") or (args.strict and (r["status"] == "unsealed" or r["id"] in suspect))
     ]
+    trusted = {}
+    for path in (args.trusted, os.environ.get("HCS_TRUSTED_KEYS")):
+        if path:
+            with open(path, encoding="utf-8") as f:
+                trusted.update(parse_trusted_keys(f.read()))
+    declared = document_keys(doc)
     certificates = []
     for c in doc["certificates"]:
         budget = int(c["fields"]["budget"]) if c["fields"].get("budget") else None
-        certificates.append({"fields": c["fields"], "current": hash_for_certificate(doc, status, budget) == c["fields"].get("digest")})
+        certificates.append(
+            {"fields": c["fields"], "current": hash_for_certificate(doc, status, budget) == c["fields"].get("digest"), "signature": check_signature(c, trusted, declared)}
+        )
+    tampered = sum(1 for c in certificates if c["signature"]["status"] == "invalid")
     if args.json:
         items = [{"kind": r["kind"], "id": r["id"], "status": r["status"]} for r in reports]
-        print(json.dumps({"file": args.file, "items": items, "certificates": certificates, "ok": not failing}, indent=2))
-        return 1 if failing else 0
+        print(json.dumps({"file": args.file, "items": items, "certificates": certificates, "ok": not failing and not tampered}, indent=2))
+        return 1 if failing or tampered else 0
     print("%s: %d claims, %d probes" % (args.file, len(doc["claims"]), len(doc["probes"])))
     for kind in ("claim", "probe"):
         counts = [(s, sum(1 for r in reports if r["kind"] == kind and r["status"] == s)) for s in ("ok", "moved", "unsealed", "stale", "missing")]
@@ -49,9 +59,17 @@ def _check(args):
             if a["status"] != "ok":
                 print("  %-8s %-6s %s  %s" % (a["status"].upper() if a["status"] in ("stale", "missing") else a["status"], r["id"], format_anchor(a["anchor"], False), a.get("detail", "")))
     for c in certificates:
-        print("  certificate %s fidelity=%s: %s" % (c["fields"].get("model"), c["fields"].get("fidelity"), "current" if c["current"] else "OUTDATED"))
+        sig = c["signature"]
+        label = {"unsigned": "", "trusted": ", signed by trusted key %s", "untrusted": ", signed by %s (key declared in this file, not trusted)",
+                 "invalid": ", SIGNATURE INVALID (edited after %s signed it)", "unknown-key": ", signed by an unknown key"}[sig["status"]]
+        label = label % sig["signer"] if "%s" in label else label
+        print("  certificate %s fidelity=%s: %s%s" % (c["fields"].get("model"), c["fields"].get("fidelity"), "current" if c["current"] else "OUTDATED", label))
+    if tampered:
+        print("FAIL: %d signed certificate(s) were edited after signing." % tampered)
     if failing:
         print("FAIL: %d item(s) no longer match their sources." % len(failing))
+        return 1
+    if tampered:
         return 1
     print("OK: every claim still matches its sources.")
     return 0
@@ -96,6 +114,7 @@ def main(argv=None):
     p.add_argument("file")
     p.add_argument("--strict", action="store_true", help="also fail on unsealed anchors and suspect claims")
     p.add_argument("--json", action="store_true")
+    p.add_argument("--trusted", help="file of trusted public keys (name ed25519:...), to verify signed certificates")
     p.set_defaults(run=_check)
     p = sub.add_parser("seal", help="hash unsealed anchors, follow moved ones")
     p.add_argument("file")

@@ -32,7 +32,7 @@ Someone controls the `.hcs` file itself (a cloned repository, a pull request).
 | Anchors that point outside the project (`> ../../.ssh/id_rsa`, absolute paths, symlinks) to make tools or the MCP server read private files | All source reads go through the project root sandbox (`src/anchors.ts::insideRoot`): such anchors are reported `missing` and never read. | The root itself comes from `@root`, see next row. |
 | An `@root` header that widens the sandbox (`@root /`) | `hcs serve` refuses a root outside the working directory unless `--root` is passed explicitly. | `check`, `render` and `score` honor `@root`; they only print hashes and statuses, never source text. |
 | Hand-written claims that carry instructions | Same guard as compiled claims: high-risk text is not rendered and fails `check --strict`. | Same pattern limit. |
-| Fake certificates (made-up fidelity scores) | A certificate is bound to a digest of the rendered context; `check` reports it outdated when the context changes. | Certificates are not signed yet (roadmap item C4): anyone can write one. Re-score before trusting a number. |
+| Fake certificates (made-up fidelity scores) | A certificate is bound to a digest of the rendered context; `check` reports it outdated when the context changes. Certificates can be signed with Ed25519: `check --trusted keys.txt` names the signer and fails when a signed certificate was edited; `badge` only uses current certificates signed by a trusted key. | Unsigned certificates can still be written by anyone, and a key declared in the file itself only proves integrity, not origin. A signature proves who scored, not that the scoring was sound. Keep signing keys out of the repository (a CI secret). |
 
 ### 3. A malicious MCP client
 

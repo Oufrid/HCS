@@ -1,0 +1,26 @@
+{
+  "certificates": [
+    {
+      "status": "trusted",
+      "signer": "alice"
+    },
+    {
+      "status": "trusted",
+      "signer": "alice"
+    },
+    {
+      "status": "invalid",
+      "signer": "alice"
+    },
+    {
+      "status": "unknown-key"
+    },
+    {
+      "status": "unsigned"
+    },
+    {
+      "status": "untrusted",
+      "signer": "bob"
+    }
+  ]
+}

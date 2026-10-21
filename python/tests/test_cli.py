@@ -46,6 +46,37 @@ class Cli(unittest.TestCase):
         self.assertEqual(run("seal", self.file, "--rehash")[0], 0)
         self.assertEqual(run("check", self.file)[0], 0)
 
+    def test_signed_certificates(self):
+        import hashlib
+
+        from hcs import parse, serialize
+        from hcs.ed25519 import public_key
+        from hcs.sign import _b64url_encode, sign_certificate
+
+        run("seal", self.file)
+        with open(self.file) as f:
+            doc = parse(f.read())
+        secret = hashlib.sha256(b"test").digest()
+        cert = {"fields": {"model": "m:x", "fidelity": "0.800", "digest": "000000000000"}}
+        pub = sign_certificate(cert, secret)
+        self.assertEqual(pub, "ed25519:" + _b64url_encode(public_key(secret)))
+        doc["certificates"].append(cert)
+        with open(self.file, "w") as f:
+            f.write(serialize(doc))
+        trusted = os.path.join(self.dir, "trusted.txt")
+        with open(trusted, "w") as f:
+            f.write("team %s\n" % pub)
+        code, out = run("check", self.file, "--trusted", trusted)
+        self.assertEqual(code, 0, out)
+        self.assertIn("signed by trusted key team", out)
+        with open(self.file) as f:
+            text = f.read()
+        with open(self.file, "w") as f:
+            f.write(text.replace("fidelity=0.800", "fidelity=0.990"))
+        code, out = run("check", self.file, "--trusted", trusted)
+        self.assertEqual(code, 1)
+        self.assertIn("SIGNATURE INVALID", out)
+
     def test_usage_errors(self):
         self.assertEqual(run("check", os.path.join(self.dir, "missing.hcs"))[0], 2)
         with open(self.file, "w") as f:
