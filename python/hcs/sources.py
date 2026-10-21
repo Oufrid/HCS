@@ -101,6 +101,9 @@ def _is_text(path):
 def collect_sources(root, paths=(".",), max_bytes=256 * 1024, ignore=()):
     """Text files under `paths` (relative to `root`), honoring .gitignore inside git repos and .hcsignore."""
     abs_root = os.path.abspath(root)
+    # A file whose @root points to a directory that does not exist (an unshared checkout) has no sources.
+    if not os.path.isdir(abs_root):
+        return []
     ignores = _load_ignores(abs_root, ignore)
     files = _git_files(abs_root)
     if files is None:

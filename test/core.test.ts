@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { checkAnchor, checkDocument, hashLines, normalizeLines, seal, SourceCache } from "../src/anchors.js";
+import { checkAnchor, checkDocument, hashLines, normalizeLines, rootDir, seal, SourceCache } from "../src/anchors.js";
 import { findPathReferences } from "../src/audit.js";
 import { parse, serialize, HcsSyntaxError } from "../src/format.js";
 import { estimateTokens, renderContext, selectClaims } from "../src/render.js";
@@ -178,5 +178,15 @@ test("audit finds broken file references", () => {
     refs.map((r) => [r.path, r.exists, r.bare]),
     [["src/rates.ts", true, false], ["docs/policy.md", true, false], ["src/legacy/old.ts", false, false], ["NOTES.md", false, true]],
   );
+  rmSync(dir, { recursive: true });
+});
+
+test("check reports claims as missing, without crashing, when @root does not exist", () => {
+  // Found in CI: bench/a1/*.hcs point to a worktree that only exists on the machine that made them.
+  const dir = tempProject({ "project.hcs": "HCS/0.2\n@root ../nowhere\n[claims]\n#c1 Moved symbol?\n  > a.ts::f #0123456789ab\n#c2 Line.\n  > a.ts:1 #0123456789ab\n" });
+  const doc = parse(readFileSync(join(dir, "project.hcs"), "utf8"));
+  const reports = checkDocument(doc, new SourceCache(rootDir(doc, join(dir, "project.hcs"))));
+  assert.deepEqual(reports.map((r) => r.status), ["missing", "missing"]);
+  assert.deepEqual(collectSources(join(dir, "nowhere")), []);
   rmSync(dir, { recursive: true });
 });

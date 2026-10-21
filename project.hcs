@@ -1,7 +1,7 @@
 HCS/0.2
 @title HCS - Holographic Context Standard (reference CLI)
 @root .
-@updated 2026-10-21T13:43:21.468Z
+@updated 2026-10-21T13:47:41.091Z
 @meta license=MIT language=TypeScript
 
 [claims]
@@ -130,7 +130,7 @@ HCS/0.2
   > src/llm.ts::MAX_RETRY_WAIT_MS #ffea888e2d7e
 ?p7 What is the largest source file size the compiler reads by default?
   = 256 KiB
-  > src/sources.ts::collectSources #c0440aacf4c2
+  > src/sources.ts::collectSources #323bcb68333c
 ?p8 Which MCP tool returns the exact source text behind a claim id?
   = hcs_expand
   > src/mcp.ts::TOOLS #fdf64141fd1e

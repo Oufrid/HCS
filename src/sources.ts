@@ -98,6 +98,8 @@ function isText(buf: Buffer): boolean {
 /** List text files under `paths` (relative to `root`), honoring .gitignore (inside git repos) and .hcsignore. */
 export function collectSources(root: string, paths: string[] = ["."], opts: SourceOptions = {}): string[] {
   const absRoot = resolve(root);
+  // A file whose @root points to a directory that does not exist (an unshared checkout) has no sources.
+  if (!existsSync(absRoot) || !statSync(absRoot).isDirectory()) return [];
   const maxBytes = opts.maxBytes ?? 256 * 1024;
   const ignores = loadIgnores(absRoot, opts.ignore);
   let all = gitFiles(absRoot);

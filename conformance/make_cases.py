@@ -270,6 +270,9 @@ os.makedirs(os.path.join(ROOT, "check-reformat-and-move", "before"), exist_ok=Tr
 with open(os.path.join(ROOT, "check-reformat-and-move", "before", "a.ts"), "w") as f:
     f.write("export function add(a: number, b: number) { return a + b; }\n\nexport function mul(a: number, b: number) {\n  return a * b;\n}\n")
 
+case("check-missing-root", "check", "When @root names a directory that does not exist, every anchor is missing (no crash, no moved symbol search).",
+     {"input.hcs": "HCS/0.2\n@root nowhere\n[claims]\n#c1 Symbol.\n  > a.ts::f #0123456789ab\n#c2 Line.\n  > a.ts:1 #0123456789ab\n#c3 Unsealed.\n  > a.ts:1\n"}, {})
+
 # ---------- seal ----------
 case("seal-basic", "seal", "Sealing hashes unsealed anchors and follows moved ones; stale anchors stay unless rehash.",
      {"input.hcs": "HCS/0.2\n@root src\n[claims]\n#a New.\n  > x.txt:2\n#b Shifted.\n  > x.txt:1 #HASH_LINE_TWO\n#c Stale.\n  > x.txt:3 #000000000000\n",
