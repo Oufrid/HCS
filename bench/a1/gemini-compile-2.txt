@@ -1,0 +1,14 @@
+incremental: 8 files unchanged, 7 to compile
+[1/7] src/llm.ts:1-450 -> 8 claims, 3 probes
+[2/7] src/mcp.ts:1-272 -> 4 claims, 2 probes
+[3/7] src/render.ts:1-102 -> 6 claims, 2 probes
+[4/7] src/score.ts:1-369 -> 5 claims, 2 probes
+[5/7] src/snapshot.ts:1-63 -> 6 claims, 3 probes
+[6/7] src/sources.ts:1-193 -> 6 claims, 3 probes
+[7/7] src/symbols.ts:1-302 -> 4 claims, 2 probes
+synthesized 8 overview claims
+wrote gemini.hcs: 95 claims, 37 probes from 15 files (7 compiled)
+  rejected by quote verification: 1/40 claims, 0/17 probes
+  context ~4259 tokens for ~57630 tokens of source. Next: hcs score gemini.hcs --model gemini:gemini-flash-lite-latest --baseline --write
+usage gemini:gemini-flash-lite-latest: 8 requests, 35688 input + 6829 output tokens (as reported by the provider)
+exit=0
