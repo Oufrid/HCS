@@ -1,0 +1,7 @@
+HCS/0.2
+@title t
+
+[claims]
+// note
+#a one
+  > f.txt:2

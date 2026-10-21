@@ -1,0 +1,102 @@
+{
+  "ok": true,
+  "document": {
+    "headers": {
+      "title": "Shop \"backend\"",
+      "root": "src",
+      "created": "2026-01-01T00:00:00Z",
+      "generator": "hand"
+    },
+    "meta": {
+      "lang": "ts",
+      "note": "two words",
+      "empty": "x"
+    },
+    "claims": [
+      {
+        "id": "c1",
+        "text": "Shipping costs a base fee plus 4 per kg.",
+        "tags": [
+          "i5",
+          "manual"
+        ],
+        "anchors": [
+          {
+            "path": "rates.ts",
+            "symbol": "shippingFee",
+            "hash": "0123456789ab"
+          },
+          {
+            "path": "docs/refund policy.md",
+            "symbol": "Refund policy"
+          }
+        ],
+        "section": "Billing"
+      },
+      {
+        "id": "c2",
+        "text": "Refunds take 14 days.",
+        "tags": [],
+        "anchors": [
+          {
+            "path": "docs/policy.md",
+            "start": 3,
+            "end": 4
+          },
+          {
+            "path": "docs/policy.md",
+            "start": 7,
+            "end": 7
+          },
+          {
+            "path": "notes.txt"
+          }
+        ],
+        "section": "Billing"
+      },
+      {
+        "id": "c3",
+        "text": "Overview claim.",
+        "tags": [
+          "overview"
+        ],
+        "anchors": [
+          {
+            "path": "rates.ts"
+          }
+        ],
+        "section": "Other"
+      }
+    ],
+    "probes": [
+      {
+        "id": "p1",
+        "question": "How much per kg? (in EUR)",
+        "answer": "4 per kg",
+        "anchors": [
+          {
+            "path": "rates.ts",
+            "start": 5,
+            "end": 5,
+            "hash": "aaaaaa"
+          }
+        ],
+        "claims": [
+          "c1",
+          "c2"
+        ]
+      }
+    ],
+    "certificates": [
+      {
+        "fields": {
+          "model": "m:x",
+          "judge": "j:y",
+          "fidelity": "0.500",
+          "digest": "abc123",
+          "date": "2026-01-01T00:00:00Z"
+        }
+      }
+    ]
+  }
+}

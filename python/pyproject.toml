@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hcs-format"
+version = "0.3.0"
+description = "Holographic Context Standard: parse, verify, seal and render .hcs context files (no dependencies)."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.9"
+dependencies = []
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+]
+
+[project.scripts]
+hcs-py = "hcs.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/Oufrid/HCS"
+
+[tool.setuptools]
+packages = ["hcs"]

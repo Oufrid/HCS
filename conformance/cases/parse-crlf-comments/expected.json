@@ -1,0 +1,25 @@
+{
+  "ok": true,
+  "document": {
+    "headers": {
+      "title": "t"
+    },
+    "meta": {},
+    "claims": [
+      {
+        "id": "a",
+        "text": "one",
+        "tags": [],
+        "anchors": [
+          {
+            "path": "f.txt",
+            "start": 2,
+            "end": 2
+          }
+        ]
+      }
+    ],
+    "probes": [],
+    "certificates": []
+  }
+}

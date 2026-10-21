@@ -1,0 +1,7 @@
+{
+  "op": "check",
+  "description": "ok, moved (shifted lines), stale, missing and unsealed, for line, file and symbol anchors; an item takes its worst anchor status.",
+  "args": {
+    "seal_against": "before"
+  }
+}

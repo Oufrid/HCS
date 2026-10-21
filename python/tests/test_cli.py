@@ -1,0 +1,57 @@
+import io
+import os
+import shutil
+import sys
+import tempfile
+import unittest
+from contextlib import redirect_stdout
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from hcs.cli import main  # noqa: E402
+
+
+def run(*argv):
+    out = io.StringIO()
+    with redirect_stdout(out):
+        code = main(list(argv))
+    return code, out.getvalue()
+
+
+class Cli(unittest.TestCase):
+    def setUp(self):
+        self.dir = tempfile.mkdtemp(prefix="hcs-cli-")
+        with open(os.path.join(self.dir, "rates.ts"), "w") as f:
+            f.write("export function fee(w) {\n  return 25 + w * 4;\n}\n")
+        self.file = os.path.join(self.dir, "project.hcs")
+        with open(self.file, "w") as f:
+            f.write("HCS/0.2\n@title t\n[claims]\n#c1 Fee is 25 plus 4 per kg.\n  > rates.ts::fee\n")
+
+    def tearDown(self):
+        shutil.rmtree(self.dir)
+
+    def test_seal_check_render_and_staleness(self):
+        self.assertEqual(run("check", self.file, "--strict")[0], 1, "unsealed fails in strict mode")
+        self.assertEqual(run("seal", self.file)[0], 0)
+        code, out = run("check", self.file, "--strict")
+        self.assertEqual(code, 0, out)
+        self.assertIn("OK: every claim still matches its sources.", out)
+        self.assertIn("c1: Fee is 25 plus 4 per kg. (rates.ts::fee)", run("render", self.file)[1])
+        with open(os.path.join(self.dir, "rates.ts"), "w") as f:
+            f.write("export function fee(w) {\n  return 30 + w * 4;\n}\n")
+        code, out = run("check", self.file)
+        self.assertEqual(code, 1)
+        self.assertIn("STALE", out)
+        self.assertNotIn("c1:", run("render", self.file)[1])
+        self.assertEqual(run("seal", self.file, "--rehash")[0], 0)
+        self.assertEqual(run("check", self.file)[0], 0)
+
+    def test_usage_errors(self):
+        self.assertEqual(run("check", os.path.join(self.dir, "missing.hcs"))[0], 2)
+        with open(self.file, "w") as f:
+            f.write("not hcs\n")
+        self.assertEqual(run("validate", self.file)[0], 2)
+
+
+if __name__ == "__main__":
+    unittest.main()

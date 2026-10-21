@@ -1,0 +1,3 @@
+{
+  "text": "<hcs-context title=\"Demo 'quoted'\">\n[A]\nc1: Essential fact. (x.txt:1)\n[B]\nc4: Hand-written fact. (x.txt::nope)\n</hcs-context>"
+}

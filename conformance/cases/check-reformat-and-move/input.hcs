@@ -1,0 +1,7 @@
+HCS/0.2
+@root src
+[claims]
+#fmt Reformatted.
+  > a.ts::add #b9805fb2bd2e
+#mv Moved to another file.
+  > a.ts::mul #5e90079d25ef

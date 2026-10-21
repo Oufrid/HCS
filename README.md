@@ -30,7 +30,7 @@ FAIL: 1 item(s) no longer match their sources. ...
 ```
 *(Example output.)*
 
-> **Status: v0.2, early.** The format, the deterministic engine (`check`, `seal`, `render`, `audit`) and the MCP server are complete and tested. The LLM features (`compile`, `score`, `snapshot`) are tested against mock OpenAI/Anthropic-compatible servers, and `compile` and `score` have run end to end on real free-tier models (Gemini, Groq); what broke and what was measured is in [bench/REPORT.md](bench/REPORT.md). **There is no benchmark yet.** Benchmark numbers will be published from `bench/` with their raw results, never as bare claims in this README.
+> **Status: v0.2, early.** The format, the deterministic engine (`check`, `seal`, `render`, `audit`) and the MCP server are complete and tested. A second, independent implementation of the deterministic core in Python passes the same [conformance suite](conformance/) in CI. The LLM features (`compile`, `score`, `snapshot`) are tested against mock OpenAI/Anthropic-compatible servers, and `compile` and `score` have run end to end on real free-tier models (Gemini, Groq); what broke and what was measured is in [bench/REPORT.md](bench/REPORT.md). **There is no benchmark yet.** Benchmark numbers will be published from `bench/` with their raw results, never as bare claims in this README.
 
 ---
 
@@ -323,7 +323,10 @@ See [PRIOR_ART.md](PRIOR_ART.md). In short: drift checkers, prompt compressors, 
 ```
 SPEC.md         the format, normative (v0.3)
 src/            CLI, MCP server and library (TypeScript, no runtime dependencies)
+python/         second implementation of the deterministic core (Python >= 3.9, no dependencies)
+conformance/    language-agnostic test cases both implementations pass in CI
 test/           node:test suite, including mock OpenAI/Anthropic-compatible servers
+docs/           MCP client setup and a recorded session
 bench/          reproducible benchmark harness
 project.hcs     HCS describing itself (checked in CI)
 action.yml      GitHub Action (verification)

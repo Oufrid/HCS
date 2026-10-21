@@ -1,0 +1,7 @@
+{
+  "op": "symbols",
+  "description": "JSON keys qualified by nesting.",
+  "args": {
+    "file": "package.json"
+  }
+}

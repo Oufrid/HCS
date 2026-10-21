@@ -1,0 +1,9 @@
+HCS/0.2
+@root src
+[claims]
+#a New.
+  > x.txt:2
+#b Shifted.
+  > x.txt:1 #HASH_LINE_TWO
+#c Stale.
+  > x.txt:3 #000000000000

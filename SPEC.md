@@ -247,3 +247,11 @@ A conforming compiler SHOULD:
 ## 9. Versioning
 
 Minor versions (0.x) may add headers, tags, fields, statuses and anchor forms. Readers SHOULD ignore unknown certificate fields and tags. Any change to hashing or anchor syntax requires a new version string.
+
+## 10. Conformance
+
+The directory `conformance/` holds language-agnostic cases: inputs, and the exact result an implementation must
+produce for parsing, serialization, anchor hashes, symbol ranges, verification statuses (including moves within
+and across files), sealing, rendering under budgets and certificate digests. An implementation conforms to this
+version when it passes every case. Two implementations do: the TypeScript reference CLI and the Python package in
+`python/`.

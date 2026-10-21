@@ -1,0 +1,4 @@
+{
+  "op": "parse",
+  "description": "A file without the magic line is rejected at line 1."
+}

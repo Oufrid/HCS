@@ -3,3 +3,6 @@ dist/
 *.log
 .hcs-cache/
 bench/.work/
+__pycache__/
+*.egg-info/
+python/build/

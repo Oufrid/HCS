@@ -1,0 +1,3 @@
+{
+  "text": "<hcs-context title=\"Demo 'quoted'\">\n[A]\nc1: Essential fact. (x.txt:1)\nc2: Normal fact. (x.txt:2)\nc3: Minor fact with a longer text that costs more tokens than the others in the budget. (x.txt:1)\n[B]\nc4: Hand-written fact. (x.txt::nope)\nc8: Fact without anchors.\n</hcs-context>"
+}

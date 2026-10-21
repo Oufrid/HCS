@@ -188,7 +188,9 @@ function braceSymbols(lines: string[], json: boolean, singleQuoteStrings: boolea
       const nested = /^\s/.test(code);
       BRACE_DEFS.some((re, k) => {
         const m = re.exec(code);
-        if (!m || CONTROL.has(m[1])) return false;
+        // After an explicit keyword (`fn new`, `def match`) the name is a definition even if it is a keyword
+        // elsewhere; the call-like patterns must skip control words (`if (`, `new Foo(`).
+        if (!m || (k !== 0 && CONTROL.has(m[1]))) return false;
         // Local variables are not useful anchors; only top-level const/let/var count.
         if (k === 1 && nested) return false;
         // A call taking a callback (`test("x", () => {`) is not a definition.

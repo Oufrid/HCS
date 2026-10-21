@@ -1,0 +1,4 @@
+{
+  "op": "parse",
+  "description": "CRLF line endings, comment lines and blank lines are ignored."
+}

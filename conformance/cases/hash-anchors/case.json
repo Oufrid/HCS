@@ -1,0 +1,18 @@
+{
+  "op": "hash",
+  "description": "Hash of every anchor form: whole file, line range, single line, symbol (whitespace-insensitive), with CRLF and trailing spaces normalized; null when the target does not exist.",
+  "args": {
+    "anchors": [
+      "a.ts",
+      "a.ts:1-3",
+      "a.ts:2",
+      "a.ts::f",
+      "c.ts::f",
+      "b.txt",
+      "b.txt:2",
+      "b.txt:2-9",
+      "missing.txt",
+      "a.ts::nope"
+    ]
+  }
+}

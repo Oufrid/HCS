@@ -1,0 +1,28 @@
+{
+  "items": [
+    {
+      "kind": "claim",
+      "id": "fmt",
+      "status": "ok",
+      "anchors": [
+        {
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "kind": "claim",
+      "id": "mv",
+      "status": "moved",
+      "anchors": [
+        {
+          "status": "moved",
+          "relocated": {
+            "path": "lib/math.ts",
+            "symbol": "mul"
+          }
+        }
+      ]
+    }
+  ]
+}

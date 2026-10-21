@@ -1,0 +1,33 @@
+HCS/0.2
+@title Shop "backend"
+@root src
+@created 2026-01-01T00:00:00Z
+@generator hand
+@meta lang=ts note="two words" empty=x
+
+[claims]
+// a comment line
+## Billing
+#c1[i5,manual] Shipping costs a base fee
+  | plus 4 per kg.
+  > rates.ts::shippingFee #0123456789ab
+  > "docs/refund policy.md"::"Refund policy"
+#c2 Refunds take 14 days.
+  > docs/policy.md:3-4
+  > docs/policy.md:7
+  > notes.txt
+
+## Other
+#c3[overview] Overview claim.
+  > rates.ts
+
+[probes]
+?p1 How much per kg?
+  | (in EUR)
+  = 4
+  = per kg
+  > rates.ts:5 #aaaaaa
+  ~ c1, c2
+
+[certificates]
+!score model=m:x judge=j:y fidelity=0.500 digest=abc123 date=2026-01-01T00:00:00Z

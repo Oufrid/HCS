@@ -1,0 +1,7 @@
+{
+  "op": "symbols",
+  "description": "Rust structs, impl blocks and functions; char literals and lifetimes.",
+  "args": {
+    "file": "main.rs"
+  }
+}

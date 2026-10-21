@@ -1,0 +1,8 @@
+{
+  "op": "seal",
+  "description": "Sealing hashes unsealed anchors and follows moved ones; stale anchors stay unless rehash.",
+  "args": {
+    "rehash": false,
+    "seal_against": "before"
+  }
+}

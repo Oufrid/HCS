@@ -1,0 +1,7 @@
+{
+  "op": "symbols",
+  "description": "Go structs, receiver methods and functions.",
+  "args": {
+    "file": "main.go"
+  }
+}

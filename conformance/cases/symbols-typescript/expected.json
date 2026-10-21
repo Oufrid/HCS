@@ -1,0 +1,39 @@
+{
+  "symbols": [
+    {
+      "name": "BASE_FEE",
+      "start": 3,
+      "end": 3
+    },
+    {
+      "name": "shippingFee",
+      "start": 5,
+      "end": 9
+    },
+    {
+      "name": "Cart",
+      "start": 11,
+      "end": 22
+    },
+    {
+      "name": "Cart.add",
+      "start": 14,
+      "end": 16
+    },
+    {
+      "name": "Cart.total",
+      "start": 18,
+      "end": 21
+    },
+    {
+      "name": "Rate",
+      "start": 24,
+      "end": 26
+    },
+    {
+      "name": "helper",
+      "start": 28,
+      "end": 30
+    }
+  ]
+}

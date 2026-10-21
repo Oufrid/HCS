@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "document": {
+    "headers": {
+      "title": "old"
+    },
+    "meta": {},
+    "claims": [
+      {
+        "id": "a",
+        "text": "x",
+        "tags": [],
+        "anchors": []
+      }
+    ],
+    "probes": [],
+    "certificates": []
+  }
+}

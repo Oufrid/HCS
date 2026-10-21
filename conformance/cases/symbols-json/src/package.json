@@ -1,0 +1,8 @@
+{
+  "name": "x",
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test"
+  },
+  "list": [1, 2]
+}

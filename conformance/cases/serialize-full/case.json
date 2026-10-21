@@ -1,0 +1,4 @@
+{
+  "op": "serialize",
+  "description": "Canonical serialization: header order, meta quoting, joined continuations, quoted anchors."
+}

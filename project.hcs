@@ -1,7 +1,7 @@
 HCS/0.2
 @title HCS - Holographic Context Standard (reference CLI)
 @root .
-@updated 2026-10-21T13:32:22.125Z
+@updated 2026-10-21T13:43:21.468Z
 @meta license=MIT language=TypeScript
 
 [claims]
@@ -34,6 +34,14 @@ HCS/0.2
   > src/symbols.ts::codeOnly #9e8476116018
 #seal[manual] `hcs seal` hashes unsealed anchors and follows moved ones (new lines, file or symbol); `--rehash` accepts stale content and drops certificates.
   > src/anchors.ts::seal #e21386b51b66
+
+## Conformance
+#conformance[manual] conformance/ holds language-agnostic cases (case.json, input.hcs, src/, expected.json) for parse, serialize, symbols, find, hash, check, seal, render and digest; the TypeScript reference runs them with `npm run conformance`, on a copy outside any git repository.
+  > conformance/reference.mjs::runCase #33c112c7d54c
+  > conformance/reference.mjs::withCopy #74a6c5ab0693
+#python-impl[manual] python/ is a dependency-free Python (>= 3.9) implementation of parse, serialize, hashing, symbol location, check, seal and render that passes the same cases, and cross_check.py compares it with the reference on this repository's files and on mutated .hcs inputs.
+  > python/tests/test_conformance.py::run_case #cfc6785602de
+  > conformance/cross_check.py::main #064028205212
 
 ## Compilation
 #quote-guard[manual] The compiler discards any claim or probe whose quote is not found verbatim (ignoring whitespace, case and Markdown markup such as backticks, emphasis and link syntax) in the cited chunk, then anchors it to the smallest enclosing symbol under 80 lines, or to the quoted lines.

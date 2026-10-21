@@ -1,0 +1,26 @@
+HCS/0.2
+@root src
+[claims]
+#ok1 Fee.
+  > fee.ts::fee #0fa32bfcc8e7
+#ok2 Limit line.
+  > fee.ts:6 #f7fa978f0d8d
+#moved1 Shifted.
+  > fee.ts:2-4 #6019da0c9456
+#stale1 Changed symbol.
+  > fee.ts::fee #000000000000
+#stale2 Changed file.
+  > fee.ts #000000000000
+#missing1 No file.
+  > gone.ts:1 #000000000000
+#missing2 No symbol.
+  > fee.ts::nope #000000000000
+#unsealed1 Not sealed.
+  > fee.ts:1
+#worst Mixed.
+  > fee.ts::fee #0fa32bfcc8e7
+  > gone.ts #000000000000
+[probes]
+?q1 Fee?
+  = 25
+  > fee.ts:3 #e88d4997a5de

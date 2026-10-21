@@ -1,0 +1,10 @@
+{
+  "op": "seal",
+  "description": "With rehash and an id filter, only the listed items are re-hashed.",
+  "args": {
+    "rehash": true,
+    "ids": [
+      "b"
+    ]
+  }
+}

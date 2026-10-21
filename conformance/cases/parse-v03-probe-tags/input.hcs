@@ -1,0 +1,7 @@
+HCS/0.3
+@known-filter a:b,c:d
+[probes]
+?p1[known,x] Who?
+  = me
+?p2 Why?
+  = because

@@ -1,0 +1,7 @@
+{
+  "op": "render",
+  "description": "Default render: sections, anchors, stale and suspect (tagged or high-risk) claims excluded.",
+  "args": {
+    "seal_against": "src"
+  }
+}

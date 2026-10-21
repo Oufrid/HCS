@@ -1,0 +1,19 @@
+{
+  "symbols": [
+    {
+      "name": "Server",
+      "start": 3,
+      "end": 5
+    },
+    {
+      "name": "Start",
+      "start": 7,
+      "end": 9
+    },
+    {
+      "name": "main",
+      "start": 11,
+      "end": 14
+    }
+  ]
+}
