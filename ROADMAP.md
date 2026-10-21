@@ -13,8 +13,11 @@ integration paths** (B), **capabilities nobody else has** (C), and **an ecosyste
 
 ## Phase A: Reliability (blocks everything else)
 
-### A1. Validate on real models `[ ]`
+### A1. Validate on real models `[~]`
 Every LLM path is tested only against mocks so far.
+Done (2026-10-21): key check in the cloud sandbox; fixed two proxy bugs it revealed (Node fetch ignored
+`HTTPS_PROXY`; misleading auth errors), see `bench/REPORT.md`. Blocked: neither key authenticates yet (Groq
+rejects the injected secret, Gemini gets none), so no compile/score run has happened.
 - Check that the keys work (`hcs models gemini`, `hcs models groq`) without printing them.
 - `compile src SPEC.md README.md --rpm 8` with a Gemini model, then `score --baseline --judge groq:<model> --runs 1`.
 - Fix whatever real outputs break: JSON extraction, quote matching rates, judge verdict parsing, abstention

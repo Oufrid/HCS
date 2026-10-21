@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // hcs: command-line interface for the Holographic Context Standard.
 
+import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, extname, join, relative, resolve } from "node:path";
 import { parseArgs } from "node:util";
@@ -441,6 +442,26 @@ async function main(argv: string[]): Promise<number> {
       throw new UsageError(`unknown command "${cmd}". Run \`hcs help\`.`);
   }
 }
+
+/**
+ * Node's built-in fetch ignores HTTPS_PROXY unless started with --use-env-proxy (Node >= 22.21 / 24.5). Behind an
+ * egress proxy, which may also be what injects the API key as a network secret, run the CLI again once with it.
+ * Returns the child's exit code, or undefined when no re-run is needed or possible.
+ */
+function rerunBehindProxy(): number | undefined {
+  const proxied = process.env.HTTPS_PROXY || process.env.https_proxy;
+  if (!proxied || process.env.HCS_PROXY_RERUN || process.env.NODE_USE_ENV_PROXY) return undefined;
+  if (!process.allowedNodeEnvironmentFlags.has("--use-env-proxy")) return undefined;
+  const flags = ["--use-env-proxy", "--disable-warning=UNDICI-EHPA", ...process.execArgv];
+  const child = spawnSync(process.execPath, [...flags, process.argv[1], ...process.argv.slice(2)], {
+    stdio: "inherit",
+    env: { ...process.env, HCS_PROXY_RERUN: "1" },
+  });
+  return child.status ?? 1;
+}
+
+const rerun = rerunBehindProxy();
+if (rerun !== undefined) process.exit(rerun);
 
 main(process.argv.slice(2)).then(
   (code) => process.exit(code),

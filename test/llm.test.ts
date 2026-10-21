@@ -7,7 +7,7 @@ import { join } from "node:path";
 import { checkDocument, SourceCache } from "../src/anchors.js";
 import { compile } from "../src/compile.js";
 import { parse, serialize } from "../src/format.js";
-import { createLLM, extractJSON, QuotaError, retryDelayMs } from "../src/llm.js";
+import { createLLM, extractJSON, listModels, QuotaError, retryDelayMs } from "../src/llm.js";
 import { bootstrapCI, hashForCertificate, scoreDocument } from "../src/score.js";
 import { FakeLLM, FIXTURE, tempProject } from "./helpers.js";
 
@@ -315,4 +315,30 @@ test("retryDelayMs reads headers and Google bodies", () => {
   assert.equal(retryDelayMs(new Headers({ "retry-after": "12" }), ""), 12000);
   assert.equal(retryDelayMs(new Headers(), '{"retryDelay": "38s"}'), 38000);
   assert.equal(retryDelayMs(new Headers(), "nothing"), undefined);
+});
+
+test("auth errors say whether a proxy-injected key was rejected or no key was sent", async () => {
+  // Real failures seen in a cloud sandbox: Groq answered 401 with the proxy's x-proxy-error header (a network
+  // secret was injected but rejected), Gemini answered 400 "Missing or invalid Authorization header" (nothing injected).
+  const server = createServer((req, res) => {
+    if (req.url?.startsWith("/groq")) {
+      res.writeHead(401, { "x-proxy-error": 'upstream auth failed: connection "api.groq.com"' });
+      return res.end('{"error":{"message":"Invalid API Key"}}');
+    }
+    res.writeHead(400);
+    res.end('[{"error":{"code":400,"message":"Missing or invalid Authorization header."}}]');
+  });
+  await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
+  const url = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+  process.env.GROQ_BASE_URL = `${url}/groq`;
+  process.env.GEMINI_BASE_URL = `${url}/gemini`;
+  try {
+    await assert.rejects(listModels("groq"), /egress proxy: upstream auth failed.*network secret for this host is set but was not accepted/);
+    await assert.rejects(listModels("gemini"), /HTTP 400.*no API key was sent/);
+    await assert.rejects(createLLM("gemini:m").complete({ system: "s", prompt: "p" }), /no API key was sent/);
+  } finally {
+    server.close();
+    delete process.env.GROQ_BASE_URL;
+    delete process.env.GEMINI_BASE_URL;
+  }
 });

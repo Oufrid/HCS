@@ -236,7 +236,9 @@ Models are written `provider:model`:
 | `anthropic:` | `ANTHROPIC_API_KEY`, `ANTHROPIC_BASE_URL` |
 | `ollama:` | `OLLAMA_HOST` (default `http://localhost:11434`) |
 
-Behind an HTTP proxy, recent Node versions honor `HTTPS_PROXY` when run with `NODE_USE_ENV_PROXY=1`.
+Behind an HTTP proxy (`HTTPS_PROXY` set), `hcs` re-runs itself once with Node's `--use-env-proxy` flag (Node >= 22.21
+or 24.5) so that requests go through the proxy; `NO_PROXY` is honored. If the proxy injects the key as a network
+secret, leave the variable unset. Authentication errors say whether no key was sent or the proxy's key was rejected.
 
 ## Decoder prompt
 

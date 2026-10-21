@@ -95,6 +95,21 @@ function proxyableKey(name: string): string | undefined {
   return env(name);
 }
 
+/**
+ * Explains an authentication failure. An egress proxy that injects a network secret reports its own view in an
+ * `x-proxy-error` header: then a key *was* sent, and the provider rejected it (wrong, revoked or mis-formatted).
+ * Without that header and without a key of ours, nothing authenticated the request.
+ */
+export function authHint(res: Response, headers: Record<string, string>, body: string): string {
+  const proxy = res.headers.get("x-proxy-error");
+  if (proxy) return ` (egress proxy: ${proxy}; the network secret for this host is set but was not accepted: check its value and format)`;
+  const authFailure = [401, 403, 404].includes(res.status) || /authorization header|api key|unregistered callers/i.test(body);
+  if (authFailure && !headers.authorization && !headers["x-api-key"]) {
+    return " (no API key was sent: set the provider's *_API_KEY variable, or a network secret for this host)";
+  }
+  return "";
+}
+
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** Longest wait we accept before retrying; anything longer means a daily quota is exhausted. */
@@ -131,11 +146,7 @@ async function postJSON(url: string, headers: Record<string, string>, body: unkn
     }
     if (res.ok) return res.json();
     const text = await res.text();
-    const hint =
-      (res.status === 401 || res.status === 403) && !headers.authorization && !headers["x-api-key"]
-        ? " (no API key was sent: set the provider's *_API_KEY variable, or a network secret for this host)"
-        : "";
-    lastErr = new Error(`HTTP ${res.status} from ${url}: ${text.slice(0, 500)}${hint}`);
+    lastErr = new Error(`HTTP ${res.status} from ${url}: ${text.slice(0, 500)}${authHint(res, headers, text)}`);
     if (res.status === 429 || res.status === 503) {
       const suggested = retryDelayMs(res.headers, text);
       if (suggested !== undefined && suggested > MAX_RETRY_WAIT_MS) {
@@ -271,8 +282,7 @@ export async function listModels(provider: string): Promise<string[]> {
   const res = await fetch(url, { headers });
   const text = await res.text();
   if (!res.ok) {
-    const hint = (res.status === 401 || res.status === 403) && !headers.authorization && !headers["x-api-key"] ? " (no API key was sent)" : "";
-    throw new Error(`HTTP ${res.status} from ${url}: ${text.slice(0, 300)}${hint}`);
+    throw new Error(`HTTP ${res.status} from ${url}: ${text.slice(0, 300)}${authHint(res, headers, text)}`);
   }
   const data = JSON.parse(text);
   const list: any[] = Array.isArray(data?.data) ? data.data : Array.isArray(data?.models) ? data.models : [];

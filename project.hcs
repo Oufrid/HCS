@@ -1,14 +1,14 @@
 HCS/0.2
 @title HCS - Holographic Context Standard (reference CLI)
 @root .
-@updated 2026-10-21T09:21:04.096Z
+@updated 2026-10-21T10:00:55.974Z
 @meta license=MIT language=TypeScript
 
 [claims]
 
 ## Overview
 #purpose[manual] HCS is a plain-text format plus a zero-dependency Node.js CLI and MCP server (`hcs`) that makes LLM context traceable (claims cite sources), verifiable (anchors carry hashes) and measured (probes and fidelity certificates).
-  > README.md::"HCS: Holographic Context Standard" #a6abd9b1b35a
+  > README.md::"HCS: Holographic Context Standard" #7d78e9fc18d8
 #layers[manual] Deterministic commands (init, validate, check, seal, render, stats, audit, serve) never call an LLM; compile, score and snapshot need a `provider:model` LLM; models only lists a provider's model ids.
   > src/cli.ts::HELP #8d7d06d557a3
 
@@ -65,9 +65,12 @@ HCS/0.2
 
 ## Providers
 #providers[manual] Providers are openai (any compatible API), ollama, gemini, groq, openrouter and anthropic, called at temperature 0 with usage accounting; Bearer keys may be absent when a proxy injects them; 429/503 retries honor Retry-After and Google's retryDelay, and waits over 120 s raise a quota error.
-  > src/llm.ts::postJSON #2c3d9859e23a
+  > src/llm.ts::postJSON #f31614ec7616
   > src/llm.ts::retryDelayMs #53c59bd9ac2f
   > src/llm.ts::MAX_RETRY_WAIT_MS #ffea888e2d7e
+#proxy[manual] Behind HTTPS_PROXY the CLI re-runs itself once with --use-env-proxy so that Node's fetch uses the proxy; auth errors say whether a proxy-injected key was rejected (x-proxy-error header) or no key was sent.
+  > src/cli.ts::rerunBehindProxy #865c33840a44
+  > src/llm.ts::authHint #ffdcc6547ae0
 #rpm[manual] `--rpm` (or HCS_RPM) spaces requests evenly with one limiter per model spec.
   > src/llm.ts::RateLimiter #5c815985358a
   > src/llm.ts::createLLM #063c3c08564d
