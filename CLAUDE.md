@@ -41,13 +41,9 @@ node dist/src/cli.js help
 
 ## Current status and next steps
 
-v0.2 is complete and tested against mocks only. Not yet done:
-
-1. Validate with real models: `compile` this repo (`src SPEC.md README.md`), then
-   `score --baseline --judge ...`; fix whatever real outputs break (JSON parsing, quote matching, judge
-   verdicts, rate limits). Report results honestly, including failures.
-2. Run `bench/run.mjs` on a few small public repos; commit its raw results file only from real runs.
-3. Later: Python implementation + language-agnostic conformance suite, PR bot, signed certificates,
-   fidelity-vs-budget curves, dependency-aware invalidation.
+v0.2 is complete and tested against mocks only. **The full plan is in `ROADMAP.md`**: phases A–D, each item's
+status, its "Done when" criterion, and the working rules (order, commits, honesty, what needs the
+maintainer's approval). Start with the first unfinished item in the order it gives (A1: real-model
+validation), and update `ROADMAP.md` in the same commit that changes an item's status.
 
 The maintainer communicates in French; answer in French, keep repository content in English.
