@@ -52,6 +52,8 @@ export interface CompileStats {
    * written to the `@incomplete` header so that `compile --update` finishes them later, and why.
    */
   incomplete?: { chunks: string[]; reason: string };
+  /** Set when the overview step failed; the extracted claims are kept and `--update` tries again. */
+  overview?: string;
 }
 
 /** Longest anchor range a claim may have; wider ranges go stale on unrelated edits. */
@@ -195,7 +197,7 @@ ${listing}`,
   try {
     data = extractJSON(reply);
   } catch {
-    return [];
+    throw new Error(`overview reply had no usable JSON (${reply.trim() ? "malformed or truncated" : "empty"})`);
   }
   const byId = new Map(claims.map((c) => [c.id, c]));
   const out: Claim[] = [];
@@ -346,6 +348,7 @@ export async function compile(opts: CompileOptions): Promise<{ doc: HcsDocument;
   claims = sortBySection(claims);
   renumber(claims);
 
+  let overviewNote: string | undefined;
   if (opts.synthesize !== false && !quota) {
     try {
       const overview = await synthesize(opts.llm, claims, doc.headers.title);
@@ -353,8 +356,11 @@ export async function compile(opts: CompileOptions): Promise<{ doc: HcsDocument;
       claims = [...overview, ...claims];
       renumber(claims);
     } catch (e) {
-      quota = e instanceof QuotaError ? e : new QuotaError(e instanceof Error ? e.message : String(e));
-      log(`overview not synthesized: ${quota.message.slice(0, 120)}`);
+      // Overview claims are optional: report the failure, keep the extracted claims, and let --update retry.
+      const reason = e instanceof Error ? e.message : String(e);
+      if (e instanceof QuotaError) quota = e;
+      overviewNote = `not synthesized: ${reason.slice(0, 200)}`;
+      log(`overview ${overviewNote}`);
     }
   }
 
@@ -387,6 +393,7 @@ export async function compile(opts: CompileOptions): Promise<{ doc: HcsDocument;
     claimsKept: kept.length,
     sourceTokens,
     sourceFindings,
+    ...(overviewNote ? { overview: overviewNote } : {}),
   };
   if (quota || unfinished.length) {
     const reasons = [quota?.message, unusable ? `${unusable} chunk(s) returned no usable JSON (truncated or malformed reply)` : undefined];

@@ -1,7 +1,7 @@
 HCS/0.2
 @title HCS - Holographic Context Standard (reference CLI)
 @root .
-@updated 2026-10-21T12:10:54.052Z
+@updated 2026-10-21T12:43:46.817Z
 @meta license=MIT language=TypeScript
 
 [claims]
@@ -40,11 +40,11 @@ HCS/0.2
   > src/compile.ts::anchorFor #5e3194b4874f
   > src/sources.ts::locateQuote #d6a37b2c93e6
 #incremental[manual] `compile --update` keeps items whose anchors are ok or moved, re-reads only dirty or uncovered files, never drops manual claims, regenerates overview claims and clears certificates.
-  > src/compile.ts::compile #90c1a051104e
+  > src/compile.ts::compile #22c51fbbec9e
 #resume[manual] When the quota runs out, the provider fails, or a reply has no usable JSON, compile keeps what it extracted and lists the missing chunks in the `@incomplete` header; `compile --update` then compiles only those chunks.
-  > src/compile.ts::compile #90c1a051104e
-#reasoning[manual] Reasoning models that spend the whole output budget before answering are retried once with a 4096-token budget, replies cut by the limit are counted, and JSON replies with unescaped quotes or backslashes are repaired before parsing.
-  > src/llm.ts::REASONING_BUDGET #c657d5bd2296
+  > src/compile.ts::compile #22c51fbbec9e
+#reasoning[manual] Reasoning models that spend the whole output budget before answering are retried once with a 16384-token budget, replies cut by the limit are counted, and JSON replies with unescaped quotes or backslashes are repaired before parsing.
+  > src/llm.ts::REASONING_BUDGET #d98e35d80f53
   > src/llm.ts::repairJSON #14b284eb41cd
 #debug-log[manual] With HCS_DEBUG_LOG set, every model request and reply is appended to that file as one JSON line, without headers or keys.
   > src/llm.ts::withDebugLog #3b77fdca4cf6

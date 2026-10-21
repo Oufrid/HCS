@@ -364,6 +364,7 @@ async function main(argv: string[]): Promise<number> {
       console.log(`wrote ${out}: ${doc.claims.length} claims, ${doc.probes.length} probes from ${stats.files} files (${stats.filesCompiled} compiled)`);
       console.log(`  rejected by quote verification: ${stats.claimsRejected}/${stats.claimsProposed} claims, ${stats.probesRejected}/${stats.probesProposed} probes`);
       printSourceFindings(stats.sourceFindings);
+      if (stats.overview) console.log(`  overview ${stats.overview}; rerun with --update to try again`);
       if (knownCount !== undefined) console.log(`  probe quality filter: ${knownCount}/${doc.probes.length} probes tagged [known] (answered without context by every filter model)`);
       if (stats.incomplete) {
         console.log(`  INCOMPLETE: ${stats.incomplete.reason}`);

@@ -211,7 +211,7 @@ async function postJSON(url: string, headers: Record<string, string>, body: unkn
 }
 
 /** Output budget for the retry when a reasoning model used all its tokens before answering. */
-export const REASONING_BUDGET = 4096;
+export const REASONING_BUDGET = 16384;
 
 function countUsage(usage: Usage, input: unknown, output: unknown): void {
   usage.requests++;

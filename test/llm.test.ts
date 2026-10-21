@@ -7,7 +7,7 @@ import { join } from "node:path";
 import { checkDocument, SourceCache } from "../src/anchors.js";
 import { compile } from "../src/compile.js";
 import { parse, serialize } from "../src/format.js";
-import { createLLM, extractJSON, listModels, QuotaError, retryDelayMs } from "../src/llm.js";
+import { createLLM, extractJSON, listModels, QuotaError, REASONING_BUDGET, retryDelayMs } from "../src/llm.js";
 import { bootstrapCI, hashForCertificate, scoreDocument } from "../src/score.js";
 import { FakeLLM, FIXTURE, tempProject } from "./helpers.js";
 
@@ -379,7 +379,7 @@ test("reasoning models that spend the whole budget on hidden reasoning are retri
   try {
     const m = createLLM("groq:reasoner");
     assert.equal(await m.complete({ system: "s", prompt: "p", maxTokens: 50 }), "pong");
-    assert.deepEqual(budgets, [50, 4096]);
+    assert.deepEqual(budgets, [50, REASONING_BUDGET]);
     assert.deepEqual(m.usage, { requests: 2, inputTokens: 10, outputTokens: 80, retriedForReasoning: 1 });
   } finally {
     server.close();
@@ -541,5 +541,25 @@ test("Groq 413 (prompt + max_tokens over the tokens-per-minute limit) shrinks ma
   } finally {
     server.close();
     delete process.env.GROQ_BASE_URL;
+  }
+});
+
+test("a failed overview step is reported, not silently skipped", async () => {
+  // Real: groq:openai/gpt-oss-20b returned an empty overview reply (reasoning used the whole budget).
+  const dir = tempProject(FIXTURE);
+  const fake = new FakeLLM();
+  const llm = {
+    id: "fake:no-overview",
+    async complete(req: { system: string; prompt: string }) {
+      return req.prompt.includes('"overview"') ? "" : fake.complete(req);
+    },
+  };
+  try {
+    const { doc, stats } = await compile({ root: dir, llm });
+    assert.match(stats.overview ?? "", /not synthesized: overview reply had no usable JSON \(empty\)/);
+    assert.ok(doc.claims.length > 0, "extracted claims are kept");
+    assert.equal(stats.incomplete, undefined);
+  } finally {
+    rmSync(dir, { recursive: true });
   }
 });
