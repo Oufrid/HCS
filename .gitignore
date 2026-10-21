@@ -1,0 +1,5 @@
+node_modules/
+dist/
+*.log
+.hcs-cache/
+bench/.work/

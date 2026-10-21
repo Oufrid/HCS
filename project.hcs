@@ -1,0 +1,81 @@
+HCS/0.1
+@title HCS - Holographic Context Standard (reference CLI)
+@root .
+@updated 2026-10-21T07:47:00.823Z
+@meta license=MIT language=TypeScript
+
+[claims]
+
+## Overview
+#purpose[manual] HCS is a plain-text format plus a zero-dependency Node.js CLI (`hcs`) that makes LLM context traceable (claims cite path:lines), verifiable (anchors carry hashes) and measured (probes and fidelity certificates).
+  > README.md:1-24 #9c2fd9c9dc0d
+  > package.json:1-13 #395622365ac7
+#layers[manual] Deterministic commands (init, validate, check, seal, render, stats, audit) never call an LLM; compile, score and snapshot need a `provider:model` LLM.
+  > src/cli.ts:18-44 #864ae4079947
+
+## Format
+#magic[manual] A file starts with the magic line `HCS/0.1`, then `@key value` headers, then optional [claims], [probes] and [certificates] blocks; the parser rejects other versions and reports errors with line numbers.
+  > src/format.ts:93-106 #61f56412baa6
+#anchor-syntax[manual] Anchors are written `> path[:start[-end]] [#hash]`; without a range they cover the whole file, and paths with spaces are double-quoted.
+  > src/format.ts:60-83 #cc689c93e8e6
+#ids[manual] Claim lines are `#id[tags] text`, probe lines are `?id question` followed by an indented `= answer`; ids must be unique across claims and probes.
+  > src/format.ts:160-190 #92c9ce86a459
+
+## Verification
+#hash[manual] Anchor hashes are the first 12 hex chars of SHA-256 over text normalized to LF line endings, with trailing whitespace and trailing blank lines removed.
+  > src/anchors.ts:8 #49f06bdc5f28
+  > src/anchors.ts:27-40 #39cb018b84b3
+#statuses[manual] checkAnchor returns missing (no file), unsealed (no hash), ok (hash matches), moved (same text found in a same-length window elsewhere, nearest first) or stale; an item takes the worst status of its anchors.
+  > src/anchors.ts:77-117 #202a8d338c4c
+#seal[manual] `hcs seal` hashes unsealed anchors and follows moved ones; `--rehash` accepts the new content of stale anchors and drops certificates, because it is a human assertion that the claim still holds.
+  > src/anchors.ts:136-167 #0127f8f64989
+
+## Compilation
+#quote-guard[manual] The compiler asks the model for claims and probes that each carry an exact quote, and discards any item whose quote cannot be found (ignoring whitespace and case) in the cited chunk; the anchor is placed on the quote.
+  > src/compile.ts:92-106 #2b5a931e3369
+  > src/sources.ts:171-193 #23d9b782baac
+#incremental[manual] `compile --update` keeps claims and probes whose anchors are ok or moved, re-reads only files that are dirty or not yet covered, never drops manual claims, regenerates overview claims and clears certificates.
+  > src/compile.ts:217-247 #03bec23b3af0
+  > src/compile.ts:296 #809d27283f65
+#probe-spread[manual] Probes are picked round-robin across chunks, independently of which claims were kept, so that scores measure the source rather than the summary.
+  > src/compile.ts:195-209 #2b95d15ab960
+#sources[manual] Source discovery uses `git ls-files` when available (honoring .gitignore), plus default ignores and `.hcsignore`, and skips binary files and files over 256 KiB.
+  > src/sources.ts:8-25 #307a427f9cbe
+  > src/sources.ts:99-104 #0203b13a4198
+
+## Scoring
+#score[manual] Scoring answers each verified probe from the rendered context only: UNKNOWN counts as abstained, a reply containing the expected answer is correct without a judge, otherwise an LLM judge grades correct, partial or incorrect; fidelity is the mean of 1, 0.5 and 0.
+  > src/score.ts:31 #58548ad4ff5d
+  > src/score.ts:87-115 #1d446e727173
+#certificate[manual] A certificate stores the fidelity, an optional no-context baseline, the misled rate and a digest of the exact rendered context; `hcs check` reports it as outdated when the digest no longer matches.
+  > src/score.ts:140-178 #8f62277a8849
+
+## Providers
+#providers[manual] Providers are openai (any OpenAI-compatible API via OPENAI_BASE_URL), ollama, gemini (OpenAI-compatible endpoint) and anthropic (Messages API, anthropic-version 2023-06-01), all called with temperature 0 and retried on 429 and 5xx.
+  > src/llm.ts:43-120 #30ca63b2690f
+
+[probes]
+?p1 How many hex characters of the SHA-256 digest does an anchor hash keep?
+  = 12
+  > src/anchors.ts:8 #49f06bdc5f28
+?p2 Which status does an anchor get when its exact text is found at a different position in the file?
+  = moved
+  > src/anchors.ts:86-91 #2e6b1c41945a
+?p3 Which command line does an HCS file have to start with?
+  = HCS/0.1
+  > src/format.ts:3-4 #79089a6baebc
+?p4 What happens to a compiled claim whose quote is not found in the source?
+  = it is discarded
+  > src/compile.ts:92-96 #e4398476db71
+?p5 How many points does a partial answer earn in the fidelity score?
+  = 0.5
+  > src/score.ts:31 #58548ad4ff5d
+?p6 Which environment variable points the openai provider at another OpenAI-compatible server?
+  = OPENAI_BASE_URL
+  > src/llm.ts:83-85 #1153965f94f6
+?p7 What is the largest source file size the compiler reads by default?
+  = 256 KiB
+  > src/sources.ts:101 #ac64b2d5c22b
+?p8 Which claims does an incremental compile never drop automatically?
+  = claims tagged manual (hand-written claims)
+  > src/compile.ts:241 #d06e74f7627a

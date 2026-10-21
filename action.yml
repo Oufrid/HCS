@@ -1,0 +1,33 @@
+name: "HCS check"
+description: "Verify that an HCS context file still matches its sources (no LLM, no network)."
+branding:
+  icon: "check-circle"
+  color: "blue"
+inputs:
+  file:
+    description: "Path to the .hcs file to verify"
+    required: false
+    default: "project.hcs"
+  strict:
+    description: "Also fail on unsealed anchors"
+    required: false
+    default: "false"
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: "20"
+    - name: Build hcs
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: npm ci --no-audit --no-fund && npm run build
+    - name: Check context file
+      shell: bash
+      env:
+        HCS_FILE: ${{ inputs.file }}
+        HCS_STRICT: ${{ inputs.strict }}
+      run: |
+        args=(check "$HCS_FILE")
+        if [ "$HCS_STRICT" = "true" ]; then args+=(--strict); fi
+        node "${{ github.action_path }}/dist/src/cli.js" "${args[@]}"
