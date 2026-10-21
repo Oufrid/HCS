@@ -246,16 +246,19 @@ function openAICompatible(
       };
       let maxTokens = req.maxTokens ?? 2048;
       let data: any;
-      try {
-        data = await call(maxTokens);
-      } catch (e) {
-        // Groq counts prompt + max_tokens against its tokens-per-minute limit and answers 413 when the sum is
-        // over it ("Limit 8000, Requested 8856"). Shrink the output cap to fit and try once more.
-        const m = /^HTTP 413 [\s\S]*?Limit (\d+), Requested (\d+)/.exec(e instanceof Error ? e.message : "");
-        const fitted = m ? maxTokens - (Number(m[2]) - Number(m[1])) - 64 : 0;
-        if (!m || fitted < 256) throw e;
-        maxTokens = fitted;
-        data = await call(maxTokens);
+      for (let shrink = 0; ; shrink++) {
+        try {
+          data = await call(maxTokens);
+          break;
+        } catch (e) {
+          // Groq counts prompt + max_tokens against its tokens-per-minute limit and answers 413 when the sum is
+          // over it ("Limit 8000, Requested 8856"). Its count varies between calls, so shrink the output cap by
+          // the reported excess plus a margin, a few times at most.
+          const m = /^HTTP 413 [\s\S]*?Limit (\d+), Requested (\d+)/.exec(e instanceof Error ? e.message : "");
+          const fitted = m ? maxTokens - (Number(m[2]) - Number(m[1])) - 256 : 0;
+          if (!m || fitted < 256 || shrink >= 3) throw e;
+          maxTokens = fitted;
+        }
       }
       // Reasoning models spend output tokens on hidden reasoning first. When that uses the whole budget the
       // visible answer is empty (finish_reason "length"): retry once with room for the reasoning.

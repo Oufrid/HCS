@@ -522,9 +522,11 @@ test("Groq 413 (prompt + max_tokens over the tokens-per-minute limit) shrinks ma
     req.on("end", () => {
       const body = JSON.parse(raw);
       budgets.push(body.max_tokens);
-      if (body.max_tokens + 664 > 8000) {
+      // Groq's estimate varies between calls: the first retry is still reported over the limit.
+      const prompt = budgets.length === 2 ? 1500 : 664;
+      if (body.max_tokens + prompt > 8000) {
         res.writeHead(413, { "content-type": "application/json" });
-        return res.end(JSON.stringify({ error: { message: `Request too large ... on tokens per minute (TPM): Limit 8000, Requested ${body.max_tokens + 664}, please reduce your message size`, code: "rate_limit_exceeded" } }));
+        return res.end(JSON.stringify({ error: { message: `Request too large ... on tokens per minute (TPM): Limit 8000, Requested ${body.max_tokens + prompt}, please reduce your message size`, code: "rate_limit_exceeded" } }));
       }
       res.writeHead(200, { "content-type": "application/json" });
       res.end(JSON.stringify({ choices: [{ message: { content: "fits" }, finish_reason: "stop" }] }));
@@ -534,7 +536,8 @@ test("Groq 413 (prompt + max_tokens over the tokens-per-minute limit) shrinks ma
   process.env.GROQ_BASE_URL = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
   try {
     assert.equal(await createLLM("groq:big").complete({ system: "s", prompt: "p", maxTokens: 8192 }), "fits");
-    assert.deepEqual(budgets, [8192, 8192 - (8192 + 664 - 8000) - 64]);
+    const first = 8192 - (8192 + 664 - 8000) - 256;
+    assert.deepEqual(budgets, [8192, first, first - (first + 1500 - 8000) - 256]);
   } finally {
     server.close();
     delete process.env.GROQ_BASE_URL;
