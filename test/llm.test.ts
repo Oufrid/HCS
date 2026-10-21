@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createServer, type IncomingMessage, type Server } from "node:http";
 import { execFileSync, spawn, spawnSync } from "node:child_process";
-import { readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { checkDocument, SourceCache } from "../src/anchors.js";
 import { compile } from "../src/compile.js";
@@ -560,6 +560,61 @@ test("a failed overview step is reported, not silently skipped", async () => {
     assert.ok(doc.claims.length > 0, "extracted claims are kept");
     assert.equal(stats.incomplete, undefined);
   } finally {
+    rmSync(dir, { recursive: true });
+  }
+});
+
+test("score saves results per probe and resumes after a quota stop", async () => {
+  // Real: groq:qwen/qwen3.8-27b hit its 200,000 tokens-per-day limit after 10 probes and the whole score was lost.
+  const dir = tempProject(FIXTURE);
+  const fake = new FakeLLM();
+  let served = 0;
+  let limit = 3;
+  const { url, server } = await mockServer(() => ({}));
+  server.removeAllListeners("request");
+  server.on("request", (req, res) => {
+    let raw = "";
+    req.on("data", (c) => (raw += c));
+    req.on("end", async () => {
+      const body = JSON.parse(raw);
+      const isScore = !body.messages[1].content.includes("<source path=") && !body.messages[1].content.includes('"overview"');
+      if (isScore && served++ >= limit) {
+        res.writeHead(429, { "content-type": "application/json", "retry-after": "1109" });
+        return res.end('{"error":{"message":"Rate limit reached on tokens per day (TPD): Limit 200000, Used 199000. Please try again in 18m28s."}}');
+      }
+      const text = await fake.complete({ system: body.messages[0].content, prompt: body.messages[1].content });
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify({ choices: [{ message: { content: text } }] }));
+    });
+  });
+  const env = { ...process.env, OPENAI_BASE_URL: `${url}/v1`, OPENAI_API_KEY: "x" };
+  const runAsync = (...args: string[]) =>
+    new Promise<{ code: number | null; out: string }>((resolve) => {
+      const p = spawn(process.execPath, [CLI, ...args], { cwd: dir, env });
+      let out = "";
+      p.stdout.on("data", (d: Buffer) => (out += d));
+      p.stderr.on("data", (d: Buffer) => (out += d));
+      p.on("close", (code: number | null) => resolve({ code, out }));
+    });
+  try {
+    let r = await runAsync("compile", "--model", "openai:fake", "-o", "project.hcs", "-q");
+    assert.equal(r.code, 0, r.out);
+    served = 0;
+    limit = 1;
+    r = await runAsync("score", "project.hcs", "--model", "openai:fake", "--baseline", "--concurrency", "1", "--write");
+    assert.equal(r.code, 1, r.out);
+    assert.match(r.out, /probe result\(s\) are saved in .*\.hcs-cache.*; run the same command later to resume/);
+    assert.ok(!readFileSync(join(dir, "project.hcs"), "utf8").includes("!score"), "no certificate from a partial score");
+
+    limit = 1000;
+    r = await runAsync("score", "project.hcs", "--model", "openai:fake", "--baseline", "--concurrency", "1", "--write");
+    assert.equal(r.code, 0, r.out);
+    assert.match(r.out, /resuming: 1 probe result\(s\) saved by an earlier, interrupted run/);
+    assert.match(r.out, /saved earlier/);
+    assert.match(readFileSync(join(dir, "project.hcs"), "utf8"), /!score model=openai:fake .*fidelity=1.000/);
+    assert.ok(!existsSync(join(dir, ".hcs-cache")) || readdirSync(join(dir, ".hcs-cache")).length === 0, "the saved results are removed once the score completes");
+  } finally {
+    server.close();
     rmSync(dir, { recursive: true });
   }
 });

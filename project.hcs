@@ -1,7 +1,7 @@
 HCS/0.2
 @title HCS - Holographic Context Standard (reference CLI)
 @root .
-@updated 2026-10-21T12:43:46.817Z
+@updated 2026-10-21T12:57:36.070Z
 @meta license=MIT language=TypeScript
 
 [claims]
@@ -46,6 +46,9 @@ HCS/0.2
 #reasoning[manual] Reasoning models that spend the whole output budget before answering are retried once with a 16384-token budget, replies cut by the limit are counted, and JSON replies with unescaped quotes or backslashes are repaired before parsing.
   > src/llm.ts::REASONING_BUDGET #d98e35d80f53
   > src/llm.ts::repairJSON #14b284eb41cd
+#score-resume[manual] `score` saves each probe result in .hcs-cache/ under a key built from the context digest, probes, models and settings; after a quota stop the same command resumes, and no certificate is written until every probe is scored.
+  > src/cli.ts::scoreCacheFile #aa584d270023
+  > src/score.ts::ScoreCache #642a022805fd
 #debug-log[manual] With HCS_DEBUG_LOG set, every model request and reply is appended to that file as one JSON line, without headers or keys.
   > src/llm.ts::withDebugLog #3b77fdca4cf6
 #probe-spread[manual] Probes are picked round-robin across chunks, independently of which claims were kept, so that scores measure the source rather than the summary.
@@ -53,18 +56,18 @@ HCS/0.2
 
 ## Scoring
 #score[manual] Each probe is answered from the rendered context only: UNKNOWN is an abstention, a reply containing the expected answer is correct without a judge, otherwise a judge grades correct, partial or incorrect (1, 0.5, 0), optionally over several runs.
-  > src/score.ts::scoreContext #2bd796d2fbfb
+  > src/score.ts::scoreContext #9b71d862413b
   > src/score.ts::POINTS #f5b535d01ef1
 #rigor[manual] Scores report a reproducible 95% bootstrap confidence interval, a no-context baseline, an informative fidelity on probes unanswerable without context, and a warning when the model judged itself.
   > src/score.ts::bootstrapCI #09a88d67acf9
-  > src/score.ts::scoreDocument #a8ee4b9d71ce
+  > src/score.ts::scoreDocument #57ee03f6734b
 #judges[manual] `score` accepts two judges: each judged answer is graded by both, the stricter verdict counts, and the raw agreement and Cohen's kappa are reported in the certificate.
-  > src/score.ts::scoreContext #2bd796d2fbfb
+  > src/score.ts::scoreContext #9b71d862413b
   > src/score.ts::cohenKappa #2be6be699209
 #known[manual] `compile --filter-known` asks every probe without context to the listed models and tags `[known]` the probes all of them answer correctly; `score` then reports a novel fidelity on the other probes.
   > src/score.ts::findKnownProbes #9b9804fedfc9
 #compare[manual] `hcs compare a b` scores two contexts (an .hcs render, any text file, or none) on the same probes and reports the mean per-probe difference with a paired bootstrap CI.
-  > src/score.ts::compareContexts #33e4f30e26c2
+  > src/score.ts::compareContexts #d00f85a78dc1
 #certificate[manual] A certificate is bound to a digest of the exact rendered context (stale claims removed); `hcs check` reports it as outdated when the digest changes.
   > src/score.ts::hashForCertificate #450fab6aa93f
 

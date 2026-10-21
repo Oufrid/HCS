@@ -2,7 +2,8 @@
 // hcs: command-line interface for the Holographic Context Standard.
 
 import { spawnSync } from "node:child_process";
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { basename, dirname, extname, join, relative, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { checkDocument, insideRoot, rootDir, seal, SourceCache, type AnchorStatus, type ItemReport } from "./anchors.js";
@@ -10,9 +11,9 @@ import { findPathReferences } from "./audit.js";
 import { injectionFindings, type SourceFinding } from "./guard.js";
 import { compile } from "./compile.js";
 import { emptyDocument, formatAnchor, HcsSyntaxError, parse, serialize, type HcsDocument } from "./format.js";
-import { createLLM, listModels, type LLM } from "./llm.js";
+import { createLLM, listModels, QuotaError, type LLM } from "./llm.js";
 import { DECODER_PROMPT, estimateTokens, renderContext, selectClaims } from "./render.js";
-import { compareContexts, findKnownProbes, hashForCertificate, scoreContext, scoreDocument, type ScoreSummary } from "./score.js";
+import { compareContexts, findKnownProbes, hashForCertificate, scoreContext, scoreDocument, type ProbeResult, type ScoreCache, type ScoreSummary } from "./score.js";
 import { serveStdio } from "./mcp.js";
 import { parseConversation, toTranscript } from "./snapshot.js";
 
@@ -101,6 +102,37 @@ function printScore(label: string, s: ScoreSummary): void {
   console.log(
     `${label.padEnd(16)} fidelity ${pct(s.fidelity).padStart(6)} ${ci}   misled ${pct(s.misled).padStart(6)}   abstained ${pct(s.abstained).padStart(6)}   (${s.probes} probes${s.runs > 1 ? ` x ${s.runs} runs` : ""})`,
   );
+}
+
+/**
+ * Per-probe score results on disk (`.hcs-cache/` next to the file), keyed by everything that affects them: the
+ * context digest, the probes, the models and the settings. A changed input gives a new key, never stale reuse.
+ */
+function scoreCacheFile(file: string, key: object) {
+  const id = createHash("sha256").update(JSON.stringify(key)).digest("hex").slice(0, 16);
+  const path = join(dirname(resolve(file)), ".hcs-cache", `score-${basename(file)}-${id}.json`);
+  const data: { context: Record<string, ProbeResult>; baseline: Record<string, ProbeResult> } = existsSync(path)
+    ? JSON.parse(readFileSync(path, "utf8"))
+    : { context: {}, baseline: {} };
+  const count = Object.keys(data.context).length + Object.keys(data.baseline).length;
+  let added = 0;
+  const store = (part: "context" | "baseline"): ScoreCache => ({
+    get: (pid) => data[part][pid],
+    put: (r) => {
+      data[part][r.id] = r;
+      added++;
+      mkdirSync(dirname(path), { recursive: true });
+      writeFileSync(path, JSON.stringify(data));
+    },
+  });
+  return {
+    path: relative(process.cwd(), path),
+    count,
+    added: () => added,
+    context: store("context"),
+    baseline: store("baseline"),
+    remove: () => rmSync(path, { force: true }),
+  };
 }
 
 function printSourceFindings(found: SourceFinding[]): void {
@@ -380,15 +412,40 @@ async function main(argv: string[]): Promise<number> {
       const file = requireFile(positionals);
       const doc = load(file);
       const reports = checkDocument(doc, new SourceCache(rootDir(doc, file)));
-      const result = await scoreDocument(doc, statusMap(reports), {
-        answerer: llm(requireModel(o.model)),
-        judge: judges(),
-        budget: num(o.budget, "budget"),
-        baseline: o.baseline,
-        runs: num(o.runs, "runs"),
-        concurrency: num(o.concurrency, "concurrency"),
-        onProgress: progress,
+      const answerer = llm(requireModel(o.model));
+      const judgeList = judges();
+      const budget = num(o.budget, "budget");
+      const runs = num(o.runs, "runs") ?? 1;
+      // Results are saved per probe, so a score stopped by a quota resumes with the same command.
+      const saved = scoreCacheFile(file, {
+        digest: hashForCertificate(doc, claimStatus(reports), budget),
+        probes: doc.probes.map((p) => [p.id, p.question, p.answer]),
+        answerer: answerer.id,
+        judges: (judgeList ?? [answerer]).map((j) => j.id),
+        budget,
+        runs,
       });
+      if (saved.count) progress?.(`resuming: ${saved.count} probe result(s) saved by an earlier, interrupted run`);
+      let result;
+      try {
+        result = await scoreDocument(doc, statusMap(reports), {
+          answerer,
+          judge: judgeList,
+          budget,
+          baseline: o.baseline,
+          runs,
+          concurrency: num(o.concurrency, "concurrency"),
+          onProgress: progress,
+          cache: saved.context,
+          baselineCache: saved.baseline,
+        });
+      } catch (e) {
+        if (e instanceof QuotaError) {
+          throw new Error(`${e.message}\n${saved.count + saved.added()} probe result(s) are saved in ${saved.path}; run the same command later to resume.`);
+        }
+        throw e;
+      }
+      saved.remove();
       if (o.write) {
         doc.certificates.push(result.certificate);
         save(file, doc);

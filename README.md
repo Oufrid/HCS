@@ -194,6 +194,8 @@ HCS works with free tiers:
 - `compile` keeps its work when that happens: the chunks not compiled yet go into an `@incomplete` header, and
   rerunning with `--update` (the next day, or with another model) compiles only those chunks. Chunks whose
   reply had no usable JSON are retried the same way.
+- `score` saves each probe's result as it goes (in `.hcs-cache/`); after a quota stop, run the same command
+  again to resume. A certificate is only written once every probe is scored.
 - `--chunk-lines 400` means fewer, larger requests, which matters when a free tier allows 20 requests a day.
 - Reasoning models that use their whole output budget before answering are retried once with more room.
 - `--reasoning-effort low` limits hidden reasoning on models that accept it (Gemini 3, Groq gpt-oss). Without it,
