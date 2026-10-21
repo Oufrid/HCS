@@ -89,7 +89,14 @@ Not done (optional): proposing updated claim text with a model.
 
 ## Phase C: Capabilities nobody else has
 
-### C1. Fidelity-vs-budget curve `[ ]`
+### C1. Fidelity-vs-budget curve `[~]`
+Done (2026-10-21): `hcs curve` (budgets scored once per distinct context, shared baseline, resumable), the knee
+(smallest budget within the 95% CI of the best) with a flat-curve warning, certificate fields `curve` and `knee`
+in SPEC 0.3, tests. A real curve with local CPU models is in `bench/REPORT.md`, but it is flat (the 7B model
+abstains even when the answer is in its context), so it does not show a knee. Remaining: the same curve with
+`groq:qwen/qwen3.8-27b` (44.6% at full context in A1). It needs about 360,000 tokens against Groq's 200,000
+tokens per day; the run stopped on the quota after the 250-token budget, its results are saved, and it resumes
+on 2026-10-22.
 - `hcs curve <file.hcs> --model M --budgets 250,500,1000,2000,4000`: fidelity with CI at each budget, plus the
   "knee" (smallest budget within 1 CI of the best score).
 - Store the curve in the file (certificate per budget, or a `!curve` line; spec it).
