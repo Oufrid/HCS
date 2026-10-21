@@ -49,6 +49,15 @@ jobs:
           node-version: "22"
       - run: npm ci --no-audit --no-fund && npm run build
 
+      - name: Models available to the configured keys
+        run: |
+          for p in gemini groq openrouter openai anthropic; do
+            key="$(echo "$p" | tr a-z A-Z)_API_KEY"
+            if [ -n "${!key:-}" ]; then
+              echo "== $p"; node dist/src/cli.js models "$p" | head -60 || true
+            fi
+          done
+
       - name: Compile and score this repository
         run: |
           set -euo pipefail
