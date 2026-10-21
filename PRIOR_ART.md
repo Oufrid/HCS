@@ -17,12 +17,13 @@ HCS was designed after looking for existing tools that already solve its problem
 
 None of the individual ideas is new. HCS combines them into one **portable, model-agnostic file** that:
 
-1. ties every claim to a **content-hashed source range** (traceability),
-2. detects drift **deterministically and without an LLM**, and distinguishes code that only *moved* from code that *changed* (verification),
+1. ties every claim to a **content-hashed source**: a function, class, heading or line range (traceability),
+2. detects drift **deterministically and without an LLM**. Symbol hashes ignore whitespace, so reformatting is not drift, and code that only *moved*, even to another file, is told apart from code that *changed* (verification),
 3. stores **probes whose answers are proven verbatim in the source** next to the claims, and invalidates them with the same anchors,
-4. records **fidelity certificates** bound to a digest of the exact context that was scored, including a no-context baseline and a "misled" rate (measurement),
+4. records **fidelity certificates** bound to a digest of the exact context that was scored, with a bootstrap confidence interval, a no-context baseline, an "informative" fidelity and a "misled" rate (measurement),
 5. supports **token budgets at render time**, so one file serves small local models and large hosted ones,
-6. applies the same mechanism to **code, prose and conversations** (session hand-off between LLMs).
+6. applies the same mechanism to **code, prose and conversations** (session hand-off between LLMs),
+7. serves all of it over **MCP**, so a model reads the compact claims first and opens the exact cited source only when needed.
 
 HCS complements the formats above rather than competing with them. `hcs audit` checks an existing `AGENTS.md` for broken references and scores it with HCS probes.
 
@@ -31,3 +32,5 @@ HCS complements the formats above rather than competing with them. `hcs audit` c
 - Fidelity scores depend on the answering model, the judge model and the probe set. A probe set produced by the same compiler model can share that model's blind spots. Use a different `--judge`, and add hand-written probes for what matters most.
 - Line-range anchors can flag a claim as stale after an edit that did not change its meaning. That is a false positive, and it is safe: a human re-seals the anchor. The opposite case is not covered: a change *outside* every anchor that makes a claim false goes unnoticed. Anchor claims to the code that enforces them.
 - Token counts are tokenizer-free estimates.
+- The symbol locator is heuristic and dependency-free, not a full parser. It reports what it cannot resolve as missing rather than guessing, but unusual syntax can still produce a wrong range. A tree-sitter back-end is a possible future option.
+- The injection guard is pattern-based. It stops common attacks, not a determined adversary.

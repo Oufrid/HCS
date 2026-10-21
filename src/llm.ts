@@ -6,13 +6,26 @@ export interface CompletionRequest {
   maxTokens?: number;
 }
 
+export interface Usage {
+  requests: number;
+  inputTokens: number;
+  outputTokens: number;
+}
+
 export interface LLM {
   /** The `provider:model` spec this client was created from. */
   id: string;
   complete(req: CompletionRequest): Promise<string>;
+  /** Requests and tokens reported by the provider so far (tokens are 0 when the provider does not report them). */
+  usage?: Usage;
 }
 
-type Factory = (model: string, spec: string) => LLM;
+export interface LLMOptions {
+  /** Maximum requests per minute for this model; also read from HCS_RPM. Free tiers need this. */
+  rpm?: number;
+}
+
+type Factory = (model: string, spec: string, usage: Usage) => LLM;
 
 const providers = new Map<string, Factory>();
 
@@ -20,13 +33,46 @@ export function registerProvider(name: string, factory: Factory): void {
   providers.set(name, factory);
 }
 
-export function createLLM(spec: string): LLM {
+export function providerNames(): string[] {
+  return [...providers.keys()];
+}
+
+/** Spacing requests evenly is gentler on free tiers than bursting until a 429. */
+class RateLimiter {
+  private next = 0;
+  constructor(private intervalMs: number) {}
+  async wait(): Promise<void> {
+    const now = Date.now();
+    const at = Math.max(now, this.next);
+    this.next = at + this.intervalMs;
+    if (at > now) await sleep(at - now);
+  }
+}
+
+const limiters = new Map<string, RateLimiter>();
+
+export function createLLM(spec: string, opts: LLMOptions = {}): LLM {
   const i = spec.indexOf(":");
-  if (i <= 0) throw new Error(`model must be "provider:model" (e.g. openai:gpt-4o-mini, ollama:llama3.1), got "${spec}"`);
+  if (i <= 0) throw new Error(`model must be "provider:model" (e.g. gemini:gemini-2.5-flash, ollama:llama3.1), got "${spec}"`);
   const name = spec.slice(0, i);
   const factory = providers.get(name);
-  if (!factory) throw new Error(`unknown provider "${name}". Known: ${[...providers.keys()].join(", ")}`);
-  return factory(spec.slice(i + 1), spec);
+  if (!factory) throw new Error(`unknown provider "${name}". Known: ${providerNames().join(", ")}`);
+  const usage: Usage = { requests: 0, inputTokens: 0, outputTokens: 0 };
+  const llm = factory(spec.slice(i + 1), spec, usage);
+  llm.usage = usage;
+  const rpm = opts.rpm ?? (env("HCS_RPM") ? Number(env("HCS_RPM")) : undefined);
+  if (!rpm || !(rpm > 0)) return llm;
+  // One limiter per model spec, shared by every client of that model in the process.
+  if (!limiters.has(spec)) limiters.set(spec, new RateLimiter(60_000 / rpm));
+  const limiter = limiters.get(spec)!;
+  return {
+    id: llm.id,
+    usage,
+    async complete(req) {
+      await limiter.wait();
+      return llm.complete(req);
+    },
+  };
 }
 
 function env(name: string): string | undefined {
@@ -40,10 +86,33 @@ function requireEnv(name: string, provider: string): string {
   return v;
 }
 
-async function postJSON(url: string, headers: Record<string, string>, body: unknown): Promise<any> {
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** Longest wait we accept before retrying; anything longer means a daily quota is exhausted. */
+const MAX_RETRY_WAIT_MS = 120_000;
+
+/** Server-suggested delay, from the Retry-After header or a Google-style `retryDelay: "38s"` in the body. */
+export function retryDelayMs(headers: Headers, body: string): number | undefined {
+  const h = headers.get("retry-after");
+  if (h) {
+    const secs = Number(h);
+    if (Number.isFinite(secs)) return secs * 1000;
+    const date = Date.parse(h);
+    if (!Number.isNaN(date)) return Math.max(0, date - Date.now());
+  }
+  const m = /"retryDelay"\s*:\s*"(\d+(?:\.\d+)?)s"/.exec(body);
+  if (m) return Number(m[1]) * 1000;
+  return undefined;
+}
+
+export class QuotaError extends Error {}
+
+async function postJSON(url: string, headers: Record<string, string>, body: unknown, attempts = 6): Promise<any> {
   let lastErr: unknown;
-  for (let attempt = 0; attempt < 4; attempt++) {
-    if (attempt) await new Promise((r) => setTimeout(r, 1000 * 2 ** (attempt - 1)));
+  let wait: number | undefined;
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    if (attempt) await sleep(wait ?? Math.min(MAX_RETRY_WAIT_MS, 2000 * 2 ** (attempt - 1)));
+    wait = undefined;
     let res: Response;
     try {
       res = await fetch(url, { method: "POST", headers: { "content-type": "application/json", ...headers }, body: JSON.stringify(body) });
@@ -54,17 +123,38 @@ async function postJSON(url: string, headers: Record<string, string>, body: unkn
     if (res.ok) return res.json();
     const text = await res.text();
     lastErr = new Error(`HTTP ${res.status} from ${url}: ${text.slice(0, 500)}`);
-    if (res.status !== 429 && res.status < 500) break;
+    if (res.status === 429 || res.status === 503) {
+      const suggested = retryDelayMs(res.headers, text);
+      if (suggested !== undefined && suggested > MAX_RETRY_WAIT_MS) {
+        throw new QuotaError(`rate limit or quota exhausted at ${url} (server asks to wait ${Math.round(suggested / 1000)}s). Try later, lower --rpm, or use another model.`);
+      }
+      wait = suggested;
+      continue;
+    }
+    if (res.status < 500) break;
   }
   throw lastErr;
 }
 
-function openAICompatible(id: string, model: string, baseURL: string, apiKey?: string): LLM {
+function countUsage(usage: Usage, input: unknown, output: unknown): void {
+  usage.requests++;
+  if (typeof input === "number") usage.inputTokens += input;
+  if (typeof output === "number") usage.outputTokens += output;
+}
+
+function openAICompatible(
+  id: string,
+  model: string,
+  baseURL: string,
+  usage: Usage,
+  apiKey?: string,
+  extraHeaders: Record<string, string> = {},
+): LLM {
   const url = `${baseURL.replace(/\/+$/, "")}/chat/completions`;
   return {
     id,
     async complete(req) {
-      const data = await postJSON(url, apiKey ? { authorization: `Bearer ${apiKey}` } : {}, {
+      const data = await postJSON(url, { ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}), ...extraHeaders }, {
         model,
         temperature: 0,
         max_tokens: req.maxTokens ?? 2048,
@@ -73,6 +163,7 @@ function openAICompatible(id: string, model: string, baseURL: string, apiKey?: s
           { role: "user", content: req.prompt },
         ],
       });
+      countUsage(usage, data?.usage?.prompt_tokens, data?.usage?.completion_tokens);
       const content = data?.choices?.[0]?.message?.content;
       if (typeof content !== "string") throw new Error(`unexpected response from ${url}: ${JSON.stringify(data).slice(0, 300)}`);
       return content;
@@ -80,24 +171,40 @@ function openAICompatible(id: string, model: string, baseURL: string, apiKey?: s
   };
 }
 
-registerProvider("openai", (model, spec) =>
-  openAICompatible(spec, model, env("OPENAI_BASE_URL") ?? "https://api.openai.com/v1", env("OPENAI_API_KEY")),
+registerProvider("openai", (model, spec, usage) =>
+  openAICompatible(spec, model, env("OPENAI_BASE_URL") ?? "https://api.openai.com/v1", usage, env("OPENAI_API_KEY")),
 );
 
-registerProvider("ollama", (model, spec) =>
-  openAICompatible(spec, model, `${(env("OLLAMA_HOST") ?? "http://localhost:11434").replace(/\/+$/, "")}/v1`),
+registerProvider("ollama", (model, spec, usage) =>
+  openAICompatible(spec, model, `${(env("OLLAMA_HOST") ?? "http://localhost:11434").replace(/\/+$/, "")}/v1`, usage),
 );
 
-registerProvider("gemini", (model, spec) =>
+registerProvider("gemini", (model, spec, usage) =>
   openAICompatible(
     spec,
     model,
     env("GEMINI_BASE_URL") ?? "https://generativelanguage.googleapis.com/v1beta/openai",
+    usage,
     requireEnv("GEMINI_API_KEY", "gemini"),
   ),
 );
 
-registerProvider("anthropic", (model, spec) => {
+registerProvider("groq", (model, spec, usage) =>
+  openAICompatible(spec, model, env("GROQ_BASE_URL") ?? "https://api.groq.com/openai/v1", usage, requireEnv("GROQ_API_KEY", "groq")),
+);
+
+registerProvider("openrouter", (model, spec, usage) =>
+  openAICompatible(
+    spec,
+    model,
+    env("OPENROUTER_BASE_URL") ?? "https://openrouter.ai/api/v1",
+    usage,
+    requireEnv("OPENROUTER_API_KEY", "openrouter"),
+    { "x-title": "hcs-cli" },
+  ),
+);
+
+registerProvider("anthropic", (model, spec, usage) => {
   const key = requireEnv("ANTHROPIC_API_KEY", "anthropic");
   const url = `${(env("ANTHROPIC_BASE_URL") ?? "https://api.anthropic.com").replace(/\/+$/, "")}/v1/messages`;
   return {
@@ -110,6 +217,7 @@ registerProvider("anthropic", (model, spec) => {
         system: req.system,
         messages: [{ role: "user", content: req.prompt }],
       });
+      countUsage(usage, data?.usage?.input_tokens, data?.usage?.output_tokens);
       const blocks = Array.isArray(data?.content) ? data.content : [];
       const text = blocks.filter((b: any) => b?.type === "text").map((b: any) => b.text).join("");
       if (!text) throw new Error(`unexpected response from ${url}: ${JSON.stringify(data).slice(0, 300)}`);
@@ -117,6 +225,46 @@ registerProvider("anthropic", (model, spec) => {
     },
   };
 });
+
+function endpoint(provider: string): { url: string; headers: Record<string, string> } {
+  const bearer = (k?: string): Record<string, string> => (k ? { authorization: `Bearer ${k}` } : {});
+  switch (provider) {
+    case "openai":
+      return { url: `${env("OPENAI_BASE_URL") ?? "https://api.openai.com/v1"}/models`, headers: bearer(env("OPENAI_API_KEY")) };
+    case "ollama":
+      return { url: `${(env("OLLAMA_HOST") ?? "http://localhost:11434").replace(/\/+$/, "")}/v1/models`, headers: {} };
+    case "gemini":
+      return {
+        url: `${env("GEMINI_BASE_URL") ?? "https://generativelanguage.googleapis.com/v1beta/openai"}/models`,
+        headers: bearer(requireEnv("GEMINI_API_KEY", "gemini")),
+      };
+    case "groq":
+      return { url: `${env("GROQ_BASE_URL") ?? "https://api.groq.com/openai/v1"}/models`, headers: bearer(requireEnv("GROQ_API_KEY", "groq")) };
+    case "openrouter":
+      return { url: `${env("OPENROUTER_BASE_URL") ?? "https://openrouter.ai/api/v1"}/models`, headers: bearer(env("OPENROUTER_API_KEY")) };
+    case "anthropic":
+      return {
+        url: `${(env("ANTHROPIC_BASE_URL") ?? "https://api.anthropic.com").replace(/\/+$/, "")}/v1/models?limit=1000`,
+        headers: { "x-api-key": requireEnv("ANTHROPIC_API_KEY", "anthropic"), "anthropic-version": "2023-06-01" },
+      };
+    default:
+      throw new Error(`unknown provider "${provider}". Known: ${providerNames().join(", ")}`);
+  }
+}
+
+/** Model ids a provider offers to this key, so users never have to guess names. */
+export async function listModels(provider: string): Promise<string[]> {
+  const { url, headers } = endpoint(provider);
+  const res = await fetch(url, { headers });
+  const text = await res.text();
+  if (!res.ok) throw new Error(`HTTP ${res.status} from ${url}: ${text.slice(0, 300)}`);
+  const data = JSON.parse(text);
+  const list: any[] = Array.isArray(data?.data) ? data.data : Array.isArray(data?.models) ? data.models : [];
+  return list
+    .map((m) => String(m?.id ?? m?.name ?? "").replace(/^models\//, ""))
+    .filter(Boolean)
+    .sort();
+}
 
 /** Pull the first JSON object out of a model reply (tolerates prose and code fences around it). */
 export function extractJSON<T = any>(text: string): T {

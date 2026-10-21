@@ -6,23 +6,26 @@ import { basename, dirname, extname, join, relative, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { checkDocument, rootDir, seal, SourceCache, type AnchorStatus, type ItemReport } from "./anchors.js";
 import { findPathReferences } from "./audit.js";
+import { injectionFindings } from "./guard.js";
 import { compile } from "./compile.js";
 import { emptyDocument, formatAnchor, HcsSyntaxError, parse, serialize, type HcsDocument } from "./format.js";
-import { createLLM } from "./llm.js";
+import { createLLM, listModels, type LLM } from "./llm.js";
 import { DECODER_PROMPT, estimateTokens, renderContext, selectClaims } from "./render.js";
 import { hashForCertificate, scoreContext, scoreDocument, type ScoreSummary } from "./score.js";
+import { serveStdio } from "./mcp.js";
 import { parseConversation, toTranscript } from "./snapshot.js";
 
-const VERSION = "0.1.0";
+const VERSION = "0.2.0";
 
 const HELP = `hcs ${VERSION} - Holographic Context Standard
 
 Verifiable, fidelity-scored context files for any LLM.
 
-Deterministic commands (no LLM, no network):
+Deterministic commands (no LLM, no network; except \`models\`, which asks the provider for its list):
   hcs init [-o project.hcs] [--title T]       Create an empty .hcs file to write claims by hand
   hcs validate <file.hcs>                     Check syntax
   hcs check <file.hcs> [--strict] [--json]    Verify every anchor against the sources; exit 1 if stale
+                                              (--strict: also unsealed anchors and suspect claims)
   hcs seal <file.hcs> [--rehash] [--ids a,b]  Fill missing hashes, follow moved anchors
                                               (--rehash: accept current content of stale anchors)
   hcs render <file.hcs> [--budget N]          Print the context block to give an LLM
@@ -30,15 +33,20 @@ Deterministic commands (no LLM, no network):
   hcs stats <file.hcs>                        Sizes, token estimates, compression ratio
   hcs audit <context-file> [--root DIR]       Find broken file references in AGENTS.md, CLAUDE.md...
             [--probes file.hcs --model M]     ...and score it against an .hcs probe set
+  hcs serve <file.hcs>                        MCP server (stdio) for any MCP client
+                                              tools: hcs_context, hcs_expand, hcs_search, hcs_verify, hcs_source
+  hcs models <provider> [--free]              List the model ids your key can use (--free: OpenRouter ":free" models)
 
-LLM commands (--model provider:model):
+LLM commands (--model provider:model, optional --rpm N to stay under free-tier rate limits):
   hcs compile [paths...] --model M [-o project.hcs] [--root DIR] [--title T]
               [--update] [--max-probes N] [--no-synthesize] [--concurrency N]
-  hcs score <file.hcs> --model M [--judge M] [--budget N] [--baseline] [--write] [--json]
+              [--anchors symbols|lines]
+  hcs score <file.hcs> --model M [--judge M] [--budget N] [--baseline] [--runs N] [--write] [--json]
   hcs snapshot <conversation.json|.md> --model M [-o session.hcs]
 
 Providers: openai (OPENAI_API_KEY, OPENAI_BASE_URL for any compatible server),
-           anthropic (ANTHROPIC_API_KEY), gemini (GEMINI_API_KEY), ollama (OLLAMA_HOST)
+           anthropic (ANTHROPIC_API_KEY), gemini (GEMINI_API_KEY), groq (GROQ_API_KEY),
+           openrouter (OPENROUTER_API_KEY), ollama (OLLAMA_HOST)
 
 Exit codes: 0 ok, 1 verification failed, 2 usage or syntax error.`;
 
@@ -75,8 +83,16 @@ function requireModel(v: unknown): string {
   return v;
 }
 
+function anchorMode(v: string | undefined): "symbols" | "lines" | undefined {
+  if (v === undefined || v === "symbols" || v === "lines") return v;
+  throw new UsageError('--anchors must be "symbols" or "lines"');
+}
+
 function printScore(label: string, s: ScoreSummary): void {
-  console.log(`${label.padEnd(16)} fidelity ${pct(s.fidelity).padStart(6)}   misled ${pct(s.misled).padStart(6)}   abstained ${pct(s.abstained).padStart(6)}   (${s.probes} probes)`);
+  const ci = `[95% CI ${pct(s.ci95[0])}-${pct(s.ci95[1])}]`;
+  console.log(
+    `${label.padEnd(16)} fidelity ${pct(s.fidelity).padStart(6)} ${ci}   misled ${pct(s.misled).padStart(6)}   abstained ${pct(s.abstained).padStart(6)}   (${s.probes} probes${s.runs > 1 ? ` x ${s.runs} runs` : ""})`,
+  );
 }
 
 async function main(argv: string[]): Promise<number> {
@@ -114,6 +130,10 @@ async function main(argv: string[]): Promise<number> {
       "no-synthesize": { type: "boolean" },
       concurrency: { type: "string" },
       "chunk-lines": { type: "string" },
+      rpm: { type: "string" },
+      runs: { type: "string" },
+      free: { type: "boolean" },
+      anchors: { type: "string" },
       probes: { type: "string" },
       quiet: { type: "boolean", short: "q" },
     },
@@ -125,6 +145,19 @@ async function main(argv: string[]): Promise<number> {
     return n;
   };
   const progress = o.quiet ? undefined : (m: string) => process.stderr.write(`${m}\n`);
+  const clients: LLM[] = [];
+  const llm = (spec: string) => {
+    const c = createLLM(spec, { rpm: num(o.rpm, "rpm") });
+    clients.push(c);
+    return c;
+  };
+  // Always tell the user what the run consumed, so costs and quotas are never a surprise.
+  process.on("exit", () => {
+    for (const c of clients) {
+      const u = c.usage;
+      if (u?.requests) process.stderr.write(`usage ${c.id}: ${u.requests} requests, ${u.inputTokens} input + ${u.outputTokens} output tokens (as reported by the provider)\n`);
+    }
+  });
 
   switch (cmd) {
     case "init": {
@@ -161,7 +194,10 @@ async function main(argv: string[]): Promise<number> {
         const budget = c.fields.budget ? Number(c.fields.budget) : undefined;
         return { fields: c.fields, current: hashForCertificate(doc, cs, budget) === c.fields.digest };
       });
-      const failing = reports.filter((r) => r.status === "stale" || r.status === "missing" || (o.strict && r.status === "unsealed"));
+      const suspect = new Set(doc.claims.filter((c) => c.tags.includes("suspect") || injectionFindings(c.text).some((f) => f.severity === "high")).map((c) => c.id));
+      const failing = reports.filter(
+        (r) => r.status === "stale" || r.status === "missing" || (o.strict && (r.status === "unsealed" || suspect.has(r.id))),
+      );
 
       if (o.json) {
         console.log(JSON.stringify({ file, items: reports, certificates: certs, ok: failing.length === 0 }, null, 2));
@@ -177,9 +213,21 @@ async function main(argv: string[]): Promise<number> {
       }
       for (const r of reports.filter((r) => r.status !== "ok")) {
         for (const a of r.anchors.filter((a) => a.status !== "ok")) {
-          const where = a.relocated ? ` -> lines ${a.relocated.start}-${a.relocated.end}` : a.detail ? `  ${a.detail}` : "";
+          const rel = a.relocated;
+          const where = rel
+            ? ` -> ${rel.path ? `${rel.path}${rel.symbol ? `::${rel.symbol}` : ""}` : `lines ${rel.start}-${rel.end}`}`
+            : a.detail
+              ? `  ${a.detail}`
+              : "";
           console.log(`  ${ICON[a.status].padEnd(8)} ${r.id.padEnd(6)} ${formatAnchor(a.anchor, false)}${where}`);
         }
+      }
+      const flagged = doc.claims
+        .map((c) => ({ c, f: injectionFindings(c.text) }))
+        .filter((x) => x.f.length || x.c.tags.includes("suspect"));
+      for (const { c, f } of flagged) {
+        const high = c.tags.includes("suspect") || f.some((x) => x.severity === "high");
+        console.log(`  ${high ? "SUSPECT " : "review  "} ${c.id.padEnd(6)} ${f.map((x) => x.reason).join("; ") || "tagged suspect"}${high ? " (not rendered)" : ""}`);
       }
       for (const c of certs) {
         console.log(`  certificate ${c.fields.model} fidelity=${c.fields.fidelity}: ${c.current ? "current" : "OUTDATED (context changed since it was scored)"}`);
@@ -256,11 +304,12 @@ async function main(argv: string[]): Promise<number> {
       const { doc, stats } = await compile({
         root,
         paths,
-        llm: createLLM(model),
+        llm: llm(model),
         title: o.title ?? basename(root),
         previous,
         maxProbes: num(o["max-probes"], "max-probes"),
         synthesize: !o["no-synthesize"],
+        anchorMode: anchorMode(o.anchors),
         concurrency: num(o.concurrency, "concurrency"),
         chunkLines: num(o["chunk-lines"], "chunk-lines"),
         onProgress: progress,
@@ -279,10 +328,11 @@ async function main(argv: string[]): Promise<number> {
       const doc = load(file);
       const reports = checkDocument(doc, new SourceCache(rootDir(doc, file)));
       const result = await scoreDocument(doc, statusMap(reports), {
-        answerer: createLLM(requireModel(o.model)),
-        judge: o.judge ? createLLM(o.judge) : undefined,
+        answerer: llm(requireModel(o.model)),
+        judge: o.judge ? llm(o.judge) : undefined,
         budget: num(o.budget, "budget"),
         baseline: o.baseline,
+        runs: num(o.runs, "runs"),
         concurrency: num(o.concurrency, "concurrency"),
         onProgress: progress,
       });
@@ -300,6 +350,11 @@ async function main(argv: string[]): Promise<number> {
         printScore("without context", result.baseline);
         console.log(`gain             ${((result.withContext.fidelity - result.baseline.fidelity) * 100).toFixed(1)} points`);
       }
+      if (result.informative) {
+        console.log(`informative      fidelity ${pct(result.informative.fidelity).padStart(6)} on the ${result.informative.probes} probes the model could not answer without context`);
+      }
+      if (result.withContext.probes < 20) console.log(`note: only ${result.withContext.probes} probes; the confidence interval is wide. Compile with more probes for a tighter estimate.`);
+      if (result.selfJudged) console.log("note: the answering model also graded itself. Use --judge with a model from another family for an unbiased score.");
       if (result.skippedProbes.length) console.log(`skipped stale probes: ${result.skippedProbes.join(", ")}`);
       const misses = result.withContext.results.filter((r) => r.verdict !== "correct");
       if (misses.length) {
@@ -324,7 +379,7 @@ async function main(argv: string[]): Promise<number> {
       const { doc } = await compile({
         root,
         paths: [basename(transcriptPath)],
-        llm: createLLM(model),
+        llm: llm(model),
         title,
         maxProbes: num(o["max-probes"], "max-probes") ?? 20,
         onProgress: progress,
@@ -354,8 +409,8 @@ async function main(argv: string[]): Promise<number> {
         const status = statusMap(reports);
         const probes = probeDoc.probes.filter((p) => ["ok", "moved"].includes(status.get(`probe:${p.id}`) ?? ""));
         const opts = {
-          answerer: createLLM(requireModel(o.model)),
-          judge: o.judge ? createLLM(o.judge) : undefined,
+          answerer: llm(requireModel(o.model)),
+          judge: o.judge ? llm(o.judge) : undefined,
           concurrency: num(o.concurrency, "concurrency"),
           onProgress: progress,
         };
@@ -364,6 +419,22 @@ async function main(argv: string[]): Promise<number> {
         if (o.baseline) printScore("without context", await scoreContext(null, probes, { ...opts, onProgress: undefined }));
       }
       return broken.length ? 1 : 0;
+    }
+
+    case "models": {
+      const provider = requireFile(positionals, "<provider> (openai, anthropic, gemini, groq, openrouter, ollama)");
+      let ids = await listModels(provider);
+      if (o.free) ids = ids.filter((id) => id.endsWith(":free"));
+      for (const id of ids) console.log(`${provider}:${id}`);
+      if (!ids.length) console.log("(no models returned)");
+      return 0;
+    }
+
+    case "serve": {
+      const file = requireFile(positionals);
+      load(file); // fail fast on a missing or invalid file
+      await serveStdio(file);
+      return 0;
     }
 
     default:

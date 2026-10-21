@@ -1,6 +1,6 @@
 {
   "name": "hcs-cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Holographic Context Standard: verifiable, fidelity-scored context files for any LLM.",
   "license": "MIT",
   "type": "module",

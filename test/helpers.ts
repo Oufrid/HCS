@@ -59,7 +59,7 @@ export class FakeLLM implements LLM {
       }));
       claims.push({ text: "Invented fact", quote: "this text is not in the source", lines: [1, 1], importance: 5 });
       const probes = content.slice(0, 1).map((l) => ({
-        question: `What does ${src[1]} line ${l.n} say?`,
+        question: `What does ${src[1]} say about "${l.text.trim().slice(0, 14)}"?`,
         answer: l.text.trim(),
         quote: l.text.trim(),
         lines: [l.n, l.n],
@@ -77,10 +77,10 @@ export class FakeLLM implements LLM {
       return JSON.stringify({ verdict: ref[2].includes(ref[1]) ? "correct" : "incorrect" });
     }
 
-    // Answering: find the claim line the question points at.
-    const q = /(?:Question: )?What does (\S+) line (\d+) say\?/.exec(p);
+    // Answering: find the claim the question points at.
+    const q = /What does (\S+) say about "(.*)"\?/.exec(p);
     if (q && p.includes("<hcs-context")) {
-      const ctx = p.split("\n").find((l) => l.includes(`${q[1]} states:`) && l.includes(`${q[1]}:${q[2]}`));
+      const ctx = p.split("\n").find((l) => l.includes(`${q[1]} states: ${q[2]}`));
       return ctx ? ctx.replace(/^c\d+: .*? states: /, "").replace(/ \(.*\)$/, "") : "UNKNOWN";
     }
     return "UNKNOWN";

@@ -1,11 +1,15 @@
 // Parser and serializer for the .hcs text format (see SPEC.md).
 
-export const FORMAT_VERSION = "0.1";
+export const FORMAT_VERSION = "0.2";
 export const MAGIC = `HCS/${FORMAT_VERSION}`;
+/** Versions this reader accepts. 0.2 added `path::Symbol` anchors; 0.1 files are valid 0.2 files. */
+export const SUPPORTED_VERSIONS = ["0.1", "0.2"];
 
 export interface Anchor {
   path: string;
-  /** 1-based inclusive line range; undefined means the whole file. */
+  /** Named code symbol or Markdown heading (`path::Name`); exclusive with a line range. */
+  symbol?: string;
+  /** 1-based inclusive line range; undefined (and no symbol) means the whole file. */
   start?: number;
   end?: number;
   /** Truncated SHA-256 of the normalized anchored text; undefined means unsealed. */
@@ -57,27 +61,30 @@ export function emptyDocument(title = "Untitled"): HcsDocument {
   };
 }
 
-const ANCHOR_RE = /^(?:"([^"]+)"|(\S+?))(?::(\d+)(?:-(\d+))?)?(?:\s+#([0-9a-f]{6,64}))?$/;
+const ANCHOR_RE = /^(?:"([^"]+)"|([^\s"]+?))(?:::(?:"([^"]+)"|([^\s"#]+))|:(\d+)(?:-(\d+))?)?(?:\s+#([0-9a-f]{6,64}))?$/;
 
 export function parseAnchor(raw: string, line = 0): Anchor {
   const m = ANCHOR_RE.exec(raw.trim());
   if (!m) throw new HcsSyntaxError(line, `invalid anchor "${raw.trim()}"`);
   const path = m[1] ?? m[2];
   const anchor: Anchor = { path };
-  if (m[3]) {
-    anchor.start = Number(m[3]);
-    anchor.end = m[4] ? Number(m[4]) : anchor.start;
+  const symbol = m[3] ?? m[4];
+  if (symbol) anchor.symbol = symbol;
+  if (m[5]) {
+    anchor.start = Number(m[5]);
+    anchor.end = m[6] ? Number(m[6]) : anchor.start;
     if (anchor.start < 1 || anchor.end < anchor.start) {
       throw new HcsSyntaxError(line, `invalid line range in anchor "${raw.trim()}"`);
     }
   }
-  if (m[5]) anchor.hash = m[5];
+  if (m[7]) anchor.hash = m[7];
   return anchor;
 }
 
 export function formatAnchor(a: Anchor, withHash = true): string {
   let s = /\s/.test(a.path) ? `"${a.path}"` : a.path;
-  if (a.start !== undefined) s += a.end !== undefined && a.end !== a.start ? `:${a.start}-${a.end}` : `:${a.start}`;
+  if (a.symbol !== undefined) s += /[\s"#]/.test(a.symbol) ? `::"${a.symbol.replace(/"/g, "'")}"` : `::${a.symbol}`;
+  else if (a.start !== undefined) s += a.end !== undefined && a.end !== a.start ? `:${a.start}-${a.end}` : `:${a.start}`;
   if (withHash && a.hash) s += ` #${a.hash}`;
   return s;
 }
@@ -95,9 +102,10 @@ export function parse(text: string): HcsDocument {
   const doc: HcsDocument = { headers: {}, meta: {}, claims: [], probes: [], certificates: [] };
   let i = 0;
   while (i < lines.length && lines[i].trim() === "") i++;
-  if (lines[i]?.trim() !== MAGIC) {
+  const magic = /^HCS\/(\d+\.\d+)$/.exec(lines[i]?.trim() ?? "");
+  if (!magic || !SUPPORTED_VERSIONS.includes(magic[1])) {
     const found = lines[i]?.trim() ?? "";
-    if (/^HCS\/\d/.test(found)) throw new HcsSyntaxError(i + 1, `unsupported version "${found}", this tool reads ${MAGIC}`);
+    if (/^HCS\/\d/.test(found)) throw new HcsSyntaxError(i + 1, `unsupported version "${found}", this tool reads ${SUPPORTED_VERSIONS.map((v) => `HCS/${v}`).join(", ")}`);
     throw new HcsSyntaxError(i + 1, `missing "${MAGIC}" magic line`);
   }
   let block: "header" | "claims" | "probes" | "certificates" = "header";

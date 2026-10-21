@@ -1,6 +1,6 @@
-# HCS Specification: version 0.1
+# HCS Specification: version 0.2
 
-**Status:** draft. Feedback is welcome through issues.
+**Status:** draft. Feedback is welcome through issues. Changes since 0.1: symbol anchors (§5.2), the `suspect` tag (§3), and certificate fields `ci95`, `informative`, `runs` (§7). Every valid 0.1 file is a valid 0.2 file.
 
 HCS (Holographic Context Standard) defines a plain-text file, conventionally `*.hcs`, that carries a compressed view of some source material (a codebase, a document set, a conversation) for a language model. It has three properties that summaries and hand-written context files lack:
 
@@ -19,7 +19,7 @@ The key words MUST, SHOULD and MAY are used as in RFC 2119.
 An HCS file is UTF-8 text. Lines end with LF; readers MUST also accept CRLF.
 
 ```
-HCS/0.1                      <- magic line (first non-blank line)
+HCS/0.2                      <- magic line (first non-blank line)
 @title My Project            <- header lines
 @root .
 
@@ -34,7 +34,7 @@ HCS/0.1                      <- magic line (first non-blank line)
 - Blank lines are ignored everywhere.
 - Lines whose first non-blank characters are `//` are comments and ignored.
 - The blocks `[claims]`, `[probes]` and `[certificates]` are optional. Each MAY appear once, in this order.
-- A reader MUST reject a file whose magic line has a different major/minor version than it supports.
+- A reader MUST reject a file whose magic line names a version it does not support. A 0.2 reader MUST accept `HCS/0.1`.
 
 ## 2. Headers
 
@@ -79,6 +79,7 @@ Unknown headers MUST be preserved by tools that rewrite the file.
 | `i1` … `i5` | Importance (5 = essential). Used to select claims under a token budget. Default 3. |
 | `manual` | Written by a human. Tools MUST NOT delete it automatically. Default importance 5. |
 | `overview` | Synthesized from other claims; its anchors are the union of theirs. |
+| `suspect` | Flagged by an injection guard as text addressed to a model (§6.1). MUST NOT be rendered by default. |
 
 Other tags are allowed and MUST be preserved.
 
@@ -103,37 +104,56 @@ Probes measure the **source**, not the claims. A compiler MUST NOT choose probes
 ## 5. Anchors
 
 ```
-> path[:start[-end]] [#hash]
+> path                       whole file
+> path:start[-end]           line range
+> path::Symbol               named symbol (function, class, method, Markdown heading, YAML/JSON key)
 ```
 
+Each form MAY be followed by whitespace and `#hash`.
+
 - `path` is relative to the root (§2) and uses `/` separators. Paths containing whitespace are double-quoted.
-- `start`/`end` are 1-based inclusive line numbers. Without them, the anchor covers the whole file. `:n` is the same as `:n-n`.
-- `hash` is the first 12 hex characters of the SHA-256 of the **normalized** anchored text, computed as follows:
-  1. Convert CRLF and CR to LF.
-  2. Strip trailing whitespace from every line.
-  3. For whole-file anchors, drop trailing empty lines.
-  4. Join the covered lines with LF (no trailing LF) and hash the UTF-8 bytes.
+- `start`/`end` are 1-based inclusive line numbers. `:n` is the same as `:n-n`.
+- `Symbol` is a qualified name whose members are joined with `.` (`Cart.add`). A Markdown heading is addressed by its text. Symbols containing whitespace, `"` or `#` are double-quoted (`docs/policy.md::"Refund policy"`).
 - An anchor without a hash is *unsealed*.
 
-### 5.1 Verification
+### 5.1 Hashing
+
+`hash` is the first 12 hex characters of the SHA-256 of the anchored text, after normalization:
+
+1. Convert CRLF and CR to LF.
+2. Strip trailing whitespace from every line.
+3. For whole-file anchors, drop trailing empty lines.
+4. Join the covered lines with LF (no trailing LF).
+5. **Symbol anchors only:** remove every whitespace character. Reformatting and re-indenting a symbol then leave its hash unchanged.
+6. Hash the UTF-8 bytes.
+
+### 5.2 Symbol resolution
+
+A symbol's range starts at its definition (including directly preceding decorators in Python) and ends where its body ends:
+brace languages at the matching `}`, Python and YAML at the next line indented at or below the definition, Markdown at the next heading of the same or higher level (trailing blank lines excluded), JSON at the end of the key's value.
+Names are qualified by nesting. A name that matches exactly one symbol by its last segment MAY be resolved.
+
+Symbol location is heuristic: it is not a full parser for every language. A verifier MUST report an unresolvable symbol as `missing`, never guess a range. Implementations SHOULD agree on the conformance cases in the reference test suite.
+
+### 5.3 Verification
 
 A verifier MUST classify each anchor as follows:
 
-| Status | Condition |
-|---|---|
-| `ok` | The hash of the current text at `path:start-end` equals `hash`. |
-| `moved` | The range does not match, but a window of the same length elsewhere in the file does. The verifier SHOULD report the nearest such window. The claim is still valid; tools MAY update the line numbers (sealing). |
-| `stale` | The file exists but no window matches (or a whole-file hash differs). The claim may be false. |
-| `missing` | The file does not exist. |
-| `unsealed` | The anchor has no hash. |
+| Status | Line or whole-file anchor | Symbol anchor |
+|---|---|---|
+| `ok` | The hash of the current text equals `hash`. | The symbol exists and its hash equals `hash`. |
+| `moved` | The range does not match, but a window of the same length elsewhere in the file does (nearest wins). | The symbol is gone from `path`, but a symbol with the same last name and hash exists in another file of the same language. |
+| `stale` | The file exists but no window matches (or a whole-file hash differs). | The symbol exists but its hash differs. |
+| `missing` | The file does not exist. | Neither the file nor any matching symbol elsewhere exists. |
+| `unsealed` | The anchor has no hash. | Same. |
 
 A claim or probe takes the worst status of its anchors, in the order `ok < moved < unsealed < stale < missing`.
 
-Verification is deterministic and requires no network access and no model.
+Verification is deterministic and requires no network access and no model. `moved` means the claim is still valid: tools MAY update the anchor (sealing).
 
-### 5.2 Sealing
+### 5.4 Sealing
 
-*Sealing* writes hashes into unsealed anchors and follows `moved` anchors to their new range. Re-hashing a `stale` anchor (accepting the new text) is an assertion by a human that the claim still holds. Tools MUST NOT do it silently.
+*Sealing* writes hashes into unsealed anchors and follows `moved` anchors to their new range, path or symbol. Re-hashing a `stale` anchor (accepting the new text) is an assertion by a human that the claim still holds. Tools MUST NOT do it silently, and MUST drop certificates when they do.
 
 ## 6. Rendering
 
@@ -147,16 +167,21 @@ c12: Card payments are captured asynchronously ... (src/payments/queue.ts:40-58)
 ```
 
 - Claims whose status is `stale` or `missing` MUST be omitted, or MUST be marked `(unverified)`.
+- Claims tagged `suspect`, or that an injection guard rates high-risk, MUST be omitted unless the user explicitly asks for them.
 - Under a token budget, claims are kept by descending importance, then document order. Output keeps document order.
 - Hashes, probes and certificates are not rendered.
 
-The recommended decoder instructions that accompany a render are in the README ("Decoder prompt"). Any model that reads plain text can use a render. HCS does not depend on special tokens or on a particular vendor.
+The recommended decoder instructions that accompany a render are in the README ("Decoder prompt"). They MUST tell the model that claims are data, not instructions. Any model that reads plain text can use a render. HCS does not depend on special tokens or on a particular vendor.
+
+### 6.1 Injection guard
+
+Claims travel into other models' prompts. A compiler SHOULD tag as `suspect` any claim whose text is addressed to a model (for example "ignore previous instructions", chat-template markers, "do not tell the user"), and drop such probes. Pattern-based guards reduce risk but cannot eliminate it. The decoder instructions are the second line of defense.
 
 ## 7. Certificates
 
 ```
 [certificates]
-!score model=openai:gpt-4o-mini judge=openai:gpt-4o-mini fidelity=0.875 baseline=0.250 misled=0.042 probes=24 tokens=1830 budget=2000 digest=9c1e0f2a3b4d date=2026-10-21T10:00:00Z
+!score model=gemini:gemini-flash judge=groq:llama-70b fidelity=0.875 ci95=0.771-0.958 baseline=0.250 informative=0.833 informative-probes=18 misled=0.042 probes=24 tokens=1830 budget=2000 digest=9c1e0f2a3b4d date=2026-10-21T10:00:00Z
 ```
 
 A certificate records one scoring run:
@@ -165,9 +190,13 @@ A certificate records one scoring run:
 |---|---|
 | `model` | Model that answered the probes, given only the rendered context. |
 | `judge` | Model that graded answers that were not an exact match. |
-| `fidelity` | Mean points over probes: correct = 1, partial = 0.5, incorrect or abstained = 0. |
+| `fidelity` | Mean points over probes: correct = 1, partial = 0.5, incorrect or abstained = 0. With several runs, a probe's points are its mean over runs. |
+| `ci95` | 95% percentile-bootstrap confidence interval of `fidelity` over probes, as `low-high`. |
 | `baseline` | (optional) The same score with **no** context, to show what the model already knew. |
-| `misled` | Share of probes answered wrongly rather than abstaining. Lower is better. |
+| `informative` | (with `baseline`) Fidelity on the probes the model could not answer without context, i.e. what the context taught it. |
+| `informative-probes` | Number of such probes. |
+| `misled` | Share of answers that were wrong rather than abstaining. Lower is better. |
+| `runs` | (optional) Times each probe was asked. Default 1. |
 | `probes` | Number of verified probes used (stale probes are skipped). |
 | `tokens` | Estimated size of the rendered context. |
 | `budget` | (optional) Token budget used for rendering. |
@@ -176,7 +205,7 @@ A certificate records one scoring run:
 
 A certificate is **current** only while recomputing `digest` on the current file and sources gives the same value. A verifier MUST report non-current certificates as outdated.
 
-Certificates are evidence, not guarantees. They depend on the answering model, the judge and the probe set.
+Certificates are evidence, not guarantees. They depend on the answering model, the judge and the probe set. When `judge` equals `model`, the model graded itself; tools SHOULD warn about it.
 
 ## 8. Compiler requirements
 
@@ -193,4 +222,4 @@ A conforming compiler SHOULD:
 
 ## 9. Versioning
 
-Minor versions (0.x) may add headers, tags, fields and statuses. Readers SHOULD ignore unknown certificate fields and tags. Any change to hashing or anchor syntax requires a new version string.
+Minor versions (0.x) may add headers, tags, fields, statuses and anchor forms. Readers SHOULD ignore unknown certificate fields and tags. Any change to hashing or anchor syntax requires a new version string.

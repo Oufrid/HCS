@@ -1,0 +1,81 @@
+name: Benchmark (manual)
+
+# Runs real models with the repository's secrets. Triggered by hand only: Actions > Benchmark > Run workflow.
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: "Model that compiles and answers, as provider:model (list them with `hcs models <provider>`)"
+        required: true
+      judge:
+        description: "Judge model, ideally from another family (empty = same model, biased)"
+        required: false
+        default: ""
+      rpm:
+        description: "Max requests per minute per model (keep free tiers happy)"
+        required: false
+        default: "8"
+      budget:
+        description: "Optional token budget for the rendered context"
+        required: false
+        default: ""
+      repos:
+        description: "Space-separated public repo URLs to benchmark (empty = only this repository)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      MODEL: ${{ inputs.model }}
+      JUDGE: ${{ inputs.judge }}
+      HCS_RPM: ${{ inputs.rpm }}
+      BUDGET: ${{ inputs.budget }}
+      REPOS: ${{ inputs.repos }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci --no-audit --no-fund && npm run build
+
+      - name: Compile and score this repository
+        run: |
+          set -euo pipefail
+          node dist/src/cli.js compile src SPEC.md README.md --model "$MODEL" --title "HCS (benchmark)" -o bench-self.hcs
+          args=(score bench-self.hcs --model "$MODEL" --baseline --write)
+          if [ -n "$JUDGE" ]; then args+=(--judge "$JUDGE"); fi
+          if [ -n "$BUDGET" ]; then args+=(--budget "$BUDGET"); fi
+          node dist/src/cli.js "${args[@]}" | tee bench-self.txt
+          node dist/src/cli.js check bench-self.hcs
+          node dist/src/cli.js stats bench-self.hcs | tee -a bench-self.txt
+
+      - name: Benchmark public repositories
+        if: ${{ inputs.repos != '' }}
+        run: |
+          set -euo pipefail
+          args=(--model "$MODEL")
+          if [ -n "$JUDGE" ]; then args+=(--judge "$JUDGE"); fi
+          if [ -n "$BUDGET" ]; then args+=(--budget "$BUDGET"); fi
+          # shellcheck disable=SC2086
+          node bench/run.mjs "${args[@]}" $REPOS
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hcs-benchmark
+          path: |
+            bench-self.hcs
+            bench-self.txt
+            bench/results.jsonl
+          if-no-files-found: ignore
