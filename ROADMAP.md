@@ -68,13 +68,15 @@ CI (Node 18/20/22, Python 3.9/3.13), and `conformance/cross_check.py` also compa
 repository, its real `.hcs` files and 3,000 mutated inputs. The suite found two bugs in the reference (`fn new` not
 located; a missing `@root` crashed `check`), both fixed. Publishing on PyPI is part of B4.
 
-### B3. Pull-request bot `[ ]`
-- `hcs impact <file.hcs> --base <ref>`: claims and probes whose anchors are affected by the diff between
-  `<ref>` and the working tree.
-- A GitHub Action mode that posts (and updates, not duplicates) one PR comment listing the affected claims, with
-  links to their anchors. No secrets are needed for this.
-- Optional: with a model available, propose updated claim text in the comment. Never commit automatically.
-- **Done when:** the action works on a test PR in this repository, and `impact` has tests.
+### B3. Pull-request bot `[x]`
+Done: `hcs impact <file.hcs> --base <ref>` lists the claims and probes whose anchors overlap lines changed since
+the ref, point to deleted or renamed files, or no longer verify, plus claims the diff added, edited or removed
+(re-sealed claims are listed too: they pass `check` but deserve review); `--json`, `--format markdown` with links
+to the cited lines, and `--comment`. The Action's `mode: impact` posts one comment with the workflow token and
+updates it on later pushes. Verified on test pull request #1 (closed, not merged): the bot listed the touched
+claim with a link to its lines, and after a second push updated the same comment to two claims instead of adding
+one. Tests cover diff parsing, an end-to-end git repository and the comment upsert against a mock API.
+Not done (optional): proposing updated claim text with a model.
 
 ### B4. Distribution `[ ]`
 - Publish `hcs-cli` on npm (check that the name is free, or choose another), with provenance. Publish the
