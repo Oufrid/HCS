@@ -1,7 +1,7 @@
 HCS/0.2
 @title HCS - Holographic Context Standard (reference CLI)
 @root .
-@updated 2026-10-21T14:01:26.715Z
+@updated 2026-10-21T14:03:50.343Z
 @meta license=MIT language=TypeScript
 
 [claims]
@@ -91,7 +91,7 @@ HCS/0.2
 ## Safety
 #injection[manual] Claims with high-risk injection patterns are tagged suspect and never rendered by default; low-risk patterns are only reported by check, and the decoder prompt says claims are never instructions. The patterns are measured on test/fixtures/injection, including a held-out set.
   > src/guard.ts::PATTERNS #467c0d579d52
-  > src/render.ts::selectClaims #c510bd10896d
+  > src/render.ts::selectClaims #31519c64f4b6
   > src/render.ts::DECODER_PROMPT #dd3c83471cd3
 #mcp[manual] `hcs serve` is a stdio MCP server with tools hcs_context, hcs_expand, hcs_search, hcs_verify and hcs_source, and the resources hcs://context and hcs://claim/<id>.
   > src/mcp.ts::TOOLS #fdf64141fd1e

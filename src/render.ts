@@ -50,7 +50,7 @@ export function selectClaims(doc: HcsDocument, opts: RenderOptions = {}): Claim[
   const ranked = eligible
     .map((c, i) => ({ c, i }))
     .sort((a, b) => importance(b.c) - importance(a.c) || a.i - b.i);
-  const keep = new Set<Claim>();
+  const kept = new Set<Claim>();
   let used = estimateTokens(`<hcs-context title="${doc.headers.title ?? ""}">\n</hcs-context>`);
   const sections = new Set<string>();
   for (const { c } of ranked) {
@@ -58,10 +58,10 @@ export function selectClaims(doc: HcsDocument, opts: RenderOptions = {}): Claim[
     if (c.section && !sections.has(c.section)) cost += estimateTokens(`[${c.section}]`) + 1;
     if (used + cost > opts.budget) continue;
     used += cost;
-    keep.add(c);
+    kept.add(c);
     if (c.section) sections.add(c.section);
   }
-  return eligible.filter((c) => keep.has(c));
+  return eligible.filter((c) => kept.has(c));
 }
 
 export function renderContext(doc: HcsDocument, opts: RenderOptions = {}): string {
