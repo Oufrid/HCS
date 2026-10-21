@@ -402,15 +402,21 @@ export interface Curve {
   /** Smallest budget whose fidelity reaches the lower bound of the best point's 95% CI. */
   knee?: number;
   best?: number;
+  /** No budget is measurably better than the smallest one (see kneeOf). */
+  flat?: boolean;
 }
 
-/** The knee: smallest budget scoring within the 95% confidence interval of the best one (ties: smallest budget). */
-export function kneeOf(points: { budget: number; fidelity: number; ci95: [number, number] }[]): { knee?: number; best?: number } {
+/**
+ * The knee: smallest budget scoring within the 95% confidence interval of the best one (ties: smallest budget).
+ * `flat` means even the smallest budget is within that interval: more context did not measurably help, so the knee
+ * says nothing about how much context is needed.
+ */
+export function kneeOf(points: { budget: number; fidelity: number; ci95: [number, number] }[]): { knee?: number; best?: number; flat?: boolean } {
   if (!points.length) return {};
   const sorted = [...points].sort((a, b) => a.budget - b.budget);
   const best = sorted.reduce((b, p) => (p.fidelity > b.fidelity ? p : b));
   const knee = sorted.find((p) => p.fidelity >= best.ci95[0]);
-  return { knee: knee?.budget, best: best.budget };
+  return { knee: knee?.budget, best: best.budget, flat: sorted.length > 1 && knee === sorted[0] };
 }
 
 /**
@@ -447,11 +453,11 @@ export async function scoreCurve(
     byDigest.set(digest, point);
     points.push(point);
   }
-  const { knee, best } = kneeOf(points.map((p) => ({ budget: p.budget, fidelity: p.score.withContext.fidelity, ci95: p.score.withContext.ci95 })));
+  const { knee, best, flat } = kneeOf(points.map((p) => ({ budget: p.budget, fidelity: p.score.withContext.fidelity, ci95: p.score.withContext.ci95 })));
   for (const p of points) {
     p.score.certificate.fields.curve = curveId;
     if (knee !== undefined) p.score.certificate.fields.knee = String(knee);
   }
-  return { points, knee, best };
+  return { points, knee, best, flat };
 }
 

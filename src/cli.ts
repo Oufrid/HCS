@@ -558,6 +558,9 @@ async function main(argv: string[]): Promise<number> {
       if (curve.knee !== undefined) {
         const best = curve.points.find((p) => p.budget === curve.best)!;
         console.log(`knee: ${curve.knee} tokens, the smallest budget within the 95% CI of the best fidelity (${pct(best.score.withContext.fidelity)} at ${best.budget})`);
+        if (curve.flat) {
+          console.log("note: the curve is flat within its confidence intervals: no budget did measurably better than the smallest, so the knee does not tell how much context is needed. More probes, or a model that uses the context, are needed.");
+        }
       }
       if (first?.selfJudged) console.log("note: the answering model also graded itself. Use --judge with a model from another family.");
       if (o.write) console.log(`${curve.points.length} certificate(s) written to ${file}`);

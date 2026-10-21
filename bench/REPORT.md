@@ -125,3 +125,30 @@ Ollama's default 4,096-token context window cut the first 193-line reply; serve 
 A full compile of this repository would take several hours on this machine, with lower quote fidelity than the
 hosted models. Local models are useful to exercise the pipeline without quotas, not to produce the published
 numbers.
+
+## C1. Fidelity-vs-budget curve
+
+### 2026-10-21: local models (CPU), a flat curve
+
+Command: `hcs curve bench/a1/gemini.hcs --model ollama:qwen2.5:7b --judge ollama:llama3.2:3b --budgets
+250,500,1000,2000,4000,8000 --baseline --concurrency 1 --write` (Ollama 0.40.7, 4 CPUs, `OLLAMA_CONTEXT_LENGTH=16384`).
+Output: `bench/c1/curve-local.txt`; every request and reply: `bench/c1/logs/curve-local.jsonl.gz`. The six
+certificates are in `bench/a1/gemini.hcs`.
+
+| Budget | Context tokens | Claims | Fidelity [95% CI] | Abstained |
+|---|---|---|---|---|
+| 250 | 245 | 4 | 0.0% [0.0-0.0] | 100.0% |
+| 500 | 461 | 7 | 0.0% [0.0-0.0] | 100.0% |
+| 1000 | 951 | 18 | 0.0% [0.0-0.0] | 100.0% |
+| 2000 | 1941 | 40 | 0.0% [0.0-0.0] | 100.0% |
+| 4000 | 3906 | 84 | 2.7% [0.0-8.1] | 94.6% |
+| 8000 (full) | 4259 | 93 | 8.1% [0.0-18.9] | 91.9% |
+| no context | 0 | 0 | 0.0% | |
+
+The curve is flat: the best point's interval includes 0, so the computed knee (250) says nothing about how much
+context is needed; `hcs curve` now prints that warning. The cause is the answering model, not the context:
+`qwen2.5:7b` answered "UNKNOWN" even when the claim stating the answer was in its prompt (for example
+`REASONING_BUDGET` = 4096, claim `c62`), and the Ollama log shows no truncation (`truncated = 0`). With the same
+full context, `groq:qwen/qwen3.8-27b` scored 44.6% (A1). Small local models follow the decoder rule "answer only
+from the context, else UNKNOWN" too literally to measure anything. The run took about 25 minutes for 259 requests
+thanks to Ollama's prompt-prefix cache.

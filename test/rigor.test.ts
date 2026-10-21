@@ -131,9 +131,12 @@ test("kneeOf: smallest budget within the 95% CI of the best fidelity", () => {
     { budget: 500, fidelity: 0.45, ci95: [0.3, 0.6] as [number, number] },
     { budget: 2000, fidelity: 0.65, ci95: [0.55, 0.78] as [number, number] },
   ];
-  assert.deepEqual(kneeOf(pts), { knee: 1000, best: 2000 });
+  assert.deepEqual(kneeOf(pts), { knee: 1000, best: 2000, flat: false });
   assert.deepEqual(kneeOf([]), {});
-  assert.deepEqual(kneeOf([{ budget: 9, fidelity: 0, ci95: [0, 0] }]), { knee: 9, best: 9 });
+  assert.deepEqual(kneeOf([{ budget: 9, fidelity: 0, ci95: [0, 0] }]), { knee: 9, best: 9, flat: false });
+  // Real local curve: 0% up to 2000 tokens, 8.1% [0-18.9%] at full context: flat, the knee is uninformative.
+  const local = [250, 500, 1000, 2000].map((budget) => ({ budget, fidelity: 0, ci95: [0, 0] as [number, number] }));
+  assert.deepEqual(kneeOf([...local, { budget: 8000, fidelity: 0.081, ci95: [0, 0.189] }]), { knee: 250, best: 8000, flat: true });
 });
 
 test("scoreCurve: one score per distinct context, certificates per budget with curve id and knee", async () => {

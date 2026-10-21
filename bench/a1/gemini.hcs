@@ -338,3 +338,9 @@ HCS/0.2
 
 [certificates]
 !score model=groq:qwen/qwen3.8-27b judge=groq:openai/gpt-oss-20b fidelity=0.446 ci95=0.311-0.608 baseline=0.000 informative=0.446 informative-probes=37 misled=0.027 probes=37 tokens=4259 digest=e8c5f684f5f8 date=2026-10-21T12:22:38.041Z
+!score model=ollama:qwen2.5:7b judge=ollama:llama3.2:3b fidelity=0.000 ci95=0.000-0.000 baseline=0.000 informative=0.000 informative-probes=37 misled=0.000 probes=37 tokens=245 budget=250 digest=5eb768c76d0e date=2026-10-21T14:25:33.831Z curve=2026-10-21T14:14:47.233Z knee=250
+!score model=ollama:qwen2.5:7b judge=ollama:llama3.2:3b fidelity=0.000 ci95=0.000-0.000 baseline=0.000 informative=0.000 informative-probes=37 misled=0.000 probes=37 tokens=461 budget=500 digest=b3c2a32f9a24 date=2026-10-21T14:28:51.977Z curve=2026-10-21T14:14:47.233Z knee=250
+!score model=ollama:qwen2.5:7b judge=ollama:llama3.2:3b fidelity=0.000 ci95=0.000-0.000 baseline=0.000 informative=0.000 informative-probes=37 misled=0.000 probes=37 tokens=951 budget=1000 digest=d367515880c5 date=2026-10-21T14:31:28.887Z curve=2026-10-21T14:14:47.233Z knee=250
+!score model=ollama:qwen2.5:7b judge=ollama:llama3.2:3b fidelity=0.000 ci95=0.000-0.000 baseline=0.000 informative=0.000 informative-probes=37 misled=0.000 probes=37 tokens=1941 budget=2000 digest=3a6034e2e7a1 date=2026-10-21T14:34:14.383Z curve=2026-10-21T14:14:47.233Z knee=250
+!score model=ollama:qwen2.5:7b judge=ollama:llama3.2:3b fidelity=0.027 ci95=0.000-0.081 baseline=0.000 informative=0.027 informative-probes=37 misled=0.027 probes=37 tokens=3906 budget=4000 digest=b69512d1640f date=2026-10-21T14:39:32.790Z curve=2026-10-21T14:14:47.233Z knee=250
+!score model=ollama:qwen2.5:7b judge=ollama:llama3.2:3b fidelity=0.081 ci95=0.000-0.189 baseline=0.000 informative=0.081 informative-probes=37 misled=0.000 probes=37 tokens=4259 budget=8000 digest=e8c5f684f5f8 date=2026-10-21T14:45:04.436Z curve=2026-10-21T14:14:47.233Z knee=250

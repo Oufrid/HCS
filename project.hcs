@@ -1,7 +1,7 @@
 HCS/0.2
 @title HCS - Holographic Context Standard (reference CLI)
 @root .
-@updated 2026-10-21T14:15:13.126Z
+@updated 2026-10-21T14:46:43.357Z
 @meta license=MIT language=TypeScript
 
 [claims]
@@ -69,9 +69,9 @@ HCS/0.2
 #rigor[manual] Scores report a reproducible 95% bootstrap confidence interval, a no-context baseline, an informative fidelity on probes unanswerable without context, and a warning when the model judged itself.
   > src/score.ts::bootstrapCI #09a88d67acf9
   > src/score.ts::scoreDocument #e1fc83b5ce10
-#curve[manual] `hcs curve` scores the same probes at several token budgets, scoring once the budgets that render the same context, and reports the knee: the smallest budget whose fidelity reaches the lower bound of the best point's 95% CI; each point is a certificate tagged with the curve id and the knee.
-  > src/score.ts::scoreCurve #38d49eb6d252
-  > src/score.ts::kneeOf #c3df37e08eb9
+#curve[manual] `hcs curve` scores the same probes at several token budgets, scoring once the budgets that render the same context, and reports the knee: the smallest budget whose fidelity reaches the lower bound of the best point's 95% CI; each point is a certificate tagged with the curve id and the knee, and a curve whose smallest budget is already within that interval is reported as flat.
+  > src/score.ts::scoreCurve #ffc5613318bc
+  > src/score.ts::kneeOf #cca6ea2cbcd4
 #judges[manual] `score` accepts two judges: each judged answer is graded by both, the stricter verdict counts, and the raw agreement and Cohen's kappa are reported in the certificate.
   > src/score.ts::scoreContext #9b71d862413b
   > src/score.ts::cohenKappa #2be6be699209
