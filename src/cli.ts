@@ -8,6 +8,8 @@ import { basename, dirname, extname, join, relative, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { checkDocument, insideRoot, rootDir, seal, SourceCache, type AnchorStatus, type ItemReport } from "./anchors.js";
 import { findPathReferences } from "./audit.js";
+import { baseDocument, COMMENT_MARKER, gitChanges, gitPrefix, impact, impactMarkdown } from "./impact.js";
+import { githubContext, upsertComment } from "./github.js";
 import { injectionFindings, type SourceFinding } from "./guard.js";
 import { compile } from "./compile.js";
 import { emptyDocument, formatAnchor, HcsSyntaxError, parse, serialize, type HcsDocument } from "./format.js";
@@ -39,6 +41,9 @@ Deterministic commands (no LLM, no network; except \`models\`, which asks the pr
             [--allow-write]                   tools: hcs_context, hcs_expand, hcs_search, hcs_verify, hcs_source
                                               (+ hcs_record with --allow-write); resources: hcs://context,
                                               hcs://claim/<id>
+  hcs impact <file.hcs> --base <ref>          Claims and probes citing code changed since a git ref
+             [--json | --format markdown | --comment] [--link-base URL]
+                                              (--comment: post or update the pull-request comment, in Actions)
   hcs models <provider> [--free]              List the model ids your key can use (--free: OpenRouter ":free" models)
 
 LLM commands (--model provider:model, optional --rpm N to stay under free-tier rate limits, optional
@@ -186,6 +191,10 @@ async function main(argv: string[]): Promise<number> {
       rpm: { type: "string" },
       "reasoning-effort": { type: "string" },
       "allow-write": { type: "boolean" },
+      base: { type: "string" },
+      format: { type: "string" },
+      "link-base": { type: "string" },
+      comment: { type: "boolean" },
       runs: { type: "string" },
       free: { type: "boolean" },
       anchors: { type: "string" },
@@ -579,6 +588,34 @@ async function main(argv: string[]): Promise<number> {
         `B - A            ${(c.difference * 100).toFixed(1)} points [95% paired CI ${(c.ci95[0] * 100).toFixed(1)} to ${(c.ci95[1] * 100).toFixed(1)}]: ${sig}`,
       );
       console.log(`per probe        B better on ${c.better}, worse on ${c.worse}, same on ${c.same}`);
+      return 0;
+    }
+
+    case "impact": {
+      const file = requireFile(positionals);
+      if (!o.base) throw new UsageError("missing --base <git ref> (e.g. origin/main, or the pull request's base sha)");
+      const doc = load(file);
+      const root = rootDir(doc, file);
+      const report = impact(doc, new SourceCache(root), gitChanges(root, o.base), o.base, baseDocument(file, o.base));
+      // Links point at the anchor's file under the .hcs root, from the repository top level.
+      const prefix = o["link-base"] ? gitPrefix(root) : "";
+      if (o["link-base"] && prefix) o["link-base"] = `${o["link-base"].replace(/\/+$/, "")}/${prefix}`;
+      if (o.comment) {
+        const body = impactMarkdown(report, relative(process.cwd(), resolve(file)) || file, o["link-base"]);
+        const quiet = !report.items.length && !report.claimsAdded.length && !report.claimsEdited.length && !report.claimsRemoved.length;
+        const done = await upsertComment(githubContext(), COMMENT_MARKER, body, quiet);
+        console.log(`pull request comment ${done}: ${report.items.length} item(s) cite changed code`);
+      } else if (o.json) console.log(JSON.stringify(report, null, 2));
+      else if (o.format === "markdown") process.stdout.write(impactMarkdown(report, relative(process.cwd(), resolve(file)) || file, o["link-base"]));
+      else {
+        console.log(`${file}: ${report.items.length} item(s) cite code changed since ${o.base} (${report.filesChanged} file(s) changed)`);
+        for (const i of report.items) {
+          console.log(`  ${i.id.padEnd(6)} [${i.status}] ${i.text.length > 100 ? `${i.text.slice(0, 97)}...` : i.text}`);
+          for (const a of i.anchors) console.log(`         ${formatAnchor(a.anchor, false)}: ${a.reason}`);
+        }
+        const delta = [["added", report.claimsAdded], ["edited", report.claimsEdited], ["removed", report.claimsRemoved]].filter(([, l]) => l.length);
+        if (delta.length) console.log(`  claims ${delta.map(([k, l]) => `${k}: ${(l as string[]).join(", ")}`).join("; ")}`);
+      }
       return 0;
     }
 

@@ -163,7 +163,14 @@ def _find_end(lines, start_idx, mode, single_quote_strings):
     closes = "}" if mode == "block" else "}])"
     i = start_idx
     while i < len(lines) and i < start_idx + 2000:
+        in_template = st.template
         code = _code_only(lines[i], st)
+        # A multi-line template literal in an initializer (`const HELP = \`...`) is a bracket of its own.
+        if mode == "value" and not in_template and st.template:
+            depth += 1
+            opened = True
+        elif mode == "value" and in_template and not st.template:
+            depth -= 1
         for ch in code:
             if mode == "block" and ch == "(":
                 parens += 1

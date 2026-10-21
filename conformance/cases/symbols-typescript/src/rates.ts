@@ -29,6 +29,14 @@ const helper = (a: number) => {
   return a * 2;
 };
 
+const HELP = `usage:
+  run   start it
+  stop  stop it`;
+
+const QUERY = sql`
+  select 1
+`
+
 describe("x", () => {
   it("works", () => {});
 });

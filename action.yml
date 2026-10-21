@@ -1,17 +1,29 @@
 name: "HCS check"
-description: "Verify that an HCS context file still matches its sources (no LLM, no network)."
+description: "Verify that an HCS context file still matches its sources, or list on a pull request the claims its changes touch (no LLM)."
 branding:
   icon: "check-circle"
   color: "blue"
 inputs:
   file:
-    description: "Path to the .hcs file to verify"
+    description: "Path to the .hcs file"
     required: false
     default: "project.hcs"
+  mode:
+    description: "check: fail when claims no longer match their sources. impact: comment on the pull request with the claims whose cited code it changes."
+    required: false
+    default: "check"
   strict:
-    description: "Also fail on unsealed anchors"
+    description: "(check) Also fail on unsealed anchors and suspect claims"
     required: false
     default: "false"
+  base:
+    description: "(impact) Git ref to compare with. Default: the pull request's base commit."
+    required: false
+    default: ""
+  github-token:
+    description: "(impact) Token used to post the comment; the workflow needs `permissions: pull-requests: write`."
+    required: false
+    default: ${{ github.token }}
 runs:
   using: "composite"
   steps:
@@ -23,6 +35,7 @@ runs:
       working-directory: ${{ github.action_path }}
       run: npm ci --no-audit --no-fund && npm run build
     - name: Check context file
+      if: inputs.mode == 'check'
       shell: bash
       env:
         HCS_FILE: ${{ inputs.file }}
@@ -31,3 +44,16 @@ runs:
         args=(check "$HCS_FILE")
         if [ "$HCS_STRICT" = "true" ]; then args+=(--strict); fi
         node "${{ github.action_path }}/dist/src/cli.js" "${args[@]}"
+    - name: Comment the claims this pull request touches
+      if: inputs.mode == 'impact'
+      shell: bash
+      env:
+        HCS_FILE: ${{ inputs.file }}
+        HCS_BASE: ${{ inputs.base || github.event.pull_request.base.sha }}
+        HCS_LINK_BASE: ${{ github.server_url }}/${{ github.repository }}/blob/${{ github.sha }}
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: |
+        if [ -z "$HCS_BASE" ]; then echo "impact mode needs a pull_request event or the 'base' input"; exit 2; fi
+        # actions/checkout fetches one commit; the base is needed for the diff.
+        git cat-file -e "$HCS_BASE^{commit}" 2>/dev/null || git fetch --no-tags --depth=1 origin "$HCS_BASE"
+        node "${{ github.action_path }}/dist/src/cli.js" impact "$HCS_FILE" --base "$HCS_BASE" --comment --link-base "$HCS_LINK_BASE"

@@ -34,6 +34,16 @@
       "name": "helper",
       "start": 28,
       "end": 30
+    },
+    {
+      "name": "HELP",
+      "start": 32,
+      "end": 34
+    },
+    {
+      "name": "QUERY",
+      "start": 36,
+      "end": 38
     }
   ]
 }

@@ -153,7 +153,13 @@ function findEnd(lines: string[], startIdx: number, mode: EndMode, singleQuoteSt
   const opens = mode === "block" ? "{" : "{[(";
   const closes = mode === "block" ? "}" : "}])";
   for (let i = startIdx; i < lines.length && i < startIdx + 2000; i++) {
+    const inTemplate = st.template;
     const code = codeOnly(lines[i], st);
+    // A multi-line template literal in an initializer (`const HELP = \`...`) is a bracket of its own.
+    if (mode === "value" && !inTemplate && st.template) {
+      depth++;
+      opened = true;
+    } else if (mode === "value" && inTemplate && !st.template) depth--;
     for (const ch of code) {
       if (mode === "block" && ch === "(") parens++;
       else if (mode === "block" && ch === ")") parens = Math.max(0, parens - 1);

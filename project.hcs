@@ -1,7 +1,7 @@
 HCS/0.2
 @title HCS - Holographic Context Standard (reference CLI)
 @root .
-@updated 2026-10-21T13:47:41.091Z
+@updated 2026-10-21T14:00:35.443Z
 @meta license=MIT language=TypeScript
 
 [claims]
@@ -9,8 +9,8 @@ HCS/0.2
 ## Overview
 #purpose[manual] HCS is a plain-text format plus a zero-dependency Node.js CLI and MCP server (`hcs`) that makes LLM context traceable (claims cite sources), verifiable (anchors carry hashes) and measured (probes and fidelity certificates).
   > README.md:3-16 #cddd3cef50fb
-#layers[manual] Deterministic commands (init, validate, check, seal, render, stats, audit, serve) never call an LLM; compile, score and snapshot need a `provider:model` LLM; models only lists a provider's model ids.
-  > src/cli.ts::HELP #8d7d06d557a3
+#layers[manual] Deterministic commands (init, validate, check, seal, render, stats, audit, serve, impact) never call an LLM; compile, score, compare and snapshot need a `provider:model` LLM; models only lists a provider's model ids.
+  > src/cli.ts::HELP #af733b7887fa
 
 ## Format
 #magic[manual] A file starts with `HCS/0.3` (0.1 and 0.2 are still accepted, and the writer emits 0.2 unless a probe has tags), then `@key value` headers, then optional [claims], [probes] and [certificates] blocks; errors carry line numbers.
@@ -78,6 +78,15 @@ HCS/0.2
   > src/score.ts::compareContexts #d00f85a78dc1
 #certificate[manual] A certificate is bound to a digest of the exact rendered context (stale claims removed); `hcs check` reports it as outdated when the digest changes.
   > src/score.ts::hashForCertificate #450fab6aa93f
+
+## Review
+#impact[manual] `hcs impact <file> --base <ref>` lists the claims and probes whose anchors overlap lines changed since a git ref (from `git diff -U0 -M`), point to deleted or renamed files, or no longer verify, plus claims the diff added, edited or removed; `--format markdown` renders the pull-request comment, marked so the bot updates it instead of posting again.
+  > src/impact.ts::impact #c4a96d9b5323
+  > src/impact.ts::parseUnifiedDiff #e7f0b964c5fc
+  > src/impact.ts::impactMarkdown #06fc01326edc
+#pr-comment[manual] In GitHub Actions, `hcs impact --comment` posts the report with the workflow token, updates the comment that carries the marker instead of adding one, and does not post a report with nothing to say on a pull request that never had one; the action's `mode: impact` runs it against the pull request's base commit.
+  > src/github.ts::upsertComment #c6dad595fb4c
+  > action.yml::runs #b433f0cbd922
 
 ## Safety
 #injection[manual] Claims with high-risk injection patterns are tagged suspect and never rendered by default; low-risk patterns are only reported by check, and the decoder prompt says claims are never instructions. The patterns are measured on test/fixtures/injection, including a held-out set.

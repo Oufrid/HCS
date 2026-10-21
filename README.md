@@ -253,6 +253,30 @@ Verify on every push (no LLM, no secrets needed):
     strict: "false"      # "true" also fails on unsealed anchors and suspect claims
 ```
 
+On pull requests, list the claims whose cited code the change touches, as one comment that is updated on every
+push (no LLM; the workflow's own token is enough):
+
+```yaml
+on: pull_request
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  impact:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Oufrid/HCS@main
+        with:
+          file: project.hcs
+          mode: impact
+```
+
+The comment lists each affected claim or probe with its status, a link to the exact cited lines and why it is
+listed (changed lines, file deleted or renamed, or no longer verified), including claims the author already
+re-sealed. Locally: `hcs impact project.hcs --base origin/main`. Pull requests from forks get a read-only token,
+so the comment cannot be posted there.
+
 Benchmark with real models: add your API keys as repository secrets (`GEMINI_API_KEY`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`), then run **Actions → Benchmark (manual) → Run workflow**. It compiles and scores this repository (and optionally public repositories), then uploads the `.hcs` file and raw results as an artifact.
 
 ## Commands
@@ -268,6 +292,7 @@ Benchmark with real models: add your API keys as repository secrets (`GEMINI_API
 | `hcs serve <f>` | no | MCP server |
 | `hcs audit <file>` | optional | Broken references; fidelity of any context file |
 | `hcs models <provider>` | no | List model ids your key can use |
+| `hcs impact <f> --base <ref>` | no | Claims and probes citing code changed since a git ref; `--comment` posts them on the pull request |
 | `hcs compile [paths]` | yes | Sources → anchored claims + verified probes (`--update`, `--anchors lines`) |
 | `hcs score <f>` | yes | Fidelity with CI, baseline, informative and novel fidelity, misled rate, judge agreement; `--write` adds a certificate |
 | `hcs compare <a> <b>` | yes | Paired comparison of two contexts (.hcs, any text file, or none) on the same probes |
