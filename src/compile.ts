@@ -2,7 +2,7 @@
 
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { checkDocument, hashLines, hashSymbolLines, SourceCache, seal } from "./anchors.js";
+import { checkDocument, hashLines, hashSymbolLines, recordParser, SourceCache, seal } from "./anchors.js";
 import { emptyDocument, formatAnchor, type Anchor, type Claim, type HcsDocument, type Probe } from "./format.js";
 import { extractJSON, mapLimit, QuotaError, type LLM } from "./llm.js";
 import { estimateTokens } from "./render.js";
@@ -399,6 +399,7 @@ export async function compile(opts: CompileOptions): Promise<{ doc: HcsDocument;
     const reasons = [quota?.message, unusable ? `${unusable} chunk(s) returned no usable JSON (truncated or malformed reply)` : undefined];
     stats.incomplete = { chunks: unfinished, reason: reasons.filter(Boolean).join("; ") };
   }
+  recordParser(doc);
   return { doc, stats };
 }
 

@@ -136,6 +136,8 @@ export interface ScoreOptions {
   onProgress?: (msg: string) => void;
   /** Results already computed for this exact context, models and settings; new results are added to it. */
   cache?: ScoreCache;
+  /** Count the context with this model's tokenizer (written as `tokens` plus `tokenizer`); default: the estimate. */
+  tokenizer?: LLM;
 }
 
 /** Deterministic PRNG so confidence intervals are reproducible. */
@@ -293,7 +295,10 @@ export interface DocumentScore {
   /** True when the answering model also graded its own answers. */
   selfJudged: boolean;
   skippedProbes: string[];
+  /** Tokens of the rendered context: counted by `tokenizer` when given, otherwise estimated. */
   contextTokens: number;
+  /** True when `contextTokens` was counted by a real tokenizer. */
+  tokensCounted?: boolean;
   certificate: Certificate;
 }
 
@@ -312,7 +317,8 @@ export async function scoreDocument(
   const withContext = await scoreContext(context, usable, opts);
   const baseline =
     opts.baselineResult ?? (opts.baseline ? await scoreContext(null, usable, { ...opts, onProgress: undefined, cache: opts.baselineCache }) : undefined);
-  const contextTokens = estimateTokens(context);
+  const counter = opts.tokenizer?.countTokens;
+  const contextTokens = counter ? await counter(context) : estimateTokens(context);
 
   let informative: DocumentScore["informative"];
   if (baseline) {
@@ -354,6 +360,7 @@ export async function scoreDocument(
   fields.misled = withContext.misled.toFixed(3);
   fields.probes = String(withContext.probes);
   fields.tokens = String(contextTokens);
+  if (counter) fields.tokenizer = opts.tokenizer!.id;
   if (opts.budget !== undefined) fields.budget = String(opts.budget);
   fields.digest = hashForCertificate(doc, claimStatus, opts.budget);
   fields.date = new Date().toISOString();
@@ -366,6 +373,7 @@ export async function scoreDocument(
     selfJudged: judges.some((j) => j.id === opts.answerer.id),
     skippedProbes: doc.probes.filter((p) => !usable.includes(p)).map((p) => p.id),
     contextTokens,
+    ...(counter ? { tokensCounted: true } : {}),
     certificate: { fields },
   };
 }

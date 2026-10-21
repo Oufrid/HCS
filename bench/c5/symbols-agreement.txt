@@ -1,0 +1,27 @@
+51 files
+symbols found by both: 474, same range: 470 (99.2%)
+found only by the heuristic: 12; only by tree-sitter: 8
+heuristic only    conformance/make_cases.py::Cart 129-140
+heuristic only    conformance/make_cases.py::Cart.__init__ 132-133
+heuristic only    conformance/make_cases.py::Cart.size 135-137
+heuristic only    conformance/make_cases.py::Cart.total 139-140
+heuristic only    conformance/make_cases.py::helper 143-147
+heuristic only    conformance/make_cases.py::helper.inner 144-145
+heuristic only    conformance/make_cases.py::decorated 150-152
+different range   src/cli.ts::scoreCacheFile.get heuristic 150-156, tree-sitter 150-150
+heuristic only    src/cli.ts::scoreCacheFile.get.put 151-156
+different range   src/cli.ts::scoreCacheFile.added heuristic 161-165, tree-sitter 161-161
+heuristic only    src/cli.ts::scoreCacheFile.added.remove 164-165
+different range   src/cli.ts::SIGNATURE_LABEL.unsigned heuristic 169-174, tree-sitter 169-169
+heuristic only    src/cli.ts::SIGNATURE_LABEL.unsigned.trusted 170-174
+heuristic only    src/cli.ts::SIGNATURE_LABEL.unsigned.trusted.untrusted 171-174
+heuristic only    src/cli.ts::SIGNATURE_LABEL.unsigned.trusted.untrusted.invalid 172-174
+tree-sitter only  src/cli.ts::scoreCacheFile.put 151-156
+tree-sitter only  src/cli.ts::scoreCacheFile.remove 164-164
+tree-sitter only  src/cli.ts::SIGNATURE_LABEL.trusted 170-170
+tree-sitter only  src/cli.ts::SIGNATURE_LABEL.untrusted 171-171
+tree-sitter only  src/cli.ts::SIGNATURE_LABEL.invalid 172-172
+tree-sitter only  src/llm.ts::LLM.countTokens 31-31
+tree-sitter only  src/symbols.ts::backend 20-20
+different range   test/guard.test.ts::corpus heuristic 50-51, tree-sitter 50-53
+tree-sitter only  test/rigor.test.ts::ScriptedLLM.constructor 9-9

@@ -182,3 +182,39 @@ do not change what a claim says. `review` is not a failure, so the cost is revie
 over 26 commits, against 56 direct invalidations. Recall cannot be measured from this history alone: the only
 claim known to have been invalidated through a dependency was caught. Cheap improvements to try with numbers: ignore
 type-only dependencies (interfaces, type aliases), and identifiers used as object keys.
+
+## C5. Optional tokenizer and tree-sitter back-end
+
+### 2026-10-21: real token counts against the estimate
+
+`hcs stats project.hcs --tokenizer groq:openai/gpt-oss-120b --rpm 8` (output `bench/c5/tokens-groq.txt`). Groq has no
+counting endpoint, so HCS sends a 1-token completion with the text as the only message and reads the reported
+prompt size, minus the chat framing measured once with a one-token message. 3 requests, 6,832 input tokens.
+
+| Text | Estimate | Counted | Estimate / counted |
+|---|---|---|---|
+| `project.hcs` (the file) | 4,061 | 3,914 | 103.8% |
+| its rendered context | 3,012 | 2,704 | 111.4% |
+
+One file and one tokenizer: this shows the estimate is in the right range here, not how far off it is in general
+(code-heavy text, other languages and other tokenizers will differ). The Anthropic and native Gemini counting
+endpoints are implemented and tested against mock servers only: no Anthropic key is available here, and the Gemini
+key in this sandbox is injected by the proxy as a Bearer token, which the native endpoint does not accept (HCS then
+falls back to the 1-token completion, which uses one of the about 20 daily Gemini requests, so it was not run).
+
+### 2026-10-21: tree-sitter versus the heuristic locator
+
+Script: `bench/c5/symbols.mjs` (output `bench/c5/symbols-agreement.txt`), on the 51 TypeScript, JavaScript and Python
+files of this repository at the C5 commit (conformance case sources excluded).
+
+- Symbols found by both: 474; same range: 470 (99.2%).
+- Found only by the heuristic: 12. Seven are Python definitions inside a string literal of
+  `conformance/make_cases.py` (test source embedded as text): the heuristic is wrong there. Five are wrong nestings
+  of one-line object members (`scoreCacheFile.get.put`, `SIGNATURE_LABEL.unsigned.trusted...`).
+- Found only by tree-sitter: 8, the same one-line members correctly named (`SIGNATURE_LABEL.trusted`), plus a
+  method signature, a `let` without initializer and a constructor the heuristic does not list.
+- Different ranges: 4, the same one-line objects, and a multi-line template literal end.
+
+On `bench/a1/gemini.hcs`, compiled and sealed with the heuristic (104 symbol anchors in TS/JS/Python), all 132
+items still check `ok` with `--parser tree-sitter`. Every difference found is a heuristic error, but the sample
+is one repository written in one style, by the same author as the heuristic.

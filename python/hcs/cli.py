@@ -16,11 +16,22 @@ from .render import DECODER_PROMPT, hash_for_certificate, render_context
 from .sign import check_signature, document_keys, parse_trusted_keys
 
 
-def _load(path):
+def _load(path, symbols=True):
     if not os.path.exists(path):
         raise FileNotFoundError("file not found: " + path)
     with open(path, encoding="utf-8") as f:
-        return parse(f.read())
+        doc = parse(f.read())
+    parser = doc["headers"].get("parser", "heuristic")
+    if symbols and parser != "heuristic":
+        # Symbol hashes depend on the locator that made them; only the heuristic is implemented here.
+        raise UnsupportedParser(
+            "%s was sealed with the %s symbol parser (@parser), which hcs-py does not implement; use the TypeScript CLI" % (path, parser)
+        )
+    return doc
+
+
+class UnsupportedParser(Exception):
+    pass
 
 
 def _check(args):
@@ -99,7 +110,7 @@ def _render(args):
 
 
 def _validate(args):
-    doc = _load(args.file)
+    doc = _load(args.file, symbols=False)
     print("%s: valid (%d claims, %d probes, %d certificates)" % (args.file, len(doc["claims"]), len(doc["probes"]), len(doc["certificates"])))
     return 0
 
@@ -131,7 +142,7 @@ def main(argv=None):
     args = parser.parse_args(argv)
     try:
         return args.run(args)
-    except (HcsSyntaxError, FileNotFoundError) as e:
+    except (HcsSyntaxError, FileNotFoundError, UnsupportedParser) as e:
         print("hcs: %s" % e, file=sys.stderr)
         return 2
 

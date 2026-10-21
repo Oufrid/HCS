@@ -24,6 +24,15 @@ export interface LLM {
   complete(req: CompletionRequest): Promise<string>;
   /** Requests and tokens reported by the provider so far (tokens are 0 when the provider does not report them). */
   usage?: Usage;
+  /**
+   * Tokens of `text` for this model's own tokenizer, when the provider can tell (see `tokenCounting`). Optional:
+   * budgets and digests always use the deterministic estimate; a real count is only reported.
+   */
+  countTokens?(text: string): Promise<number>;
+  /** "endpoint": a free counting endpoint; "usage": a 1-token completion whose reported prompt size is read. */
+  tokenCounting?: "endpoint" | "usage";
+  /** Set by providers whose raw count includes the message framing; `createLLM` then subtracts it. */
+  countIncludesFraming?: boolean;
 }
 
 export interface LLMOptions {
@@ -74,17 +83,32 @@ export function createLLM(spec: string, opts: LLMOptions = {}): LLM {
   const llm = withDebugLog(factory(spec.slice(i + 1), spec, usage, { ...opts, reasoningEffort }));
   llm.usage = usage;
   const rpm = opts.rpm ?? (env("HCS_RPM") ? Number(env("HCS_RPM")) : undefined);
-  if (!rpm || !(rpm > 0)) return llm;
   // One limiter per model spec, shared by every client of that model in the process.
-  if (!limiters.has(spec)) limiters.set(spec, new RateLimiter(60_000 / rpm));
-  const limiter = limiters.get(spec)!;
+  if (rpm && rpm > 0 && !limiters.has(spec)) limiters.set(spec, new RateLimiter(60_000 / rpm));
+  const limiter = rpm && rpm > 0 ? limiters.get(spec)! : undefined;
+  const raw = llm.countTokens?.bind(llm);
+  const limited = raw && (async (text: string) => (await limiter?.wait(), raw(text)));
   return {
     id: llm.id,
     usage,
     async complete(req) {
-      await limiter.wait();
+      await limiter?.wait();
       return llm.complete(req);
     },
+    ...(limited ? { tokenCounting: llm.tokenCounting, countTokens: llm.countIncludesFraming ? framedCounter(limited) : limited } : {}),
+  };
+}
+
+/**
+ * Counting a user message also counts the provider's message framing (role markers, chat template). Measure it
+ * once with a one-token message and subtract it, so the result is the text's own size.
+ */
+function framedCounter(raw: (text: string) => Promise<number>): (text: string) => Promise<number> {
+  let overhead: Promise<number> | undefined;
+  return async (text) => {
+    overhead ??= raw("x").then((n) => Math.max(0, n - 1));
+    const [n, o] = await Promise.all([raw(text), overhead]);
+    return Math.max(0, n - o);
   };
 }
 
@@ -273,6 +297,20 @@ function openAICompatible(
       if (data?.choices?.[0]?.finish_reason === "length") usage.truncated = (usage.truncated ?? 0) + 1;
       return content;
     },
+    tokenCounting: "usage",
+    countIncludesFraming: true,
+    async countTokens(text) {
+      const data = await postJSON(url, { ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}), ...extraHeaders }, {
+        model,
+        temperature: 0,
+        max_tokens: 1,
+        messages: [{ role: "user", content: text }],
+      });
+      const n = data?.usage?.prompt_tokens;
+      countUsage(usage, n, data?.usage?.completion_tokens);
+      if (typeof n !== "number") throw new Error(`${id} does not report prompt tokens, so it cannot count tokens`);
+      return n;
+    },
   };
 }
 
@@ -284,8 +322,8 @@ registerProvider("ollama", (model, spec, usage, opts) =>
   openAICompatible(spec, model, `${(env("OLLAMA_HOST") ?? "http://localhost:11434").replace(/\/+$/, "")}/v1`, usage, undefined, {}, opts),
 );
 
-registerProvider("gemini", (model, spec, usage, opts) =>
-  openAICompatible(
+registerProvider("gemini", (model, spec, usage, opts) => {
+  const llm = openAICompatible(
     spec,
     model,
     env("GEMINI_BASE_URL") ?? "https://generativelanguage.googleapis.com/v1beta/openai",
@@ -293,8 +331,23 @@ registerProvider("gemini", (model, spec, usage, opts) =>
     proxyableKey("GEMINI_API_KEY"),
     {},
     opts,
-  ),
-);
+  );
+  // The native API has a free countTokens method, but it only accepts the key as `x-goog-api-key`; with a key
+  // injected by a proxy (as a Bearer token) it refuses, and the 1-token completion of the OpenAI layer is used.
+  const key = env("GEMINI_API_KEY");
+  if (!key) return llm;
+  const url = `${(env("GEMINI_NATIVE_BASE_URL") ?? "https://generativelanguage.googleapis.com/v1beta").replace(/\/+$/, "")}/models/${model}:countTokens`;
+  return {
+    ...llm,
+    tokenCounting: "endpoint",
+    countIncludesFraming: false,
+    async countTokens(text) {
+      const data = await postJSON(url, { "x-goog-api-key": key }, { contents: [{ role: "user", parts: [{ text }] }] });
+      if (typeof data?.totalTokens !== "number") throw new Error(`unexpected response from ${url}: ${JSON.stringify(data).slice(0, 300)}`);
+      return data.totalTokens;
+    },
+  };
+});
 
 registerProvider("groq", (model, spec, usage, opts) =>
   openAICompatible(spec, model, env("GROQ_BASE_URL") ?? "https://api.groq.com/openai/v1", usage, proxyableKey("GROQ_API_KEY"), {}, opts),
@@ -330,6 +383,16 @@ registerProvider("anthropic", (model, spec, usage) => {
       const text = blocks.filter((b: any) => b?.type === "text").map((b: any) => b.text).join("");
       if (!text) throw new Error(`unexpected response from ${url}: ${JSON.stringify(data).slice(0, 300)}`);
       return text;
+    },
+    tokenCounting: "endpoint",
+    countIncludesFraming: true,
+    async countTokens(text) {
+      const data = await postJSON(`${url}/count_tokens`, { "x-api-key": key, "anthropic-version": "2023-06-01" }, {
+        model,
+        messages: [{ role: "user", content: text }],
+      });
+      if (typeof data?.input_tokens !== "number") throw new Error(`unexpected response from ${url}/count_tokens: ${JSON.stringify(data).slice(0, 300)}`);
+      return data.input_tokens;
     },
   };
 });

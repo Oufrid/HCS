@@ -6,7 +6,7 @@ import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import type { Anchor, Claim, HcsDocument, Probe } from "./format.js";
 import { collectSources } from "./sources.js";
 import { dependencies, depsHash, supportsDeps } from "./deps.js";
-import { findSymbol, languageOf, listSymbols, type SymbolRange } from "./symbols.js";
+import { findSymbol, languageOf, listSymbols, symbolBackend, type SymbolRange } from "./symbols.js";
 
 export const HASH_LENGTH = 12;
 
@@ -273,5 +273,15 @@ export function seal(doc: HcsDocument, cache: SourceCache, opts: { rehash?: bool
       } else if (r.status === "ok") refreshDeps(a);
     }
   }
+  recordParser(doc);
   return result;
+}
+
+/**
+ * Symbol hashes depend on the locator that found the range. When an optional back-end (tree-sitter) is active,
+ * record it in `@parser` so that every later check uses the same one.
+ */
+export function recordParser(doc: HcsDocument): void {
+  if (symbolBackend() === "heuristic") return;
+  if ([...doc.claims, ...doc.probes].some((i) => i.anchors.some((a) => a.symbol !== undefined && a.hash))) doc.headers.parser = symbolBackend();
 }

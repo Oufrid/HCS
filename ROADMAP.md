@@ -132,10 +132,20 @@ fields, a re-signature by another key, garbage signatures, outdated certificates
 signatures with a pure-Python Ed25519 that produces byte-identical signatures to `node:crypto`; a conformance case
 signed in Python is verified by both implementations.
 
-### C5. Better tokens and parsing (optional back-ends) `[ ]`
+### C5. Better tokens and parsing (optional back-ends) `[x]`
 - An optional real tokenizer when a provider exposes token counting, keeping the estimate as fallback.
 - An optional tree-sitter back-end for the symbol locator, behind a flag, never a hard dependency.
 - **Done when:** both are available, default behavior is unchanged, and the conformance suite still passes.
+
+Done: `--tokenizer M` on `score`, `curve` and `stats` counts with the provider (Anthropic `count_tokens`, Gemini
+native `countTokens` when the key is in the environment, otherwise the prompt size of a 1-token completion, minus
+the chat framing); certificates record `tokenizer`, budgets and digests keep the estimate. `--parser tree-sitter`
+(or `HCS_PARSER`) locates TypeScript, JavaScript and Python symbols with `web-tree-sitter`, loaded at run time only
+(dev dependencies for the tests, no runtime dependency); files sealed with it record `@parser tree-sitter` (SPEC
+0.3, section 5.2), later commands switch automatically, and hcs-py refuses them instead of misreading them. The
+default is unchanged: conformance 41/41 in both implementations, cross-check identical. Measured in
+`bench/REPORT.md`: estimate 111% of Groq's count on this repository's context; tree-sitter and the heuristic agree
+on 470 of 474 common symbols, every difference being a heuristic error.
 
 ---
 

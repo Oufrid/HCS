@@ -1,7 +1,7 @@
 HCS/0.2
 @title HCS - Holographic Context Standard (reference CLI)
 @root .
-@updated 2026-10-21T15:11:49.880Z
+@updated 2026-10-21T23:15:24.831Z
 @meta license=MIT language=TypeScript
 
 [claims]
@@ -10,10 +10,10 @@ HCS/0.2
 #purpose[manual] HCS is a plain-text format plus a zero-dependency Node.js CLI and MCP server (`hcs`) that makes LLM context traceable (claims cite sources), verifiable (anchors carry hashes) and measured (probes and fidelity certificates).
   > README.md:3-16 #cddd3cef50fb
 #layers[manual] Deterministic commands (init, validate, check, seal, render, stats, audit, serve, impact, keygen, badge) never call an LLM; compile, score, curve, compare and snapshot need a `provider:model` LLM; models only lists a provider's model ids.
-  > src/cli.ts::HELP #2b11aa8922f8
+  > src/cli.ts::HELP #b0da33a71ed9
 
 ## Format
-#magic[manual] A file starts with `HCS/0.3` (0.1 and 0.2 are still accepted, and the writer emits 0.2 unless a probe has tags), then `@key value` headers, then optional [claims], [probes] and [certificates] blocks; errors carry line numbers.
+#magic[manual] A file starts with `HCS/0.3` (0.1 and 0.2 are still accepted, and the writer emits 0.2 unless a 0.3 feature is used: probe tags, dependency hashes or the `@parser` header), then `@key value` headers, then optional [claims], [probes] and [certificates] blocks; errors carry line numbers.
   > src/format.ts::parse #3b7f2aa6aa3c
   > src/format.ts::SUPPORTED_VERSIONS #bfa61b8b8d04
 #anchor-syntax[manual] Anchors are `> path`, `> path:start-end` or `> path::Symbol`, optionally followed by `#hash` (`#hash/deps` for symbol anchors with a dependency hash); quoted forms allow spaces in paths and symbols.
@@ -30,14 +30,19 @@ HCS/0.2
   > src/anchors.ts::checkSymbolAnchor #ba6eb19e6540
   > src/anchors.ts::findMovedSymbol #e33d34d73e62
 #symbols[manual] Symbols are located without dependencies for brace languages, Python, Markdown headings, YAML and JSON, ignoring strings, regex literals and comments; unresolvable symbols are reported missing, never guessed.
-  > src/symbols.ts::listSymbols #20db3769bf48
+  > src/symbols.ts::listSymbols #9ff7204d2e67
   > src/symbols.ts::codeOnly #9e8476116018
+#treesitter[manual] `--parser tree-sitter` (or HCS_PARSER) locates TypeScript, JavaScript and Python symbols with web-tree-sitter, loaded at run time only and qualified by the syntax tree; other languages keep the heuristic, sealing records `@parser tree-sitter`, and the CLI turns the back-end on for files that carry it or stops with an install hint.
+  > src/treesitter.ts::enableTreeSitter #efbeaf0fb1c3
+  > src/treesitter.ts::treeSymbols #cc8f83cade7e
+  > src/cli.ts::chooseParser #b6191c8ad303
+  > src/anchors.ts::recordParser #b241c9f1f675
 #deps[manual] With `seal --deps`, JS/TS and Python symbol anchors also store a hash of the symbols they use directly (same-file symbols and class siblings found by identifier matching, plus names imported from project files), and check reports `review`, a non-failing status, when that hash changes while the symbol itself does not.
   > src/deps.ts::dependencies #6268650a4566
   > src/deps.ts::depsHash #2527f7f95d4c
   > src/anchors.ts::checkSymbolAnchor #ba6eb19e6540
 #seal[manual] `hcs seal` hashes unsealed anchors and follows moved ones (new lines, file or symbol); `--rehash` accepts stale content and drops certificates; `--rehash` also accepts `review` anchors, and `--deps` adds dependency hashes.
-  > src/anchors.ts::seal #ec2904d70807
+  > src/anchors.ts::seal #15fc15a95ec5
 
 ## Conformance
 #conformance[manual] conformance/ holds language-agnostic cases (case.json, input.hcs, src/, expected.json) for parse, serialize, symbols, find, hash, deps, check, seal, render, digest and verify (signatures); the TypeScript reference runs them with `npm run conformance`, on a copy outside any git repository.
@@ -52,9 +57,9 @@ HCS/0.2
   > src/compile.ts::anchorFor #5e3194b4874f
   > src/sources.ts::locateQuote #d6a37b2c93e6
 #incremental[manual] `compile --update` keeps items whose anchors are ok or moved, re-reads only dirty or uncovered files, never drops manual claims, regenerates overview claims and clears certificates.
-  > src/compile.ts::compile #52004be366d5
+  > src/compile.ts::compile #d68054f83887
 #resume[manual] When the quota runs out, the provider fails, or a reply has no usable JSON, compile keeps what it extracted and lists the missing chunks in the `@incomplete` header; `compile --update` then compiles only those chunks.
-  > src/compile.ts::compile #52004be366d5
+  > src/compile.ts::compile #d68054f83887
 #reasoning[manual] Reasoning models that spend the whole output budget before answering are retried once with a 16384-token budget, replies cut by the limit are counted, and JSON replies with unescaped quotes or backslashes are repaired before parsing.
   > src/llm.ts::REASONING_BUDGET #d98e35d80f53
   > src/llm.ts::repairJSON #14b284eb41cd
@@ -72,7 +77,7 @@ HCS/0.2
   > src/score.ts::POINTS #f5b535d01ef1
 #rigor[manual] Scores report a reproducible 95% bootstrap confidence interval, a no-context baseline, an informative fidelity on probes unanswerable without context, and a warning when the model judged itself.
   > src/score.ts::bootstrapCI #09a88d67acf9
-  > src/score.ts::scoreDocument #0001d11be7d7
+  > src/score.ts::scoreDocument #3429f04c4e76
 #curve[manual] `hcs curve` scores the same probes at several token budgets, scoring once the budgets that render the same context, and reports the knee: the smallest budget whose fidelity reaches the lower bound of the best point's 95% CI; each point is a certificate tagged with the curve id and the knee, and a curve whose smallest budget is already within that interval is reported as flat.
   > src/score.ts::scoreCurve #ffc5613318bc
   > src/score.ts::kneeOf #cca6ea2cbcd4
@@ -128,7 +133,10 @@ HCS/0.2
   > src/llm.ts::authHint #ffdcc6547ae0
 #rpm[manual] `--rpm` (or HCS_RPM) spaces requests evenly with one limiter per model spec; `--reasoning-effort` (or HCS_REASONING_EFFORT) is sent as `reasoning_effort` only when given.
   > src/llm.ts::RateLimiter #5c815985358a
-  > src/llm.ts::createLLM #e1653e3a53e5
+  > src/llm.ts::createLLM #3e324be51ea7
+#tokenizer[manual] `--tokenizer M` counts the rendered context with M's tokenizer (Anthropic count_tokens, Gemini native countTokens when GEMINI_API_KEY is set, otherwise the prompt size of a 1-token completion minus the chat framing measured once); `score` and `curve` then write `tokens` from that count and `tokenizer=M`, while budgets and digests keep the estimate.
+  > src/llm.ts::framedCounter #30ca9d4028a0
+  > src/score.ts::scoreDocument #3429f04c4e76
 
 [probes]
 ?p1 How many hex characters of the SHA-256 digest does an anchor hash keep?

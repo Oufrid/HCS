@@ -7,6 +7,8 @@
   Compilers may ignore Markdown markup when verifying quotes, and may write an `@incomplete` header (§8).
   The `recorded` tag (§3) marks claims written by an agent. Certificates may form a fidelity-vs-budget curve
   (`curve`, `knee`, §7). Certificates may be signed with Ed25519 (`key`, `sig`, the `@keys` header, §7.1).
+  The `@parser` header (§2, §5.2) names an optional symbol locator; the `tokenizer` certificate field (§7)
+  says that `tokens` was counted by a real tokenizer.
 - Changes in 0.2: symbol anchors (§5.2), the `suspect` tag (§3), and certificate fields `ci95`, `informative`, `runs` (§7).
 
 Every valid 0.1 or 0.2 file is a valid 0.3 file. A writer SHOULD emit the oldest version that can express the
@@ -59,6 +61,7 @@ Header lines appear before the first block and have the form `@key value`.
 | `source-files` | Number of source files the compiler considered. |
 | `source-tokens` | Estimated token size of all source material, for compression ratios. |
 | `meta` | Free-form `key=value` pairs (`@meta team=core license=MIT`). Values with spaces are double-quoted. |
+| `parser` | (since 0.3) The symbol locator that computed the ranges of `path::Symbol` anchors (§5.2): `heuristic` (the default when absent) or `tree-sitter`. |
 
 Unknown headers MUST be preserved by tools that rewrite the file.
 
@@ -152,6 +155,13 @@ brace languages at the matching `}`, Python and YAML at the next line indented a
 Names are qualified by nesting. A name that matches exactly one symbol by its last segment MAY be resolved.
 
 Symbol location is heuristic: it is not a full parser for every language. A verifier MUST report an unresolvable symbol as `missing`, never guess a range. Implementations SHOULD agree on the conformance cases in the reference test suite.
+
+Since 0.3, a tool MAY offer a parser-based locator instead (the reference CLI offers tree-sitter for TypeScript,
+JavaScript and Python, behind an option). It finds the same kinds of definitions with the same naming rules, but
+its ranges can differ on code the heuristic misreads, and a different range gives a different hash. A writer that
+seals symbol anchors with such a locator MUST write its name in the `@parser` header. A verifier MUST use the
+locator the header names; one that does not implement it MUST NOT report those anchors as stale, and SHOULD stop
+with an error instead.
 
 ### 5.3 Verification
 
@@ -248,7 +258,8 @@ A certificate records one scoring run:
 | `misled` | Share of answers that were wrong rather than abstaining. Lower is better. |
 | `runs` | (optional) Times each probe was asked. Default 1. |
 | `probes` | Number of verified probes used (stale probes are skipped). |
-| `tokens` | Estimated size of the rendered context. |
+| `tokens` | Size of the rendered context: estimated, or counted when `tokenizer` is present. |
+| `tokenizer` | (since 0.3, optional) The `provider:model` whose tokenizer counted `tokens`. Budgets (`budget`, §6) always use the deterministic estimate, so that digests do not depend on a provider. |
 | `budget` | (optional) Token budget used for rendering. |
 | `digest` | First 12 hex characters of the SHA-256 of the rendered context (with stale/missing claims removed, at `budget`). |
 | `date` | When the score was computed. |

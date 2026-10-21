@@ -208,7 +208,11 @@ _HEADER_ORDER = ["title", "root", "created", "updated", "generator", "source-fil
 
 
 def serialize(doc):
-    needs_03 = any(p.get("tags") for p in doc["probes"]) or any(a.get("deps") for i in doc["claims"] + doc["probes"] for a in i["anchors"])
+    needs_03 = (
+        "parser" in doc["headers"]
+        or any(p.get("tags") for p in doc["probes"])
+        or any(a.get("deps") for i in doc["claims"] + doc["probes"] for a in i["anchors"])
+    )
     out = [MAGIC if needs_03 else "HCS/0.2"]
     headers = doc["headers"]
     keys = [k for k in _HEADER_ORDER if k in headers] + [k for k in headers if k not in _HEADER_ORDER]

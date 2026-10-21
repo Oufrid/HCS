@@ -83,6 +83,14 @@ class Cli(unittest.TestCase):
             f.write("not hcs\n")
         self.assertEqual(run("validate", self.file)[0], 2)
 
+    def test_tree_sitter_files_are_refused_not_misread(self):
+        # Hashes made by another symbol parser could read as stale here: refuse instead of guessing.
+        with open(self.file, "w") as f:
+            f.write("HCS/0.3\n@title t\n@parser tree-sitter\n[claims]\n#c1 Fee.\n  > rates.ts::fee #000000000000\n")
+        self.assertEqual(run("validate", self.file)[0], 0)
+        for cmd in ("check", "seal", "render"):
+            self.assertEqual(run(cmd, self.file)[0], 2, cmd)
+
 
 if __name__ == "__main__":
     unittest.main()

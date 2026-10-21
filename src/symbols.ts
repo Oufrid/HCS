@@ -14,6 +14,23 @@ type Lang = "brace" | "python" | "markdown" | "yaml" | "json";
 
 type Flat = Omit<SymbolRange, "name"> & { short: string };
 
+/** Qualified symbols of a file from an optional back-end (tree-sitter), or null to use the heuristic. */
+export type SymbolBackend = (path: string, lines: string[]) => SymbolRange[] | null;
+
+let backend: SymbolBackend | undefined;
+let backendName = "heuristic";
+
+/** Replace the heuristic for the files a back-end handles (see src/treesitter.ts). Pass undefined to reset. */
+export function setSymbolBackend(fn: SymbolBackend | undefined, name = "heuristic"): void {
+  backend = fn;
+  backendName = fn ? name : "heuristic";
+}
+
+/** "heuristic" by default, or the name of the active back-end. */
+export function symbolBackend(): string {
+  return backendName;
+}
+
 export function languageOf(path: string): Lang {
   const ext = /\.([A-Za-z0-9]+)$/.exec(path)?.[1]?.toLowerCase() ?? "";
   if (["py", "pyi"].includes(ext)) return "python";
@@ -273,6 +290,8 @@ function markdownSymbols(lines: string[]): (Flat & { level: number })[] {
 /** All symbols in a file with qualified names derived from nesting. */
 export function listSymbols(path: string, lines: string[]): SymbolRange[] {
   const lang = languageOf(path);
+  const parsed = backend?.(path, lines);
+  if (parsed) return parsed;
   let flat: Flat[];
   if (lang === "markdown") {
     // Headings are addressed by their own text; nesting would make names fragile.

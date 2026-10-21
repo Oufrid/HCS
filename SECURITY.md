@@ -55,4 +55,7 @@ An agent connected to `hcs serve` tries to read or change more than it should.
 ## Supply chain
 
 The CLI has no runtime dependencies (only Node.js built-ins), which keeps the attack surface small. Releases
-will be published with npm provenance (roadmap item B4).
+will be published with npm provenance (roadmap item B4). The optional tree-sitter back-end (`--parser
+tree-sitter`) loads `web-tree-sitter` and grammar packages only when asked for; they are WebAssembly modules that
+parse source text and get no file or network access from HCS. Install them from npm with a lockfile like any
+other dependency.

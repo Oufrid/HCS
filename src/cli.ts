@@ -20,6 +20,7 @@ import { DECODER_PROMPT, estimateTokens, renderContext, selectClaims } from "./r
 import { compareContexts, findKnownProbes, hashForCertificate, scoreContext, scoreCurve, scoreDocument, type ProbeResult, type ScoreCache, type ScoreSummary } from "./score.js";
 import { serveStdio } from "./mcp.js";
 import { parseConversation, toTranscript } from "./snapshot.js";
+import { enableTreeSitter, INSTALL_HINT } from "./treesitter.js";
 
 const VERSION = "0.2.0";
 
@@ -39,7 +40,8 @@ Deterministic commands (no LLM, no network; except \`models\`, which asks the pr
                                               check reports "review" when a dependency changes)
   hcs render <file.hcs> [--budget N]          Print the context block to give an LLM
              [--decoder] [--no-anchors] [--keep-stale]
-  hcs stats <file.hcs>                        Sizes, token estimates, compression ratio
+  hcs stats <file.hcs> [--tokenizer M]        Sizes, token estimates, compression ratio
+                                              (--tokenizer: also count with that model's real tokenizer)
   hcs audit <context-file> [--root DIR]       Find broken file references in AGENTS.md, CLAUDE.md...
             [--probes file.hcs --model M]     ...and score it against an .hcs probe set
   hcs serve <file.hcs> [--root DIR]           MCP server (stdio) for any MCP client; source reads stay in the root
@@ -54,8 +56,13 @@ Deterministic commands (no LLM, no network; except \`models\`, which asks the pr
                                               trusted key
   hcs models <provider> [--free]              List the model ids your key can use (--free: OpenRouter ":free" models)
 
+Any command: --parser tree-sitter (or HCS_PARSER=tree-sitter) locates TypeScript, JavaScript and Python symbols
+with tree-sitter instead of the built-in heuristic. Optional: ${INSTALL_HINT}
+Files sealed this way record @parser tree-sitter, and later commands use it automatically.
+
 LLM commands (--model provider:model, optional --rpm N to stay under free-tier rate limits, optional
---reasoning-effort low|medium|high to limit hidden reasoning on models that support it):
+--reasoning-effort low|medium|high to limit hidden reasoning on models that support it, optional
+--tokenizer M on score and curve to count the context with M's tokenizer instead of estimating it):
   hcs compile [paths...] --model M [-o project.hcs] [--root DIR] [--title T]
               [--update] [--max-probes N] [--no-synthesize] [--concurrency N]
               [--anchors symbols|lines] [--filter-known M1,M2]
@@ -71,6 +78,10 @@ LLM commands (--model provider:model, optional --rpm N to stay under free-tier r
                                               Paired comparison of two contexts on the same probes; each side
                                               is an .hcs file (rendered), any text file (AGENTS.md...) or none
   hcs snapshot <conversation.json|.md> --model M [-o session.hcs]
+
+Token counting (--tokenizer): anthropic and gemini (with GEMINI_API_KEY set) use their free counting endpoints;
+the other providers send a 1-token completion and read the prompt size it reports (it uses requests and
+quota). Budgets and digests always use the deterministic estimate.
 
 Providers: openai (OPENAI_API_KEY, OPENAI_BASE_URL for any compatible server),
            anthropic (ANTHROPIC_API_KEY), gemini (GEMINI_API_KEY), groq (GROQ_API_KEY),
@@ -185,6 +196,38 @@ function printSourceFindings(found: SourceFinding[]): void {
   if (high.length) console.log("  claims quoting such text are tagged suspect and not rendered; review these files if you did not expect it");
 }
 
+/** The `@parser` header of an .hcs file given on the command line, if any. */
+function recordedParser(positionals: string[]): { file: string; parser: string } | undefined {
+  for (const file of positionals) {
+    if (!file.endsWith(".hcs") || !existsSync(file)) continue;
+    const head = readFileSync(file, "utf8").split(/\r?\n\[/)[0];
+    const parser = /^@parser[ \t]+(\S+)/m.exec(head)?.[1];
+    if (parser) return { file, parser };
+  }
+  return undefined;
+}
+
+/**
+ * Symbol locator: the heuristic by default; tree-sitter when asked (--parser, HCS_PARSER) or when the file was
+ * sealed with it (`@parser tree-sitter`), since symbol hashes must be recomputed with the parser that made them.
+ */
+async function chooseParser(flag: string | undefined, positionals: string[]): Promise<void> {
+  const recorded = recordedParser(positionals);
+  const asked = flag ?? process.env.HCS_PARSER?.trim();
+  if (asked && recorded && asked !== recorded.parser) {
+    console.error(`hcs: warning: ${recorded.file} was sealed with --parser ${recorded.parser}; symbol anchors may read as stale with ${asked}`);
+  }
+  const parser = asked || recorded?.parser || "heuristic";
+  if (parser === "heuristic") return;
+  if (parser !== "tree-sitter") throw new UsageError(`unknown parser "${parser}" (expected heuristic or tree-sitter)`);
+  try {
+    await enableTreeSitter();
+  } catch (e) {
+    const why = recorded && !asked ? `${recorded.file} was sealed with the tree-sitter symbol parser (@parser tree-sitter). ` : "";
+    throw new UsageError(`${why}${e instanceof Error ? e.message : String(e)}`);
+  }
+}
+
 async function main(argv: string[]): Promise<number> {
   const [cmd, ...rest] = argv;
   if (!cmd || cmd === "help" || cmd === "--help" || cmd === "-h") {
@@ -223,6 +266,8 @@ async function main(argv: string[]): Promise<number> {
       "chunk-lines": { type: "string" },
       rpm: { type: "string" },
       "reasoning-effort": { type: "string" },
+      tokenizer: { type: "string" },
+      parser: { type: "string" },
       "allow-write": { type: "boolean" },
       deps: { type: "boolean" },
       sign: { type: "string" },
@@ -240,6 +285,7 @@ async function main(argv: string[]): Promise<number> {
       quiet: { type: "boolean", short: "q" },
     },
   });
+  await chooseParser(o.parser, positionals);
   const num = (v: string | undefined, name: string) => {
     if (v === undefined) return undefined;
     const n = Number(v);
@@ -254,6 +300,12 @@ async function main(argv: string[]): Promise<number> {
     return c;
   };
   const judges = () => (o.judge?.length ? o.judge.map(llm) : undefined);
+  const tokenizer = () => {
+    if (!o.tokenizer) return undefined;
+    const c = llm(o.tokenizer);
+    if (!c.countTokens) throw new UsageError(`${o.tokenizer}: this provider cannot count tokens`);
+    return c;
+  };
   // Always tell the user what the run consumed, so costs and quotas are never a surprise.
   process.on("exit", () => {
     for (const c of clients) {
@@ -412,7 +464,15 @@ async function main(argv: string[]): Promise<number> {
         if (b < ctxTokens) console.log(`  --budget ${String(b).padEnd(5)}    keeps ${selectClaims(doc, { budget: b }).length} claims`);
       }
       for (const c of doc.certificates) console.log(`  certificate       ${Object.entries(c.fields).map(([k, v]) => `${k}=${v}`).join(" ")}`);
-      console.log("  (token counts are tokenizer-free estimates)");
+      const counter = tokenizer();
+      if (counter) {
+        const [fileCount, ctxCount] = [await counter.countTokens!(readFileSync(file, "utf8")), await counter.countTokens!(ctx)];
+        const how = counter.tokenCounting === "endpoint" ? "counting endpoint" : "prompt size of a 1-token completion";
+        console.log(`  counted by ${counter.id} (${how}):`);
+        console.log(`  .hcs file         ${fileCount} tokens  (estimate ${pct(fileTokens / fileCount)} of it)`);
+        console.log(`  rendered context  ${ctxCount} tokens  (estimate ${pct(ctxTokens / ctxCount)} of it)`);
+        console.log("  (other counts are tokenizer-free estimates; budgets always use the estimate)");
+      } else console.log("  (token counts are tokenizer-free estimates)");
       return 0;
     }
 
@@ -498,6 +558,7 @@ async function main(argv: string[]): Promise<number> {
           onProgress: progress,
           cache: saved.context,
           baselineCache: saved.baseline,
+          tokenizer: tokenizer(),
         });
       } catch (e) {
         if (e instanceof QuotaError) {
@@ -515,7 +576,8 @@ async function main(argv: string[]): Promise<number> {
         console.log(JSON.stringify(result, null, 2));
         return 0;
       }
-      console.log(`${file} scored with ${result.certificate.fields.model} (judge ${result.certificate.fields.judge}), context ~${result.contextTokens} tokens`);
+      const size = result.tokensCounted ? `${result.contextTokens} tokens (counted by ${result.certificate.fields.tokenizer})` : `~${result.contextTokens} tokens`;
+      console.log(`${file} scored with ${result.certificate.fields.model} (judge ${result.certificate.fields.judge}), context ${size}`);
       printScore("with context", result.withContext);
       if (result.baseline) {
         printScore("without context", result.baseline);
@@ -576,6 +638,7 @@ async function main(argv: string[]): Promise<number> {
           concurrency: num(o.concurrency, "concurrency"),
           onProgress: progress,
           cacheFor,
+          tokenizer: tokenizer(),
         });
       } catch (e) {
         if (e instanceof QuotaError) throw new Error(`${e.message}\nProbe results are saved; run the same command later to resume.`);

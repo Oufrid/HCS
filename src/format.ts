@@ -3,7 +3,8 @@
 export const FORMAT_VERSION = "0.3";
 export const MAGIC = `HCS/${FORMAT_VERSION}`;
 /**
- * Versions this reader accepts. 0.2 added `path::Symbol` anchors, 0.3 added probe tags (`?id[known] ...`).
+ * Versions this reader accepts. 0.2 added `path::Symbol` anchors, 0.3 added probe tags (`?id[known] ...`),
+ * dependency hashes and the `@parser` header.
  * Older files are valid newer files. The writer emits the oldest version that can express the document.
  */
 export const SUPPORTED_VERSIONS = ["0.1", "0.2", "0.3"];
@@ -214,7 +215,8 @@ export function parse(text: string): HcsDocument {
 }
 
 export function serialize(doc: HcsDocument): string {
-  const needs03 = doc.probes.some((p) => p.tags?.length) || [...doc.claims, ...doc.probes].some((i) => i.anchors.some((a) => a.deps));
+  const needs03 =
+    "parser" in doc.headers || doc.probes.some((p) => p.tags?.length) || [...doc.claims, ...doc.probes].some((i) => i.anchors.some((a) => a.deps));
   const out: string[] = [needs03 ? MAGIC : "HCS/0.2"];
   const order = ["title", "root", "created", "updated", "generator", "source-files", "source-tokens"];
   const keys = [...order.filter((k) => k in doc.headers), ...Object.keys(doc.headers).filter((k) => !order.includes(k))];

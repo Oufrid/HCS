@@ -93,6 +93,11 @@ not recovered from the context:
 - **`--budget 1000`** scores what a small-context model would see. `hcs curve project.hcs --model M --judge J`
   scores several budgets (250 to 4000 by default) on the same probes and reports the knee: the smallest budget
   within the 95% CI of the best fidelity. Budgets that render the same context are scored once.
+- **`--tokenizer M`** counts the context with model M's tokenizer instead of estimating it (also on `curve`, and
+  `hcs stats --tokenizer M`); the certificate then records `tokenizer=M`. Anthropic and Gemini (with
+  `GEMINI_API_KEY` set) have free counting endpoints; other providers are asked a 1-token completion whose
+  reported prompt size is read, which uses a request. Budgets always use the estimate, so digests stay
+  reproducible without a provider.
 - **`--write`** stores a **certificate** bound to a digest of the exact context that was scored. `hcs check` reports it as outdated as soon as that context changes.
 - **`--sign team.key`** signs it with Ed25519 (`hcs keygen team` creates the key pair). `hcs check --trusted keys.txt`
   then says who signed each certificate, and fails if one was edited after signing. `hcs badge project.hcs --trusted
@@ -160,6 +165,14 @@ A symbol anchor (`path::Name`) hashes its symbol with all whitespace removed:
 - **Changing its logic** gives `stale`: a human or `compile --update` must look at it.
 
 Symbol location is built in and needs no dependency. It covers brace languages (JS/TS, Java, C#, Go, Rust, C/C++, PHP, Kotlin, Swift…), Python, Markdown headings, and YAML/JSON keys. It is heuristic rather than a full parser: when it cannot find a symbol, it says so and never guesses. Line anchors (`path:10-20`) and whole-file anchors remain available; `compile --anchors lines` forces them.
+
+For TypeScript, JavaScript and Python, `--parser tree-sitter` (or `HCS_PARSER=tree-sitter`) uses a real parser
+instead. It is optional: install `web-tree-sitter tree-sitter-typescript tree-sitter-javascript tree-sitter-python`
+next to `hcs` or in your project. A file sealed this way records `@parser tree-sitter`, and later commands use it
+automatically (or stop with an install hint), since a symbol's hash depends on the range the parser found. On this
+repository's 51 TS/JS/Python files the two locators give the same range for 470 of the 474 symbols both find; the
+differences are code the heuristic misreads, such as functions inside one-line objects
+([bench/c5/symbols-agreement.txt](bench/c5/symbols-agreement.txt)).
 
 ### Claims about code that uses other code
 
@@ -302,7 +315,7 @@ Benchmark with real models: add your API keys as repository secrets (`GEMINI_API
 | `hcs check <f>` | no | Verify all anchors, certificates and suspect claims (exit 1 on stale/missing) |
 | `hcs seal <f>` | no | Hash unsealed anchors, follow moved ones, `--rehash` accepts changes |
 | `hcs render <f>` | no | Print the context block (`--budget`, `--decoder`) |
-| `hcs stats <f>` | no | Sizes, compression ratio, claims kept per budget |
+| `hcs stats <f>` | optional | Sizes, compression ratio, claims kept per budget (`--tokenizer M`: real token counts) |
 | `hcs serve <f>` | no | MCP server |
 | `hcs audit <file>` | optional | Broken references; fidelity of any context file |
 | `hcs models <provider>` | no | List model ids your key can use |
