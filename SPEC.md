@@ -4,6 +4,7 @@
 
 - Changes in 0.3: probe tags and the `known` tag (§4), the `@known-filter` header (§4), two judges and the
   certificate fields `novel`, `novel-probes`, `judge-agreement`, `judge-kappa`, `judged` (§7).
+  Compilers may ignore Markdown markup when verifying quotes, and may write an `@incomplete` header (§8).
 - Changes in 0.2: symbol anchors (§5.2), the `suspect` tag (§3), and certificate fields `ci95`, `informative`, `runs` (§7).
 
 Every valid 0.1 or 0.2 file is a valid 0.3 file. A writer SHOULD emit the oldest version that can express the
@@ -230,13 +231,16 @@ Certificates are evidence, not guarantees. They depend on the answering model, t
 A conforming compiler (which turns sources into an `.hcs` file) MUST:
 
 1. Seal every anchor it writes.
-2. Discard any claim or probe whose supporting quote cannot be found verbatim (modulo whitespace and case) in the cited source passage.
+2. Discard any claim or probe whose supporting quote cannot be found verbatim (modulo whitespace and case) in the cited source passage. Since 0.3, a compiler MAY also ignore Markdown inline markup (backticks, `*`, `_`, `~`, link syntax `[text](url)`) and typographic quote styles on both sides, because models quote the words of a passage but often drop its markup; the words themselves MUST still match.
 3. Preserve `manual` claims when updating an existing file.
 
 A conforming compiler SHOULD:
 
 - Update incrementally, by keeping claims whose anchors are `ok`/`moved` and re-reading only changed or new sources.
 - Drop existing certificates whenever the claims change.
+- When a run stops early (quota, provider failure, unusable reply), keep what was extracted and list the source
+  chunks not compiled yet in the header `@incomplete path:start-end,...`, so that an incremental run can finish
+  them. A file with `@incomplete` is valid but partial; tools SHOULD say so.
 
 ## 9. Versioning
 

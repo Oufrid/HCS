@@ -169,18 +169,17 @@ export function profileFor(path: string, text: string): Profile {
 }
 
 /**
- * Locate a quoted passage inside a chunk, ignoring whitespace and case differences.
+ * Locate a quoted passage inside a chunk, ignoring whitespace, case and Markdown formatting.
  * Returns the 1-based line range it spans, or null if the quote is not really in the source.
  */
 export function locateQuote(chunk: Chunk, quote: string): { start: number; end: number } | null {
-  const norm = (s: string) => s.replace(/\s+/g, " ").trim().toLowerCase();
-  const q = norm(quote);
+  const q = normalizeForQuote(quote);
   if (q.length < 3) return null;
   let joined = "";
   const offsets: number[] = [];
   for (const l of chunk.lines) {
     offsets.push(joined.length);
-    joined += norm(l) + " ";
+    joined += normalizeForQuote(l) + " ";
   }
   const at = joined.indexOf(q);
   if (at === -1) return null;
@@ -190,4 +189,20 @@ export function locateQuote(chunk: Chunk, quote: string): { start: number; end: 
     return chunk.start + i;
   };
   return { start: lineAt(at), end: lineAt(at + q.length - 1) };
+}
+
+/**
+ * Normalization for quote matching. Models quote the words of a passage but often drop its Markdown markup
+ * (`code`, **bold**, [links](url)) or switch quote styles, so those are ignored on both sides; the words
+ * themselves must still match exactly.
+ */
+export function normalizeForQuote(s: string): string {
+  return s
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201c\u201d]/g, '"')
+    .replace(/[`*_~]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
 }

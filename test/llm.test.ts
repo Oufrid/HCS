@@ -426,6 +426,8 @@ test("compile keeps its work when the quota runs out, and --update finishes it",
     const partial = readFileSync(join(dir, "project.hcs"), "utf8");
     assert.match(partial, /@incomplete docs\/policy.md:1-\d+,src\/rates.ts:1-\d+/);
     assert.match(partial, /docs\/more.md/, "the chunk compiled before the quota ran out is kept");
+    const checked = await runAsync("check", "project.hcs");
+    assert.match(checked.out, /note: partial file, 2 source chunk\(s\) not compiled yet/);
 
     exhausted = false;
     r = await runAsync("compile", "--model", "openai:fake", "-o", "project.hcs", "--update", "-q");
@@ -509,4 +511,32 @@ test("extractJSON repairs unescaped quotes and backslashes copied from source co
   assert.equal(data.claims[0].quote, 'return injectionFindings(text).some((f) => f.severity === "high");');
   assert.equal(data.claims[1].quote, "/\\s+/g and \\d");
   assert.equal(data.claims.length, 2);
+});
+
+test("Groq 413 (prompt + max_tokens over the tokens-per-minute limit) shrinks max_tokens once", async () => {
+  // Real: "Request too large for model `openai/gpt-oss-120b` ... (TPM): Limit 8000, Requested 8856".
+  const budgets: number[] = [];
+  const server = createServer((req, res) => {
+    let raw = "";
+    req.on("data", (c) => (raw += c));
+    req.on("end", () => {
+      const body = JSON.parse(raw);
+      budgets.push(body.max_tokens);
+      if (body.max_tokens + 664 > 8000) {
+        res.writeHead(413, { "content-type": "application/json" });
+        return res.end(JSON.stringify({ error: { message: `Request too large ... on tokens per minute (TPM): Limit 8000, Requested ${body.max_tokens + 664}, please reduce your message size`, code: "rate_limit_exceeded" } }));
+      }
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify({ choices: [{ message: { content: "fits" }, finish_reason: "stop" }] }));
+    });
+  });
+  await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
+  process.env.GROQ_BASE_URL = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+  try {
+    assert.equal(await createLLM("groq:big").complete({ system: "s", prompt: "p", maxTokens: 8192 }), "fits");
+    assert.deepEqual(budgets, [8192, 8192 - (8192 + 664 - 8000) - 64]);
+  } finally {
+    server.close();
+    delete process.env.GROQ_BASE_URL;
+  }
 });

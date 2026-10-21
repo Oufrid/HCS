@@ -131,6 +131,13 @@ test("chunking, quote location and ignore globs", () => {
   assert.deepEqual(locateQuote(c, "return 1 + 2;"), { start: 2, end: 3 });
   assert.equal(locateQuote(c, "return 3"), null);
 
+  // Real Gemini quotes of README.md dropped the Markdown markup; the words still have to match.
+  const md = chunkFile("README.md", "# T\n\n- **Fidelity** comes with a 95% bootstrap CI.\n\n`hcs serve project.hcs` is a [Model Context Protocol](https://modelcontextprotocol.io) server.\nIt\u2019s \u201cfast\u201d.\n")[0];
+  assert.deepEqual(locateQuote(md, "Fidelity comes with a 95% bootstrap CI."), { start: 3, end: 3 });
+  assert.deepEqual(locateQuote(md, "hcs serve project.hcs is a Model Context Protocol server."), { start: 5, end: 5 });
+  assert.deepEqual(locateQuote(md, `It's "fast".`), { start: 6, end: 6 });
+  assert.equal(locateQuote(md, "Fidelity comes with a 99% bootstrap CI."), null, "words must still match");
+
   assert.ok(globToRegExp("*.lock").test("deep/dir/yarn.lock"));
   assert.ok(globToRegExp("node_modules/").test("a/node_modules/x.js"));
   assert.ok(globToRegExp("/src/gen/**").test("src/gen/a/b.ts"));

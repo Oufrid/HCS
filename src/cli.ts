@@ -260,6 +260,9 @@ async function main(argv: string[]): Promise<number> {
         console.log(`  certificate ${c.fields.model} fidelity=${c.fields.fidelity}: ${c.current ? "current" : "OUTDATED (context changed since it was scored)"}`);
       }
       if (reports.some((r) => r.status === "moved" || r.status === "unsealed")) console.log(`  hint: run \`hcs seal ${file}\` to update moved/unsealed anchors`);
+      if (doc.headers.incomplete) {
+        console.log(`  note: partial file, ${doc.headers.incomplete.split(",").length} source chunk(s) not compiled yet (@incomplete); finish with \`hcs compile --update\``);
+      }
       if (failing.length) {
         console.log(`FAIL: ${failing.length} item(s) no longer match their sources. Review them, then fix or \`hcs seal --rehash --ids ...\`, or recompile with --update.`);
         return 1;

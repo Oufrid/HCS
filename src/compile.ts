@@ -315,10 +315,11 @@ export async function compile(opts: CompileOptions): Promise<{ doc: HcsDocument;
     try {
       r = await extractChunk(opts.llm, chunk, profile, opts, fileLines);
     } catch (e) {
-      if (!(e instanceof QuotaError)) throw e;
-      quota ??= e;
+      // Any provider failure (quota, overload, a request the provider refuses) stops the run without losing
+      // what was already extracted.
+      quota ??= e instanceof QuotaError ? e : new QuotaError(e instanceof Error ? e.message : String(e));
       unfinished.push(chunkKey(chunk));
-      log(`[${++done}/${chunks.length}] ${chunkKey(chunk)} -> not compiled: quota exhausted`);
+      log(`[${++done}/${chunks.length}] ${chunkKey(chunk)} -> not compiled: ${e instanceof QuotaError ? "quota exhausted" : "provider error"}`);
       return empty;
     }
     if (r.unusable) {
@@ -352,9 +353,8 @@ export async function compile(opts: CompileOptions): Promise<{ doc: HcsDocument;
       claims = [...overview, ...claims];
       renumber(claims);
     } catch (e) {
-      if (!(e instanceof QuotaError)) throw e;
-      quota = e;
-      log("overview not synthesized: quota exhausted");
+      quota = e instanceof QuotaError ? e : new QuotaError(e instanceof Error ? e.message : String(e));
+      log(`overview not synthesized: ${quota.message.slice(0, 120)}`);
     }
   }
 
