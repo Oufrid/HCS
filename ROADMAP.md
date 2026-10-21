@@ -103,7 +103,7 @@ on 2026-10-22.
 - **Done when:** the curve is implemented, specified and tested, and one real curve is published in
   `bench/REPORT.md`.
 
-### C2. Self-improving compilation `[ ]`
+### C2. Self-improving compilation `[~]`
 - `hcs refine <file.hcs> --model M`: use failed probes to find gaps, extract claims that fill them from the
   cited sources (quote verification still applies), and drop claims that no probe ever relies on (measured by
   ablation within the budget). Repeat while fidelity improves beyond the CI.
@@ -111,6 +111,14 @@ on 2026-10-22.
   fidelity on them.
 - **Done when:** refine improves held-out fidelity on at least two real repositories, documented with raw
   numbers. If it does not, document that honestly.
+
+Done so far: `hcs refine` (src/refine.ts). It splits the probes deterministically (30% held out, recorded in an
+`@holdout` header and reused), asks the writer for up to 3 claims per failed training probe with the probe's
+question and cited source but not its answer, keeps only quote-verified new claims, accepts a round only when
+training fidelity rises and stops when a gain stays inside the confidence interval; `--prune` drops whole sections
+the training probes do not need. A quota stop resumes from saved probe results and writer replies. Tests cover
+held-out isolation, rejected rounds, pruning and resume. Remaining: the real measurement on two repositories, which
+needs free-tier quota.
 
 ### C3. Dependency-aware invalidation `[x]`
 Done: `hcs seal --deps` stores, on JS/TS and Python symbol anchors, a hash of the symbols they use directly

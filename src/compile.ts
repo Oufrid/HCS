@@ -106,7 +106,7 @@ interface RawProbe {
   lines?: unknown;
 }
 
-function anchorFor(chunk: Chunk, quote: unknown, lines: unknown, fileLines?: string[]): Anchor | null {
+export function anchorFor(chunk: Chunk, quote: unknown, lines: unknown, fileLines?: string[]): Anchor | null {
   if (typeof quote !== "string") return null;
   const at = locateQuote(chunk, quote);
   if (!at) return null;
@@ -170,7 +170,7 @@ async function extractChunk(llm: LLM, chunk: Chunk, profile: Profile, opts: Comp
   return { claims, probes, proposedClaims: rawClaims.length, proposedProbes: rawProbes.length };
 }
 
-function oneLine(s: string): string {
+export function oneLine(s: string): string {
   return s.replace(/\s+/g, " ").trim();
 }
 

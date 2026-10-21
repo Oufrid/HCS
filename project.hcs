@@ -1,7 +1,7 @@
 HCS/0.2
 @title HCS - Holographic Context Standard (reference CLI)
 @root .
-@updated 2026-10-21T23:34:09.984Z
+@updated 2026-10-21T23:53:42.889Z
 @meta license=MIT language=TypeScript
 
 [claims]
@@ -9,8 +9,8 @@ HCS/0.2
 ## Overview
 #purpose[manual] HCS is a plain-text format plus a zero-dependency Node.js CLI and MCP server (`hcs`) that makes LLM context traceable (claims cite sources), verifiable (anchors carry hashes) and measured (probes and fidelity certificates).
   > README.md:3-16 #cddd3cef50fb
-#layers[manual] Deterministic commands (init, validate, check, seal, render, stats, audit, serve, impact, keygen, badge) never call an LLM; compile, score, curve, compare and snapshot need a `provider:model` LLM; models only lists a provider's model ids.
-  > src/cli.ts::HELP #b0da33a71ed9
+#layers[manual] Deterministic commands (init, validate, check, seal, render, stats, audit, serve, impact, keygen, badge) never call an LLM; compile, score, curve, refine, compare and snapshot need a `provider:model` LLM; models only lists a provider's model ids.
+  > src/cli.ts::HELP #03eabca60f40
 
 ## Format
 #magic[manual] A file starts with `HCS/0.3` (0.1 and 0.2 are still accepted, and the writer emits 0.2 unless a 0.3 feature is used: probe tags, dependency hashes or the `@parser` header), then `@key value` headers, then optional [claims], [probes] and [certificates] blocks; errors carry line numbers.
@@ -61,7 +61,7 @@ HCS/0.2
 
 ## Compilation
 #quote-guard[manual] The compiler discards any claim or probe whose quote is not found verbatim (ignoring whitespace, case and Markdown markup such as backticks, emphasis and link syntax) in the cited chunk, then anchors it to the smallest enclosing symbol under 80 lines, or to the quoted lines.
-  > src/compile.ts::anchorFor #5e3194b4874f
+  > src/compile.ts::anchorFor #22911e78a9b3
   > src/sources.ts::locateQuote #d6a37b2c93e6
 #incremental[manual] `compile --update` keeps items whose anchors are ok or moved, re-reads only dirty or uncovered files, never drops manual claims, regenerates overview claims and clears certificates.
   > src/compile.ts::compile #d68054f83887
@@ -85,6 +85,10 @@ HCS/0.2
 #rigor[manual] Scores report a reproducible 95% bootstrap confidence interval, a no-context baseline, an informative fidelity on probes unanswerable without context, and a warning when the model judged itself.
   > src/score.ts::bootstrapCI #09a88d67acf9
   > src/score.ts::scoreDocument #3429f04c4e76
+#refine[manual] `hcs refine` holds out a deterministic share of the probes (default 30%, kept in the `@holdout` header), asks the writer model for quote-verified claims filling each failed training probe without showing it the answer, keeps a round only if training fidelity rises, and reports fidelity on the held-out probes before and after.
+  > src/refine.ts::refine #fe9eb42cf1ae
+  > src/refine.ts::splitHoldout #e1d7aa4ab901
+  > src/refine.ts::fillGap #ab8af775cc24
 #curve[manual] `hcs curve` scores the same probes at several token budgets, scoring once the budgets that render the same context, and reports the knee: the smallest budget whose fidelity reaches the lower bound of the best point's 95% CI; each point is a certificate tagged with the curve id and the knee, and a curve whose smallest budget is already within that interval is reported as flat.
   > src/score.ts::scoreCurve #ffc5613318bc
   > src/score.ts::kneeOf #cca6ea2cbcd4
@@ -157,7 +161,7 @@ HCS/0.2
   > src/format.ts::SUPPORTED_VERSIONS #bfa61b8b8d04
 ?p4 What happens to a compiled claim whose quote is not found in the source?
   = it is discarded
-  > src/compile.ts::anchorFor #5e3194b4874f
+  > src/compile.ts::anchorFor #22911e78a9b3
 ?p5 How many points does a partial answer earn in the fidelity score?
   = 0.5
   > src/score.ts::POINTS #f5b535d01ef1

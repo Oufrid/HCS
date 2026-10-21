@@ -19,6 +19,7 @@ import { createLLM, listModels, QuotaError, type LLM } from "./llm.js";
 import { DECODER_PROMPT, estimateTokens, renderContext, selectClaims } from "./render.js";
 import { compareContexts, findKnownProbes, hashForCertificate, scoreContext, scoreCurve, scoreDocument, type ProbeResult, type ScoreCache, type ScoreSummary } from "./score.js";
 import { serveStdio } from "./mcp.js";
+import { refine, refineStore } from "./refine.js";
 import { parseConversation, toTranscript } from "./snapshot.js";
 import { enableTreeSitter, INSTALL_HINT } from "./treesitter.js";
 
@@ -74,6 +75,9 @@ LLM commands (--model provider:model, optional --rpm N to stay under free-tier r
   hcs curve <file.hcs> --model M [--judge M] [--budgets 250,500,1000,2000,4000] [--baseline] [--runs N] [--write] [--json] [--sign key-file]
                                               Fidelity at each token budget and the knee (smallest budget within the
                                               95% CI of the best); --write stores one certificate per budget
+  hcs refine <file.hcs> --model M [--judge J] [--answerer A] [--holdout 0.3] [--rounds 3] [--budget N] [--prune] [-o f]
+                                              Fill the gaps the failed probes reveal with new verified claims, kept
+                                              only if training fidelity rises; reports fidelity on held-out probes
   hcs compare <a> <b> --model M [--probes file.hcs] [--judge M] [--budget N] [--runs N] [--json]
                                               Paired comparison of two contexts on the same probes; each side
                                               is an .hcs file (rendered), any text file (AGENTS.md...) or none
@@ -267,6 +271,10 @@ async function main(argv: string[]): Promise<number> {
       rpm: { type: "string" },
       "reasoning-effort": { type: "string" },
       tokenizer: { type: "string" },
+      answerer: { type: "string" },
+      holdout: { type: "string" },
+      rounds: { type: "string" },
+      prune: { type: "boolean" },
       parser: { type: "string" },
       "allow-write": { type: "boolean" },
       deps: { type: "boolean" },
@@ -602,6 +610,65 @@ async function main(argv: string[]): Promise<number> {
         for (const r of misses) console.log(`  ${r.id} [${r.verdict}] ${r.question}`);
       }
       if (o.write) console.log(`certificate written to ${file}`);
+      return 0;
+    }
+
+    case "refine": {
+      const file = requireFile(positionals);
+      const doc = load(file);
+      const out = o.output ?? file;
+      const writer = llm(requireModel(o.model));
+      const holdout = o.holdout !== undefined ? Number(o.holdout) : undefined;
+      if (holdout !== undefined && !(holdout >= 0 && holdout < 1)) throw new UsageError("--holdout must be a share between 0 and 1, e.g. 0.3");
+      // Resumable: probe results and writer replies are saved until the run finishes.
+      const key = createHash("sha256")
+        .update(JSON.stringify([writer.id, o.answerer, o.judge, holdout, o.rounds, o.budget, o.prune, serialize(doc)]))
+        .digest("hex")
+        .slice(0, 16);
+      const savedPath = join(dirname(resolve(file)), ".hcs-cache", `refine-${basename(file)}-${key}.json`);
+      const saved = existsSync(savedPath) ? JSON.parse(readFileSync(savedPath, "utf8")) : {};
+      if (existsSync(savedPath)) progress?.(`resuming from ${relative(process.cwd(), savedPath)}`);
+      const store = refineStore(saved, () => {
+        mkdirSync(dirname(savedPath), { recursive: true });
+        writeFileSync(savedPath, JSON.stringify(saved));
+      });
+      const result = await refine(doc, {
+        store,
+        cache: new SourceCache(rootDir(doc, file)),
+        llm: writer,
+        answerer: o.answerer ? llm(o.answerer) : undefined,
+        judge: judges(),
+        holdout,
+        rounds: num(o.rounds, "rounds"),
+        budget: num(o.budget, "budget"),
+        prune: o.prune,
+        concurrency: num(o.concurrency, "concurrency"),
+        onProgress: progress,
+      });
+      const added = result.rounds.filter((r) => r.accepted).reduce((n, r) => n + r.added, 0);
+      if (result.stopped.startsWith("quota")) {
+        console.log(`${file}: stopped by the provider's quota (${result.stopped}).`);
+        console.log(`  progress is saved in ${relative(process.cwd(), savedPath)}; run the same command later to resume`);
+        return 1;
+      }
+      rmSync(savedPath, { force: true });
+      if (added || result.pruned.length || doc.headers.holdout === undefined) save(out, result.doc);
+      if (o.json) {
+        console.log(JSON.stringify(result, null, 2));
+        return 0;
+      }
+      console.log(`${file}: refined with ${writer.id}; ${result.holdoutIds.length} hold-out probes never shown to refine (@holdout)`);
+      printScore("train before", result.before.train);
+      printScore("train after", result.after.train);
+      if (result.before.holdout) printScore("hold-out before", result.before.holdout);
+      if (result.after.holdout) printScore("hold-out after", result.after.holdout);
+      for (const r of result.rounds) {
+        console.log(`  round ${r.round}: ${r.gaps} gaps, ${r.proposed} claims proposed, ${r.added} new and verified, training ${pct(r.train.fidelity)}${r.accepted ? "" : " (not kept)"}`);
+      }
+      if (result.pruned.length) console.log(`  pruned ${result.pruned.length} claims the training probes did not need: ${result.pruned.join(", ")}`);
+      console.log(`  stopped: ${result.stopped}`);
+      console.log(added || result.pruned.length ? `  wrote ${out}: ${added} claims added` : "  no change kept");
+      console.log("  judge the gain on the hold-out probes only; with few probes the intervals are wide");
       return 0;
     }
 

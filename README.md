@@ -96,6 +96,11 @@ not recovered from the context:
 - **`--budget 1000`** scores what a small-context model would see. `hcs curve project.hcs --model M --judge J`
   scores several budgets (250 to 4000 by default) on the same probes and reports the knee: the smallest budget
   within the 95% CI of the best fidelity. Budgets that render the same context are scored once.
+- **`hcs refine project.hcs --model M --judge J`** looks at the probes the context fails, asks M for the missing
+  claims from the probes' cited sources (quote verification still applies), and keeps them only if training
+  fidelity rises. 30% of the probes are held out (recorded in an `@holdout` header) and never shown to refine: judge
+  the gain on them. `--prune` also drops sections the training probes do not need (it costs requests). A quota stop
+  resumes on the next run. Whether it helps on real projects is being measured (roadmap C2).
 - **`--tokenizer M`** counts the context with model M's tokenizer instead of estimating it (also on `curve`, and
   `hcs stats --tokenizer M`); the certificate then records `tokenizer=M`. Anthropic and Gemini (with
   `GEMINI_API_KEY` set) have free counting endpoints; other providers are asked a 1-token completion whose
@@ -325,6 +330,7 @@ Benchmark with real models: add your API keys as repository secrets (`GEMINI_API
 | `hcs impact <f> --base <ref>` | no | Claims and probes citing code changed since a git ref; `--comment` posts them on the pull request |
 | `hcs compile [paths]` | yes | Sources → anchored claims + verified probes (`--update`, `--anchors lines`) |
 | `hcs score <f>` | yes | Fidelity with CI, baseline, informative and novel fidelity, misled rate, judge agreement; `--write` adds a certificate |
+| `hcs refine <f>` | yes | Add verified claims for the gaps failed probes reveal; reports fidelity on held-out probes |
 | `hcs curve <f>` | yes | Fidelity at several token budgets and the knee; `--write` stores one certificate per budget |
 | `hcs keygen [name]` | no | Ed25519 key pair to sign certificates |
 | `hcs badge <f> --trusted <keys>` | no | SVG badge from a current certificate signed by a trusted key |
