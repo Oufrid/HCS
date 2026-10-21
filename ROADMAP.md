@@ -37,15 +37,15 @@ Done: bootstrap CI, `--runs`, informative fidelity, self-judging warning; probe 
 stricter verdict counts; `hcs compare` with a paired bootstrap CI. Spec bumped to 0.3 (probe tags). Tested with
 mocks only; real-model behavior is part of A1.
 
-### A4. Security `[~]`
-Done: injection guard (suspect tag, never rendered), decoder rule, MCP root sandbox, quote verification.
-Remaining:
-- A red-team corpus `test/fixtures/injection/` (≥ 30 real-world injection samples plus ≥ 30 benign
-  look-alikes). The guard tests measure precision and recall on it, and the README states the numbers.
-- Scan *source chunks* before compilation: report files containing injection-like text in `compile` output.
-- `SECURITY.md`: threat model (malicious source, malicious `.hcs`, malicious MCP client), reporting process.
-- Fuzz the parser (random and mutated `.hcs` input must give an `HcsSyntaxError`, never a crash).
-- **Done when:** the corpus, scan, SECURITY.md and fuzz tests exist and pass.
+### A4. Security `[x]`
+Done: injection guard (suspect tag, never rendered), decoder rule, MCP root sandbox, quote verification;
+red-team corpus `test/fixtures/injection/` (39 attacks, 40 benign look-alikes, plus a held-out set of 15 + 15)
+with precision and recall in the tests and README; source scan in `compile` and `snapshot`; `SECURITY.md`
+threat model; parser fuzz tests. Results: the high-risk level catches 35/39 corpus attacks (in-sample, after
+tuning) but only 7/15 held-out attacks, with no false positive in either. The fuzzer found three round-trip bugs
+in the parser and the threat-model review found that anchors could read files outside the root through
+`hcs_expand`; all are fixed with regression tests. Possible follow-up: better held-out recall (an optional
+model-based classifier), measured on a new held-out set.
 
 ---
 

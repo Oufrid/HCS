@@ -141,9 +141,9 @@ export function parse(text: string): HcsDocument {
     }
 
     if (block === "certificates") {
-      const m = /^!score\s+(.*)$/.exec(t);
+      const m = /^!score(?:\s+(.*))?$/.exec(t);
       if (!m) throw new HcsSyntaxError(n, `expected "!score key=value ...", got "${t}"`);
-      doc.certificates.push({ fields: parseKeyValues(m[1]) });
+      doc.certificates.push({ fields: parseKeyValues(m[1] ?? "") });
       continue;
     }
 
@@ -155,12 +155,13 @@ export function parse(text: string): HcsDocument {
       } else if (block === "probes" && t.startsWith("=")) {
         const p = current as Probe;
         const ans = t.slice(1).trim();
-        p.answer = p.answer ? `${p.answer} ${ans}` : ans;
+        if (ans) p.answer = p.answer ? `${p.answer} ${ans}` : ans;
       } else if (block === "probes" && t.startsWith("~")) {
         (current as Probe).claims.push(...t.slice(1).trim().split(/[\s,]+/).filter(Boolean));
       } else if (t.startsWith("|")) {
         // Continuation of the claim text or probe question.
         const more = t.slice(1).trim();
+        if (!more) continue;
         if (block === "claims") (current as Claim).text += ` ${more}`;
         else (current as Probe).question += ` ${more}`;
       } else {
@@ -248,6 +249,8 @@ export function serialize(doc: HcsDocument): string {
   return out.join("\n") + "\n";
 }
 
+/** Key=value values have no escapes: double quotes become single quotes, then values with spaces are quoted. */
 function quote(v: string): string {
-  return /[\s"]/.test(v) ? `"${v.replace(/"/g, "'")}"` : v;
+  const safe = v.replace(/"/g, "'");
+  return /\s/.test(safe) ? `"${safe}"` : safe;
 }

@@ -1,8 +1,8 @@
 // Deterministic anchor verification: hashing, relocation and staleness. No LLM involved.
 
 import { createHash } from "node:crypto";
-import { readFileSync, existsSync, statSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { readFileSync, existsSync, realpathSync, statSync } from "node:fs";
+import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import type { Anchor, Claim, HcsDocument, Probe } from "./format.js";
 import { collectSources } from "./sources.js";
 import { findSymbol, languageOf, listSymbols, type SymbolRange } from "./symbols.js";
@@ -55,14 +55,31 @@ export function rootDir(doc: HcsDocument, hcsPath: string): string {
   return resolve(dirname(resolve(hcsPath)), doc.headers.root || ".");
 }
 
+/** Resolve `path` against the root and refuse anything outside it, including through symlinks. */
+export function insideRoot(root: string, path: string): string {
+  const deny = () => new Error("path must be inside the project root");
+  const escapes = (rel: string) => !rel || isAbsolute(rel) || rel === ".." || rel.startsWith(`..${sep}`);
+  const full = resolve(root, path);
+  const rel = relative(root, full);
+  if (escapes(rel)) throw deny();
+  if (existsSync(full) && escapes(relative(realpathSync(root), realpathSync(full)))) throw deny();
+  return rel;
+}
+
 export class SourceCache {
   private files = new Map<string, string[] | null>();
   constructor(public root: string) {}
 
+  /** Lines of a file under the root; null when it does not exist or lies outside the root (a hostile anchor). */
   lines(path: string): string[] | null {
     if (!this.files.has(path)) {
-      const full = resolve(this.root, path);
-      if (!existsSync(full) || !statSync(full).isFile()) this.files.set(path, null);
+      let full: string | undefined;
+      try {
+        full = resolve(this.root, insideRoot(this.root, path));
+      } catch {
+        full = undefined;
+      }
+      if (!full || !existsSync(full) || !statSync(full).isFile()) this.files.set(path, null);
       else this.files.set(path, normalizeLines(readFileSync(full, "utf8")));
     }
     return this.files.get(path)!;

@@ -1,10 +1,12 @@
 // `hcs serve`: a Model Context Protocol server (stdio, JSON-RPC 2.0) over one .hcs file.
 // It lets any MCP client read the compact context first, then zoom into the exact cited source on demand.
 
-import { existsSync, readFileSync, realpathSync } from "node:fs";
-import { isAbsolute, relative, resolve, sep } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { resolve, sep } from "node:path";
 import { createInterface } from "node:readline";
-import { checkDocument, rootDir, SourceCache, type AnchorStatus } from "./anchors.js";
+import { checkDocument, insideRoot, rootDir, SourceCache, type AnchorStatus } from "./anchors.js";
+
+export { insideRoot };
 import { formatAnchor, parse, type Claim, type HcsDocument } from "./format.js";
 import { DECODER_PROMPT, renderContext } from "./render.js";
 import { findSymbol } from "./symbols.js";
@@ -75,12 +77,13 @@ const TOOLS = [
 ];
 
 export class HcsMcpServer {
-  constructor(private file: string) {}
+  /** `root` overrides the file's `@root` header; it is the sandbox for every source read. */
+  constructor(private file: string, private root?: string) {}
 
   private load(): { doc: HcsDocument; cache: SourceCache } {
     if (!existsSync(this.file)) throw new Error(`HCS file not found: ${this.file}`);
     const doc = parse(readFileSync(this.file, "utf8"));
-    return { doc, cache: new SourceCache(rootDir(doc, this.file)) };
+    return { doc, cache: new SourceCache(this.root ?? rootDir(doc, this.file)) };
   }
 
   /** Returns the response to send, or null for notifications. */
@@ -214,20 +217,6 @@ export class HcsMcpServer {
   }
 }
 
-/** Resolve `path` against the root and refuse anything outside it, including through symlinks. */
-export function insideRoot(root: string, path: string): string {
-  const deny = () => new Error("path must be inside the project root");
-  const full = resolve(root, path);
-  const rel = relative(root, full);
-  if (!rel || isAbsolute(rel) || rel === ".." || rel.startsWith(`..${sep}`)) throw deny();
-  if (existsSync(full)) {
-    const realRoot = realpathSync(root);
-    const realRel = relative(realRoot, realpathSync(full));
-    if (!realRel || isAbsolute(realRel) || realRel === ".." || realRel.startsWith(`..${sep}`)) throw deny();
-  }
-  return rel;
-}
-
 function rangeOf(
   cache: SourceCache,
   a: { path: string; symbol?: string; start?: number; end?: number },
@@ -264,8 +253,8 @@ function scoreClaim(c: Claim, terms: string[]): number {
 }
 
 /** Run the server on stdio until stdin closes. Logs go to stderr; stdout carries only protocol messages. */
-export async function serveStdio(file: string): Promise<void> {
-  const server = new HcsMcpServer(resolve(file));
+export async function serveStdio(file: string, root?: string): Promise<void> {
+  const server = new HcsMcpServer(resolve(file), root && resolve(root));
   const rl = createInterface({ input: process.stdin, crlfDelay: Infinity });
   process.stderr.write(`hcs MCP server ready for ${file}\n`);
   for await (const line of rl) {

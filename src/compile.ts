@@ -7,7 +7,7 @@ import { emptyDocument, formatAnchor, type Anchor, type Claim, type HcsDocument,
 import { extractJSON, mapLimit, type LLM } from "./llm.js";
 import { estimateTokens } from "./render.js";
 import { chunkFile, collectSources, locateQuote, numbered, profileFor, type Chunk, type Profile } from "./sources.js";
-import { isHighRisk, SUSPECT_TAG } from "./guard.js";
+import { isHighRisk, scanSource, SUSPECT_TAG, type SourceFinding } from "./guard.js";
 import { enclosingSymbol } from "./symbols.js";
 
 export interface CompileOptions {
@@ -45,6 +45,8 @@ export interface CompileStats {
   probesRejected: number;
   claimsKept: number;
   sourceTokens: number;
+  /** Lines of the compiled sources that look like instructions aimed at a model. */
+  sourceFindings: SourceFinding[];
 }
 
 /** Longest anchor range a claim may have; wider ranges go stale on unrelated edits. */
@@ -261,10 +263,12 @@ export async function compile(opts: CompileOptions): Promise<{ doc: HcsDocument;
 
   const chunks: { chunk: Chunk; profile: Profile }[] = [];
   let sourceTokens = 0;
+  const sourceFindings: SourceFinding[] = [];
   for (const f of files) {
     const text = readFileSync(resolve(root, f), "utf8");
     sourceTokens += estimateTokens(text);
     if (!toCompile.includes(f)) continue;
+    sourceFindings.push(...scanSource(f, text));
     const profile = profileFor(f, text);
     for (const chunk of chunkFile(f, text, opts.chunkLines ?? 250)) chunks.push({ chunk, profile });
   }
@@ -324,6 +328,7 @@ export async function compile(opts: CompileOptions): Promise<{ doc: HcsDocument;
     probesRejected: results.reduce((n, r) => n + r.proposedProbes - r.probes.length, 0),
     claimsKept: kept.length,
     sourceTokens,
+    sourceFindings,
   };
   return { doc, stats };
 }

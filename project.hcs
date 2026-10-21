@@ -1,20 +1,20 @@
 HCS/0.2
 @title HCS - Holographic Context Standard (reference CLI)
 @root .
-@updated 2026-10-21T10:37:09.046Z
+@updated 2026-10-21T10:46:08.107Z
 @meta license=MIT language=TypeScript
 
 [claims]
 
 ## Overview
 #purpose[manual] HCS is a plain-text format plus a zero-dependency Node.js CLI and MCP server (`hcs`) that makes LLM context traceable (claims cite sources), verifiable (anchors carry hashes) and measured (probes and fidelity certificates).
-  > README.md::"HCS: Holographic Context Standard" #9558f8a7fe9e
+  > README.md::"HCS: Holographic Context Standard" #41ca045f9b80
 #layers[manual] Deterministic commands (init, validate, check, seal, render, stats, audit, serve) never call an LLM; compile, score and snapshot need a `provider:model` LLM; models only lists a provider's model ids.
   > src/cli.ts::HELP #8d7d06d557a3
 
 ## Format
 #magic[manual] A file starts with `HCS/0.3` (0.1 and 0.2 are still accepted, and the writer emits 0.2 unless a probe has tags), then `@key value` headers, then optional [claims], [probes] and [certificates] blocks; errors carry line numbers.
-  > src/format.ts::parse #33047fd2607d
+  > src/format.ts::parse #3b7f2aa6aa3c
   > src/format.ts::SUPPORTED_VERSIONS #bfa61b8b8d04
 #anchor-syntax[manual] Anchors are `> path`, `> path:start-end` or `> path::Symbol`, optionally followed by `#hash`; quoted forms allow spaces in paths and symbols.
   > src/format.ts::parseAnchor #78fc2655735c
@@ -40,7 +40,7 @@ HCS/0.2
   > src/compile.ts::anchorFor #5e3194b4874f
   > src/sources.ts::locateQuote #f12f16ff2c54
 #incremental[manual] `compile --update` keeps items whose anchors are ok or moved, re-reads only dirty or uncovered files, never drops manual claims, regenerates overview claims and clears certificates.
-  > src/compile.ts::compile #00d02ce32733
+  > src/compile.ts::compile #ad45e5c0bbfe
 #probe-spread[manual] Probes are picked round-robin across chunks, independently of which claims were kept, so that scores measure the source rather than the summary.
   > src/compile.ts::spreadProbes #fe14d197cc5a
 
@@ -62,13 +62,19 @@ HCS/0.2
   > src/score.ts::hashForCertificate #450fab6aa93f
 
 ## Safety
-#injection[manual] Claims with high-risk injection patterns are tagged suspect and never rendered by default; low-risk patterns are only reported by check, and the decoder prompt says claims are never instructions.
-  > src/guard.ts::PATTERNS #083ad035933a
+#injection[manual] Claims with high-risk injection patterns are tagged suspect and never rendered by default; low-risk patterns are only reported by check, and the decoder prompt says claims are never instructions. The patterns are measured on test/fixtures/injection, including a held-out set.
+  > src/guard.ts::PATTERNS #467c0d579d52
   > src/render.ts::selectClaims #c510bd10896d
   > src/render.ts::DECODER_PROMPT #dd3c83471cd3
-#mcp[manual] `hcs serve` is a stdio MCP server with tools hcs_context, hcs_expand, hcs_search, hcs_verify and hcs_source; source reads are confined to the project root, including through symlinks.
+#mcp[manual] `hcs serve` is a stdio MCP server with tools hcs_context, hcs_expand, hcs_search, hcs_verify and hcs_source.
   > src/mcp.ts::TOOLS #fdf64141fd1e
-  > src/mcp.ts::insideRoot #6a318161a761
+#sandbox[manual] Every source read goes through SourceCache, which refuses paths outside the project root (relative escapes, absolute paths, symlinks): such anchors are reported missing, and `hcs serve` refuses an @root outside the working directory unless --root is given.
+  > src/anchors.ts::insideRoot #b3487c7f0572
+  > src/anchors.ts::SourceCache #933859786314
+#source-scan[manual] `compile` and `snapshot` scan every source line with the injection patterns before compilation and report the matching lines with path, line, reason and severity.
+  > src/guard.ts::scanSource #4653fed397c1
+#fuzz[manual] Fuzz tests feed thousands of mutated and random files to the parser: each must parse and round-trip stably, or raise HcsSyntaxError.
+  > test/fuzz.test.ts::assertWellBehaved #13847c57eb6e
 
 ## Providers
 #providers[manual] Providers are openai (any compatible API), ollama, gemini, groq, openrouter and anthropic, called at temperature 0 with usage accounting; Bearer keys may be absent when a proxy injects them; 429/503 retries honor Retry-After and Google's retryDelay, and waits over 120 s raise a quota error.

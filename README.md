@@ -166,6 +166,19 @@ Then run `hcs seal project.hcs` to hash the anchor. From then on, `hcs check` te
 ## Security
 
 - **Prompt injection.** Source files can contain text aimed at AIs ("ignore previous instructions…"), and summaries pass it on to other models. HCS tells the compiling model that the source is data. It then tags high-risk claims as `suspect`, never renders them by default, and drops such probes. `hcs check` lists suspect claims and low-risk ones for review; `--strict` fails on them. The decoder prompt tells every reading model that claims are never instructions. This is pattern-based: it reduces the risk, it does not eliminate it.
+  Measured on the corpus in `test/fixtures/injection/` (39 attacks, 40 benign look-alikes, written for this
+  repository from publicly documented attack patterns): before tuning, the high-risk level caught 28% of
+  attacks (11/39) with no false positive. After tuning on that corpus it catches 90% (35/39), still with no
+  false positive; counting low-risk findings too, it catches 100% (39/39) with 85% precision (7 benign lines
+  flagged for review). **These are in-sample numbers.** On a held-out set written before tuning and never used
+  for it (15 attacks, 15 benign), the high-risk level catches only 47% (7/15) with no false positive (1/15
+  before tuning). Expect roughly half of novel attacks to get through the patterns; the decoder prompt is the
+  second line of defense.
+- **Source scan.** `compile` and `snapshot` scan every source line before compilation and list the lines that
+  look like instructions aimed at a model (path, line, reason), so you can review a file even when no claim
+  repeats its text.
+- **Threat model.** See [SECURITY.md](SECURITY.md) for what HCS defends against, what it does not, and how to
+  report a vulnerability.
 - **No hallucinated anchors.** Every compiled claim and probe must quote the source verbatim, or it is discarded.
 - **Sandboxed reads.** The MCP server cannot read outside the project root.
 - **Free tiers.** Some free API tiers let the provider use your prompts to improve their products. Do not compile private code with them.

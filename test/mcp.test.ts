@@ -1,7 +1,9 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 import { HcsMcpServer } from "../src/mcp.js";
 import { FIXTURE, tempProject } from "./helpers.js";
@@ -94,4 +96,31 @@ test("hcs serve speaks JSON-RPC over stdio", async () => {
   assert.equal(msgs[1].error.code, -32700);
   assert.match(msgs[2].result.content[0].text, /<hcs-context/);
   rmSync(dir, { recursive: true });
+});
+
+test("a hostile .hcs file cannot make the MCP server read outside the project root", async () => {
+  const outer = mkdtempSync(join(tmpdir(), "hcs-outer-"));
+  writeFileSync(join(outer, "secret.txt"), "TOP-SECRET-VALUE\n");
+  const dir = join(outer, "repo");
+  mkdirSync(dir);
+  symlinkSync(join(outer, "secret.txt"), join(dir, "link.txt"));
+  writeFileSync(
+    join(dir, "project.hcs"),
+    `HCS/0.2\n[claims]\n#c1 Looks harmless.\n  > ../secret.txt\n#c2 Also harmless.\n  > link.txt\n#c3 Absolute.\n  > ${join(outer, "secret.txt")}\n`,
+  );
+  const server = new HcsMcpServer(join(dir, "project.hcs"));
+  for (const id of ["c1", "c2", "c3"]) {
+    const r = await call(server, "hcs_expand", { id });
+    assert.ok(!r.text.includes("TOP-SECRET"), `${id} leaked: ${r.text}`);
+    assert.match(r.text, /status: missing/);
+  }
+  // `@root` pointing outside the working directory is refused unless --root is given.
+  writeFileSync(join(dir, "wide.hcs"), "HCS/0.2\n@root ..\n[claims]\n#c1 x\n  > secret.txt\n");
+  const cli = join(process.cwd(), "dist/src/cli.js");
+  const refused = spawnSync(process.execPath, [cli, "serve", "wide.hcs"], { cwd: dir, encoding: "utf8", input: "" });
+  assert.equal(refused.status, 2);
+  assert.match(refused.stderr, /outside the working directory; pass --root/);
+  const allowed = spawnSync(process.execPath, [cli, "serve", "wide.hcs", "--root", outer], { cwd: dir, encoding: "utf8", input: "" });
+  assert.equal(allowed.status, 0, allowed.stderr);
+  rmSync(outer, { recursive: true });
 });

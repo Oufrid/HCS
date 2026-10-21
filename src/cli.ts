@@ -5,9 +5,9 @@ import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, dirname, extname, join, relative, resolve } from "node:path";
 import { parseArgs } from "node:util";
-import { checkDocument, rootDir, seal, SourceCache, type AnchorStatus, type ItemReport } from "./anchors.js";
+import { checkDocument, insideRoot, rootDir, seal, SourceCache, type AnchorStatus, type ItemReport } from "./anchors.js";
 import { findPathReferences } from "./audit.js";
-import { injectionFindings } from "./guard.js";
+import { injectionFindings, type SourceFinding } from "./guard.js";
 import { compile } from "./compile.js";
 import { emptyDocument, formatAnchor, HcsSyntaxError, parse, serialize, type HcsDocument } from "./format.js";
 import { createLLM, listModels, type LLM } from "./llm.js";
@@ -34,7 +34,7 @@ Deterministic commands (no LLM, no network; except \`models\`, which asks the pr
   hcs stats <file.hcs>                        Sizes, token estimates, compression ratio
   hcs audit <context-file> [--root DIR]       Find broken file references in AGENTS.md, CLAUDE.md...
             [--probes file.hcs --model M]     ...and score it against an .hcs probe set
-  hcs serve <file.hcs>                        MCP server (stdio) for any MCP client
+  hcs serve <file.hcs> [--root DIR]           MCP server (stdio) for any MCP client; source reads stay in the root
                                               tools: hcs_context, hcs_expand, hcs_search, hcs_verify, hcs_source
   hcs models <provider> [--free]              List the model ids your key can use (--free: OpenRouter ":free" models)
 
@@ -100,6 +100,16 @@ function printScore(label: string, s: ScoreSummary): void {
   console.log(
     `${label.padEnd(16)} fidelity ${pct(s.fidelity).padStart(6)} ${ci}   misled ${pct(s.misled).padStart(6)}   abstained ${pct(s.abstained).padStart(6)}   (${s.probes} probes${s.runs > 1 ? ` x ${s.runs} runs` : ""})`,
   );
+}
+
+function printSourceFindings(found: SourceFinding[]): void {
+  if (!found.length) return;
+  const high = found.filter((f) => f.severity === "high");
+  console.log(`  source scan: ${found.length} line(s) with injection-like text in ${new Set(found.map((f) => f.path)).size} file(s), ${high.length} high risk`);
+  const shown = [...high, ...found.filter((f) => f.severity === "low")].slice(0, 20);
+  for (const f of shown) console.log(`    ${f.severity === "high" ? "HIGH" : "low "} ${f.path}:${f.line}  ${f.reason}`);
+  if (found.length > shown.length) console.log(`    ... and ${found.length - shown.length} more`);
+  if (high.length) console.log("  claims quoting such text are tagged suspect and not rendered; review these files if you did not expect it");
 }
 
 async function main(argv: string[]): Promise<number> {
@@ -343,6 +353,7 @@ async function main(argv: string[]): Promise<number> {
       const ctxTokens = estimateTokens(renderContext(doc));
       console.log(`wrote ${out}: ${doc.claims.length} claims, ${doc.probes.length} probes from ${stats.files} files (${stats.filesCompiled} compiled)`);
       console.log(`  rejected by quote verification: ${stats.claimsRejected}/${stats.claimsProposed} claims, ${stats.probesRejected}/${stats.probesProposed} probes`);
+      printSourceFindings(stats.sourceFindings);
       if (knownCount !== undefined) console.log(`  probe quality filter: ${knownCount}/${doc.probes.length} probes tagged [known] (answered without context by every filter model)`);
       console.log(`  context ~${ctxTokens} tokens for ~${stats.sourceTokens} tokens of source. Next: hcs score ${out} --model ${model} --baseline --write`);
       return 0;
@@ -408,7 +419,7 @@ async function main(argv: string[]): Promise<number> {
       const text = extname(input).toLowerCase() === ".json" ? toTranscript(parseConversation(JSON.parse(raw)), title) : `<!-- hcs:transcript -->\n${raw}`;
       writeFileSync(transcriptPath, text);
       const root = dirname(transcriptPath);
-      const { doc } = await compile({
+      const { doc, stats } = await compile({
         root,
         paths: [basename(transcriptPath)],
         llm: llm(model),
@@ -420,6 +431,7 @@ async function main(argv: string[]): Promise<number> {
       doc.headers.root = relative(dirname(resolve(out)), root) || ".";
       save(out, doc);
       console.log(`wrote ${out} and ${relative(process.cwd(), transcriptPath)}: ${doc.claims.length} claims, ${doc.probes.length} probes`);
+      printSourceFindings(stats.sourceFindings);
       console.log(`  paste the output of \`hcs render ${out} --decoder\` into any LLM to continue the session`);
       return 0;
     }
@@ -504,8 +516,18 @@ async function main(argv: string[]): Promise<number> {
 
     case "serve": {
       const file = requireFile(positionals);
-      load(file); // fail fast on a missing or invalid file
-      await serveStdio(file);
+      const doc = load(file); // fail fast on a missing or invalid file
+      // A cloned repository's .hcs file chooses its own @root. Refuse one that escapes the working directory
+      // unless the user names the root, so a hostile file cannot widen the MCP sandbox to the whole disk.
+      const root = o.root ? resolve(o.root) : rootDir(doc, file);
+      if (!o.root) {
+        try {
+          if (relative(process.cwd(), root)) insideRoot(process.cwd(), root);
+        } catch {
+          throw new UsageError(`${file} sets @root to ${root}, outside the working directory; pass --root ${root} to serve it anyway`);
+        }
+      }
+      await serveStdio(file, root);
       return 0;
     }
 
