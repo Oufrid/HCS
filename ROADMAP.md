@@ -78,12 +78,21 @@ claim with a link to its lines, and after a second push updated the same comment
 one. Tests cover diff parsing, an end-to-end git repository and the comment upsert against a mock API.
 Not done (optional): proposing updated claim text with a model.
 
-### B4. Distribution `[ ]`
+### B4. Distribution `[~]`
 - Publish `hcs-cli` on npm (check that the name is free, or choose another), with provenance. Publish the
   Python package on PyPI after B2.
 - Versioned GitHub releases, CHANGELOG.md, and a `v0` tag for the Action.
 - **Done when:** `npx hcs-cli check project.hcs` works from a clean machine, and the maintainer approved the
   publication. Publishing is outward-facing, so ask before doing it.
+
+Prepared, nothing published: the names `hcs-cli` (npm) and `hcs-format` (PyPI) were free on 2026-10-21. The npm
+tarball (24 files, 87 kB, no runtime dependency) runs `hcs check project.hcs --strict` from a clean checkout with
+no `node_modules` (`npx --package=<tarball> hcs`), and the Python wheel installs in a fresh virtual environment and
+passes the same check with `hcs-py`. `CHANGELOG.md` proposes 0.3.0; `.github/workflows/release.yml` runs only on a
+version tag or by hand (dry run by default): it verifies, checks that the tag matches every version number,
+publishes to npm with provenance and to PyPI with trusted publishing, and creates the GitHub release. Remaining,
+all for the maintainer: approve the version, add the `NPM_TOKEN` secret and the PyPI trusted publisher, push the
+tag, and move a `v0` tag for the Action.
 
 ---
 
