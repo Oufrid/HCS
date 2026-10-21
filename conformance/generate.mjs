@@ -9,6 +9,7 @@ import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { currentHash, SourceCache } from "../dist/src/anchors.js";
+import { depsHash } from "../dist/src/deps.js";
 import { parse, parseAnchor, serialize } from "../dist/src/format.js";
 import { checkDocument } from "../dist/src/anchors.js";
 import { hashForCertificate } from "../dist/src/score.js";
@@ -31,10 +32,15 @@ function buildInput(dir) {
     .map((l) => {
       const m = /^(\s*>\s*)(.+?)\s+#(HASH_\w+)\s*$/.exec(l);
       if (!m) return l;
-      const h = currentHash(parseAnchor(m[2]), new SourceCache(join(dir, spec.args.seal_against)));
+      const cache = new SourceCache(join(dir, spec.args.seal_against));
+      const anchor = parseAnchor(m[2]);
+      const h = currentHash(anchor, cache);
       if (!h) throw new Error(`${dir}: cannot seal ${m[2]} against ${spec.args.seal_against}`);
       sealed.set(m[3], h);
-      return `${m[1]}${m[2]} #${h}`;
+      // #HASH_DEPS_<name> also records the dependency hash, as `hcs seal --deps` does.
+      const d = m[3].startsWith("HASH_DEPS") ? depsHash(anchor, cache) : undefined;
+      if (m[3].startsWith("HASH_DEPS") && !d) throw new Error(`${dir}: ${m[2]} has no dependencies in ${spec.args.seal_against}`);
+      return `${m[1]}${m[2]} #${h}${d ? `/${d}` : ""}`;
     })
     .join("\n");
   if (/DIGEST_/.test(text)) {

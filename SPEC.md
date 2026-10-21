@@ -126,7 +126,8 @@ Probes measure the **source**, not the claims. A compiler MUST NOT choose probes
 > path::Symbol               named symbol (function, class, method, Markdown heading, YAML/JSON key)
 ```
 
-Each form MAY be followed by whitespace and `#hash`.
+Each form MAY be followed by whitespace and `#hash`. Since 0.3, a symbol anchor MAY carry a dependency hash too:
+`#hash/deps` (§5.5).
 
 - `path` is relative to the root (§2) and uses `/` separators. Paths containing whitespace are double-quoted.
 - `start`/`end` are 1-based inclusive line numbers. `:n` is the same as `:n-n`.
@@ -163,14 +164,37 @@ A verifier MUST classify each anchor as follows:
 | `stale` | The file exists but no window matches (or a whole-file hash differs). | The symbol exists but its hash differs. |
 | `missing` | The file does not exist. | Neither the file nor any matching symbol elsewhere exists. |
 | `unsealed` | The anchor has no hash. | Same. |
+| `review` | (not applicable) | (since 0.3) The symbol's hash equals `hash`, but its dependency hash (§5.5) differs: code it uses changed. |
 
-A claim or probe takes the worst status of its anchors, in the order `ok < moved < unsealed < stale < missing`.
+A claim or probe takes the worst status of its anchors, in the order `ok < moved < review < unsealed < stale < missing`.
+`review` is not a failure: the claim's own source is unchanged, but it should be re-read.
 
 Verification is deterministic and requires no network access and no model. `moved` means the claim is still valid: tools MAY update the anchor (sealing).
 
 ### 5.4 Sealing
 
 *Sealing* writes hashes into unsealed anchors and follows `moved` anchors to their new range, path or symbol. Re-hashing a `stale` anchor (accepting the new text) is an assertion by a human that the claim still holds. Tools MUST NOT do it silently, and MUST drop certificates when they do.
+
+### 5.5 Dependency hashes (since 0.3)
+
+A symbol anchor in JavaScript/TypeScript (`.ts .tsx .mts .cts .js .jsx .mjs .cjs`) or Python (`.py .pyi`) MAY carry
+a second hash, `deps`, written `#hash/deps`. Its dependencies are the symbols its body uses directly, found by
+identifier matching on the body with strings and comments removed:
+
+1. other symbols of the same file whose last name appears in the body: top-level symbols, and members of the same
+   class as the anchored symbol (not the symbol itself, its own members or its ancestors);
+2. names imported by name into the file (`import { a, b as c } from "./m"`, `from .m import a`, `from pkg.m
+   import a`) that appear in the body, when the module resolves to a project file that defines that symbol at top
+   level.
+
+`deps` is the first 12 hex characters of the SHA-256 of the lines `path::Symbol=<symbol hash>` (§5.1), one per
+dependency, sorted by `path::Symbol`, joined with LF; a dependency that cannot be located contributes `=missing`.
+A symbol without dependencies has no `deps`. Sealing with dependency hashes records it; re-hashing a `review`
+anchor accepts the new dependencies, like re-hashing a `stale` one. The exact behavior is fixed by the conformance
+cases `deps-*`, `check-review` and `seal-deps`.
+
+The analysis is shallow by design (depth 1, names only). It raises reviews for dependency changes that do not affect
+the claim: measured on this repository's history, 1 of 18 reviews was needed (`bench/REPORT.md`, C3).
 
 ## 6. Rendering
 

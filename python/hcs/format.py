@@ -26,7 +26,7 @@ def empty_document(title="Untitled"):
 
 
 _ANCHOR_RE = re.compile(
-    r'(?:"([^"]+)"|([^\s"]+?))(?:::(?:"([^"]+)"|([^\s"#]+))|:([0-9]+)(?:-([0-9]+))?)?(?:\s+#([0-9a-f]{6,64}))?'
+    r'(?:"([^"]+)"|([^\s"]+?))(?:::(?:"([^"]+)"|([^\s"#]+))|:([0-9]+)(?:-([0-9]+))?)?(?:\s+#([0-9a-f]{6,64})(?:/([0-9a-f]{6,64}))?)?'
 )
 
 
@@ -45,6 +45,8 @@ def parse_anchor(raw, line=0):
             raise HcsSyntaxError(line, 'invalid line range in anchor "%s"' % raw.strip())
     if m.group(7):
         anchor["hash"] = m.group(7)
+    if m.group(8):
+        anchor["deps"] = m.group(8)
     return anchor
 
 
@@ -57,7 +59,7 @@ def format_anchor(a, with_hash=True):
         end = a.get("end")
         s += ":%d-%d" % (a["start"], end) if end is not None and end != a["start"] else ":%d" % a["start"]
     if with_hash and a.get("hash"):
-        s += " #" + a["hash"]
+        s += " #" + a["hash"] + ("/" + a["deps"] if a.get("deps") else "")
     return s
 
 
@@ -206,8 +208,8 @@ _HEADER_ORDER = ["title", "root", "created", "updated", "generator", "source-fil
 
 
 def serialize(doc):
-    probe_tags = any(p.get("tags") for p in doc["probes"])
-    out = [MAGIC if probe_tags else "HCS/0.2"]
+    needs_03 = any(p.get("tags") for p in doc["probes"]) or any(a.get("deps") for i in doc["claims"] + doc["probes"] for a in i["anchors"])
+    out = [MAGIC if needs_03 else "HCS/0.2"]
     headers = doc["headers"]
     keys = [k for k in _HEADER_ORDER if k in headers] + [k for k in headers if k not in _HEADER_ORDER]
     for k in keys:

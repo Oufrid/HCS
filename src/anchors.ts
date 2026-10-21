@@ -5,11 +5,13 @@ import { readFileSync, existsSync, realpathSync, statSync } from "node:fs";
 import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import type { Anchor, Claim, HcsDocument, Probe } from "./format.js";
 import { collectSources } from "./sources.js";
+import { dependencies, depsHash, supportsDeps } from "./deps.js";
 import { findSymbol, languageOf, listSymbols, type SymbolRange } from "./symbols.js";
 
 export const HASH_LENGTH = 12;
 
-export type AnchorStatus = "ok" | "moved" | "stale" | "missing" | "unsealed";
+/** `review` (since 0.3): the anchored text is unchanged but a symbol it uses changed. Not a failure. */
+export type AnchorStatus = "ok" | "moved" | "review" | "stale" | "missing" | "unsealed";
 
 export interface AnchorReport {
   anchor: Anchor;
@@ -141,7 +143,13 @@ function checkSymbolAnchor(a: Anchor, cache: SourceCache): AnchorReport {
   const range = lines ? findSymbol(a.path, lines, a.symbol!) : null;
   if (range && !a.hash) return { anchor: a, status: "unsealed", detail: "anchor has no hash; run `hcs seal`" };
   if (range && lines) {
-    if (hashSymbolLines(lines.slice(range.start - 1, range.end)) === a.hash) return { anchor: a, status: "ok" };
+    if (hashSymbolLines(lines.slice(range.start - 1, range.end)) === a.hash) {
+      if (a.deps && depsHash(a, cache) !== a.deps) {
+        const names = dependencies(a, cache).map((d) => (d.path === a.path ? d.symbol : `${d.path}::${d.symbol}`));
+        return { anchor: a, status: "review", detail: `a symbol it uses changed (uses ${names.join(", ") || "nothing now"})` };
+      }
+      return { anchor: a, status: "ok" };
+    }
     return { anchor: a, status: "stale", detail: `symbol changed (lines ${range.start}-${range.end})` };
   }
   const moved = findMovedSymbol(a, cache);
@@ -187,7 +195,7 @@ function findWindow(lines: string[], len: number, hash: string, origin: number):
   return -1;
 }
 
-const SEVERITY: AnchorStatus[] = ["ok", "moved", "unsealed", "stale", "missing"];
+const SEVERITY: AnchorStatus[] = ["ok", "moved", "review", "unsealed", "stale", "missing"];
 
 export function worst(statuses: AnchorStatus[]): AnchorStatus {
   return statuses.reduce<AnchorStatus>((w, s) => (SEVERITY.indexOf(s) > SEVERITY.indexOf(w) ? s : w), "ok");
@@ -209,14 +217,29 @@ export interface SealResult {
   sealed: number;
   relocated: number;
   rehashed: number;
+  /** Dependency hashes added or updated. */
+  deps: number;
 }
 
 /**
  * Write hashes into unsealed anchors, follow moved anchors to their new range and,
  * with `rehash`, accept the current content of stale anchors (a human asserts the claim still holds).
  */
-export function seal(doc: HcsDocument, cache: SourceCache, opts: { rehash?: boolean; ids?: Set<string> } = {}): SealResult {
-  const result: SealResult = { sealed: 0, relocated: 0, rehashed: 0 };
+/**
+ * `deps`: also record dependency hashes on symbol anchors that can have them (JS/TS, Python). Anchors that already
+ * carry one keep it up to date when they are sealed, relocated or re-hashed; `review` anchors are accepted by `rehash`.
+ */
+export function seal(doc: HcsDocument, cache: SourceCache, opts: { rehash?: boolean; ids?: Set<string>; deps?: boolean } = {}): SealResult {
+  const result: SealResult = { sealed: 0, relocated: 0, rehashed: 0, deps: 0 };
+  /** Recompute the dependency hash where one is kept, or wanted (opts.deps); counts the ones that changed. */
+  const refreshDeps = (a: Anchor) => {
+    if (!a.deps && !(opts.deps && a.symbol !== undefined && supportsDeps(a.path))) return;
+    const d = depsHash(a, cache);
+    if (d === a.deps) return;
+    if (d) a.deps = d;
+    else delete a.deps;
+    result.deps++;
+  };
   for (const item of [...doc.claims, ...doc.probes]) {
     if (opts.ids && !opts.ids.has(item.id)) continue;
     for (const a of item.anchors) {
@@ -226,6 +249,7 @@ export function seal(doc: HcsDocument, cache: SourceCache, opts: { rehash?: bool
         if (h) {
           a.hash = h;
           result.sealed++;
+          refreshDeps(a);
         }
       } else if (r.status === "moved" && r.relocated) {
         if (r.relocated.path !== undefined) a.path = r.relocated.path;
@@ -235,13 +259,18 @@ export function seal(doc: HcsDocument, cache: SourceCache, opts: { rehash?: bool
           a.end = r.relocated.end;
         }
         result.relocated++;
+        refreshDeps(a);
       } else if (r.status === "stale" && opts.rehash) {
         const h = currentHash(a, cache);
         if (h) {
           a.hash = h;
           result.rehashed++;
+          refreshDeps(a);
         }
-      }
+      } else if (r.status === "review" && opts.rehash) {
+        result.rehashed++;
+        refreshDeps(a);
+      } else if (r.status === "ok") refreshDeps(a);
     }
   }
   return result;

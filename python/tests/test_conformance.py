@@ -13,6 +13,7 @@ import unittest
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(HERE))
 
+from hcs.deps import dependencies, deps_hash  # noqa: E402
 from hcs import (  # noqa: E402
     HcsSyntaxError,
     SourceCache,
@@ -67,6 +68,13 @@ def run_case(d):
     if op == "hash":
         cache = SourceCache(os.path.join(d, "src"))
         return {"hashes": [current_hash(parse_anchor(a), cache) for a in args["anchors"]]}
+    if op == "deps":
+        cache = SourceCache(os.path.join(d, "src"))
+        out = []
+        for raw in args["anchors"]:
+            a = parse_anchor(raw)
+            out.append({"dependencies": dependencies(a, cache), "hash": deps_hash(a, cache)})
+        return {"results": out}
     if op == "check":
         doc, cache = doc_and_cache()
         items = []
@@ -81,7 +89,7 @@ def run_case(d):
         return {"items": items}
     if op == "seal":
         doc, cache = doc_and_cache()
-        result = seal(doc, cache, rehash=bool(args.get("rehash")), ids=set(args["ids"]) if args.get("ids") else None)
+        result = seal(doc, cache, rehash=bool(args.get("rehash")), ids=set(args["ids"]) if args.get("ids") else None, deps=bool(args.get("deps")))
         return {"result": result, "text": serialize(doc)}
     if op == "render":
         doc, cache = doc_and_cache()

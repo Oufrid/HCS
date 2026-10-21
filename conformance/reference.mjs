@@ -5,6 +5,7 @@ import { cpSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { checkDocument, currentHash, normalizeLines, rootDir, seal, SourceCache } from "../dist/src/anchors.js";
+import { dependencies, depsHash } from "../dist/src/deps.js";
 import { HcsSyntaxError, parse, parseAnchor, serialize } from "../dist/src/format.js";
 import { renderContext } from "../dist/src/render.js";
 import { hashForCertificate } from "../dist/src/score.js";
@@ -60,6 +61,15 @@ export function runCase(dir) {
       const cache = new SourceCache(join(dir, "src"));
       return { hashes: args.anchors.map((a) => currentHash(parseAnchor(a), cache)) };
     }
+    case "deps": {
+      const cache = new SourceCache(join(dir, "src"));
+      return {
+        results: args.anchors.map((raw) => {
+          const a = parseAnchor(raw);
+          return { dependencies: dependencies(a, cache), hash: depsHash(a, cache) ?? null };
+        }),
+      };
+    }
     case "check": {
       const { doc, cache } = docAndCache();
       return {
@@ -73,7 +83,7 @@ export function runCase(dir) {
     }
     case "seal": {
       const { doc, cache } = docAndCache();
-      const result = seal(doc, cache, { rehash: !!args.rehash, ids: args.ids ? new Set(args.ids) : undefined });
+      const result = seal(doc, cache, { rehash: !!args.rehash, ids: args.ids ? new Set(args.ids) : undefined, deps: !!args.deps });
       return { result, text: serialize(doc) };
     }
     case "render": {

@@ -304,7 +304,7 @@ export async function scoreDocument(
 ): Promise<DocumentScore> {
   const usable = doc.probes.filter((p) => {
     const s = status.get(`probe:${p.id}`);
-    return s === "ok" || s === "moved";
+    return s === "ok" || s === "moved" || s === "review";
   });
   if (!usable.length) throw new Error("no verified probes to score with (run `hcs check`; stale probes are skipped)");
   const claimStatus = new Map([...status].filter(([k]) => k.startsWith("claim:")).map(([k, v]) => [k.slice(6), v]));
@@ -375,7 +375,7 @@ export async function scoreDocument(
  * context, so the digest is computed the same way `hcs check` recomputes it.
  */
 export function hashForCertificate(doc: HcsDocument, claimStatus: Map<string, AnchorStatus>, budget?: number): string {
-  const allFresh = [...claimStatus.values()].every((s) => s === "ok" || s === "moved");
+  const allFresh = [...claimStatus.values()].every((s) => s === "ok" || s === "moved" || s === "review");
   if (allFresh) return contextDigest(doc, budget);
   const filtered: HcsDocument = {
     ...doc,

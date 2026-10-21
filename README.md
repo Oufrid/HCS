@@ -158,6 +158,15 @@ A symbol anchor (`path::Name`) hashes its symbol with all whitespace removed:
 
 Symbol location is built in and needs no dependency. It covers brace languages (JS/TS, Java, C#, Go, Rust, C/C++, PHP, Kotlin, Swift…), Python, Markdown headings, and YAML/JSON keys. It is heuristic rather than a full parser: when it cannot find a symbol, it says so and never guesses. Line anchors (`path:10-20`) and whole-file anchors remain available; `compile --anchors lines` forces them.
 
+### Claims about code that uses other code
+
+A claim about `fee()` can become false when a helper that `fee` calls changes, while `fee` itself does not. With
+`hcs seal project.hcs --deps`, symbol anchors in JavaScript/TypeScript and Python also hash the symbols they use
+directly (same file, or imported by name). `hcs check` then reports such claims as `review`: not a failure, a
+prompt to re-read them; `hcs seal --rehash --ids ...` accepts them. It is a shallow, name-based analysis: on this
+repository's history only 1 of 18 reviews pointed at a claim that had really become inaccurate, so expect mostly
+false alarms ([bench/REPORT.md](bench/REPORT.md), C3).
+
 ## Hand-written claims
 
 The compiler is optional. Rules that no tool can infer (*"never log card numbers"*) are the most valuable context, so write them yourself and anchor them:

@@ -112,13 +112,15 @@ on 2026-10-22.
 - **Done when:** refine improves held-out fidelity on at least two real repositories, documented with raw
   numbers. If it does not, document that honestly.
 
-### C3. Dependency-aware invalidation `[ ]`
-- Build a lightweight reference graph: which symbols a symbol calls or imports, using the existing symbol
-  locator plus identifier matching.
-- `check` marks a claim `review` (a new, non-failing status) when a symbol its anchor depends on changed.
-  Spec the status.
-- **Done when:** this works on JS/TS and Python with tests, and the false-positive rate on this repository's
-  history is measured and reported.
+### C3. Dependency-aware invalidation `[x]`
+Done: `hcs seal --deps` stores, on JS/TS and Python symbol anchors, a hash of the symbols they use directly
+(same-file symbols and class siblings by identifier matching, plus names imported from project files), written
+`#hash/deps`; `check` reports `review`, a new non-failing status, when it changes while the symbol does not;
+`seal --rehash` accepts it. Specified in SPEC 0.3 (section 5.5), implemented in TypeScript and Python, covered by
+conformance cases and by the cross-check (785 dependency edges of this repository identical in both). Measured on
+this repository's history (`bench/c3/`): 18 review events over 26 commits, 1 needed, so a false-positive rate of
+17/18 (94%), reported in `bench/REPORT.md`. Possible follow-ups: ignore type-only dependencies and object keys,
+measured the same way.
 
 ### C4. Signed certificates `[ ]`
 - `score --sign` signs the certificate with an Ed25519 key (`node:crypto`, no dependency). `check` verifies the

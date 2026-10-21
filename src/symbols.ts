@@ -138,6 +138,16 @@ function regexClose(line: string, from: number): number {
   return -1;
 }
 
+/** Code of each line with string literals, regex literals and comments blanked out (state carried across lines). */
+export function codeLines(path: string, lines: string[]): string[] {
+  const st = newState(!/\.(rs|c|h|cc|cpp|hpp|cxx|java|kt|kts|scala|swift|cs|go|dart)$/i.test(path));
+  return lines.map((l) => {
+    const inside = st.comment || st.template;
+    const code = codeOnly(l, st);
+    return inside && !code ? "" : code;
+  });
+}
+
 /**
  * "block": a definition with a body; braces count only outside the parameter list, and a body must open.
  * "value": an initializer (const x = ...); all brackets count, and it ends at the statement's end.

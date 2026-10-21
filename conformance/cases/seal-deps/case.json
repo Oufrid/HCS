@@ -1,0 +1,7 @@
+{
+  "op": "seal",
+  "description": "seal with deps records dependency hashes on JS/TS/Python symbol anchors that have dependencies, and only there.",
+  "args": {
+    "deps": true
+  }
+}

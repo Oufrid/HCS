@@ -257,7 +257,7 @@ export async function compile(opts: CompileOptions): Promise<{ doc: HcsDocument;
     const status = new Map(checkDocument(prev, cache).map((r) => [`${r.kind}:${r.id}`, r.status]));
     const fresh = (kind: string, id: string) => {
       const s = status.get(`${kind}:${id}`);
-      return s === "ok" || s === "moved";
+      return s === "ok" || s === "moved" || s === "review";
     };
     const dirty = new Set<string>();
     for (const item of [...prev.claims, ...prev.probes]) {

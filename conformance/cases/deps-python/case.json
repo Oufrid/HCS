@@ -1,0 +1,10 @@
+{
+  "op": "deps",
+  "description": "Direct dependencies of Python functions, through relative and package imports.",
+  "args": {
+    "anchors": [
+      "app/pricing.py::fee",
+      "app/pricing.py::base"
+    ]
+  }
+}

@@ -152,3 +152,33 @@ context is needed; `hcs curve` now prints that warning. The cause is the answeri
 full context, `groq:qwen/qwen3.8-27b` scored 44.6% (A1). Small local models follow the decoder rule "answer only
 from the context, else UNKNOWN" too literally to measure anything. The run took about 25 minutes for 259 requests
 thanks to Ollama's prompt-prefix cache.
+
+## C3. Dependency-aware invalidation
+
+### 2026-10-21: false-positive rate on this repository's history
+
+Script: `bench/c3/history.mjs` (output `bench/c3/events.json`). It replays the 27 first-parent commits of the work
+branch up to this change. For each of the 60 symbol anchors of `project.hcs` (as of HEAD) and each pair of
+consecutive commits where the symbol exists in both (1,201 observations), it compares the symbol's own hash and the
+hashes of its direct dependencies. 56 observations are own changes (`stale`); 18 are **review events**: own text
+unchanged, a dependency changed.
+
+Each event was judged by reading the claim and the dependency's diff (by the agent that wrote the code, so with that
+bias):
+
+| Events | Judged | Why |
+|---|---|---|
+| 1 | needed | `quote-guard` (cites `compile.ts::anchorFor`): `locateQuote` started ignoring Markdown markup, and the claim said quotes were matched "ignoring whitespace and case" only. It was corrected by hand at the time. |
+| 3 | not needed | `format.ts::Probe` gained an optional `tags` field; the compile claims did not depend on it. |
+| 1 | not needed | `format.ts::parse` accepted probe tags; the `hcs_record` claim is unaffected. |
+| 4 | not needed | `SourceCache` gained the root sandbox; `checkAnchor`, `checkSymbolAnchor`, `findMovedSymbol` and `seal` claims unaffected. |
+| 4 | not needed | `score.ts::answer` and `judge` got larger token caps; one of these edges (`scoreDocument` -> `judge`) is a false dependency: the identifier `judge` there is an object key. |
+| 1 | not needed | `scoreContext` gained a result cache; the `--filter-known` claim is unaffected. |
+| 1 | not needed | `braceSymbols` located `fn new`; the locator claim is still true. |
+| 3 | not needed | `collectSources` returned no files for a missing root; compile and sandbox claims unaffected. |
+
+**False-positive rate: 17/18 (94%).** Depth-1 name matching flags most dependency changes, and most dependency changes
+do not change what a claim says. `review` is not a failure, so the cost is reviewer attention: here 18 extra reviews
+over 26 commits, against 56 direct invalidations. Recall cannot be measured from this history alone: the only
+claim known to have been invalidated through a dependency was caught. Cheap improvements to try with numbers: ignore
+type-only dependencies (interfaces, type aliases), and identifiers used as object keys.

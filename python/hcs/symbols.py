@@ -151,6 +151,17 @@ def _code_only(line, st):
     return out
 
 
+def code_lines(path, lines):
+    """Code of each line with string literals, regex literals and comments blanked out (state carried across lines)."""
+    st = _ScanState(not _NO_SINGLE_QUOTE_STRINGS.search(path))
+    out = []
+    for line in lines:
+        inside = st.comment or st.template
+        code = _code_only(line, st)
+        out.append("" if inside and not code else code)
+    return out
+
+
 _CONTINUES = re.compile(r"(=>|[=,(+\-*?:]|&&|\|\|)\s*$")
 
 

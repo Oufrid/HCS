@@ -7,8 +7,27 @@ import re
 from .sources import collect_sources
 from .symbols import find_symbol, language_of, list_symbols
 
+
+def _deps():
+    # Imported late: deps uses this module's hashing (no import cycle at load time).
+    from . import deps
+
+    return deps
+
+
+def dependencies(a, cache):
+    return _deps().dependencies(a, cache)
+
+
+def deps_hash(a, cache):
+    return _deps().deps_hash(a, cache)
+
+
+def supports_deps(path):
+    return _deps().supports_deps(path)
+
 HASH_LENGTH = 12
-SEVERITY = ["ok", "moved", "unsealed", "stale", "missing"]
+SEVERITY = ["ok", "moved", "review", "unsealed", "stale", "missing"]
 
 
 def normalize_lines(text):
@@ -132,6 +151,9 @@ def _check_symbol_anchor(a, cache):
         return {"anchor": a, "status": "unsealed", "detail": "anchor has no hash; run `hcs seal`"}
     if rng and lines is not None:
         if hash_symbol_lines(lines[rng["start"] - 1 : rng["end"]]) == a["hash"]:
+            if a.get("deps") and deps_hash(a, cache) != a["deps"]:
+                names = [d["symbol"] if d["path"] == a["path"] else "%s::%s" % (d["path"], d["symbol"]) for d in dependencies(a, cache)]
+                return {"anchor": a, "status": "review", "detail": "a symbol it uses changed (uses %s)" % (", ".join(names) or "nothing now")}
             return {"anchor": a, "status": "ok"}
         return {"anchor": a, "status": "stale", "detail": "symbol changed (lines %d-%d)" % (rng["start"], rng["end"])}
     moved = _find_moved_symbol(a, cache)
@@ -195,20 +217,39 @@ def check_document(doc, cache):
     return [check_item(c, "claim", cache) for c in doc["claims"]] + [check_item(p, "probe", cache) for p in doc["probes"]]
 
 
-def seal(doc, cache, rehash=False, ids=None):
-    """Hash unsealed anchors, follow moved ones and, with rehash, accept the current content of stale ones."""
-    result = {"sealed": 0, "relocated": 0, "rehashed": 0}
+def seal(doc, cache, rehash=False, ids=None, deps=False):
+    """Hash unsealed anchors, follow moved ones and, with rehash, accept stale or review ones.
+
+    `deps`: also record dependency hashes on symbol anchors that can have them (JS/TS, Python). Anchors that already
+    carry one keep it up to date.
+    """
+    result = {"sealed": 0, "relocated": 0, "rehashed": 0, "deps": 0}
+
+    def refresh_deps(a):
+        if not a.get("deps") and not (deps and "symbol" in a and supports_deps(a["path"])):
+            return
+        d = deps_hash(a, cache)
+        if d == a.get("deps"):
+            return
+        if d:
+            a["deps"] = d
+        else:
+            a.pop("deps", None)
+        result["deps"] += 1
+
     for item in doc["claims"] + doc["probes"]:
         if ids is not None and item["id"] not in ids:
             continue
         for a in item["anchors"]:
             r = check_anchor(a, cache)
-            if r["status"] == "unsealed":
+            st = r["status"]
+            if st == "unsealed":
                 h = current_hash(a, cache)
                 if h:
                     a["hash"] = h
                     result["sealed"] += 1
-            elif r["status"] == "moved" and r.get("relocated"):
+                    refresh_deps(a)
+            elif st == "moved" and r.get("relocated"):
                 rel = r["relocated"]
                 if "path" in rel:
                     a["path"] = rel["path"]
@@ -218,9 +259,16 @@ def seal(doc, cache, rehash=False, ids=None):
                     a["start"] = rel["start"]
                     a["end"] = rel["end"]
                 result["relocated"] += 1
-            elif r["status"] == "stale" and rehash:
+                refresh_deps(a)
+            elif st == "stale" and rehash:
                 h = current_hash(a, cache)
                 if h:
                     a["hash"] = h
                     result["rehashed"] += 1
+                    refresh_deps(a)
+            elif st == "review" and rehash:
+                result["rehashed"] += 1
+                refresh_deps(a)
+            elif st == "ok":
+                refresh_deps(a)
     return result

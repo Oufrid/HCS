@@ -281,6 +281,34 @@ with open(os.path.join(ROOT, "check-reformat-and-move", "before", "a.ts"), "w") 
 case("check-missing-root", "check", "When @root names a directory that does not exist, every anchor is missing (no crash, no moved symbol search).",
      {"input.hcs": "HCS/0.2\n@root nowhere\n[claims]\n#c1 Symbol.\n  > a.ts::f #0123456789ab\n#c2 Line.\n  > a.ts:1 #0123456789ab\n#c3 Unsealed.\n  > a.ts:1\n"}, {})
 
+# ---------- dependencies (since 0.3) ----------
+DEP_TS = {
+    "src/rates.ts": 'import { round, LIMIT as MAX } from "./util.js";\nimport { unused } from "./util.js";\n\nexport function fee(w: number): number {\n  if (w > MAX) throw new Error("helper and base are words in a string");\n  return round(base() + w * 4);\n}\n\nfunction base() {\n  return 25;\n}\n\nexport class Cart {\n  total() {\n    return this.sum() * 2;\n  }\n  sum() {\n    return 1;\n  }\n}\n',
+    "src/util.ts": "export function round(x: number) {\n  return Math.round(x);\n}\n\nexport const LIMIT = 30;\n\nexport function unused() {\n  return 0;\n}\n",
+}
+case("deps-typescript", "deps", "Direct dependencies of TS symbols: same-file symbols, class siblings, names imported from project files; words inside strings do not count.",
+     DEP_TS, {"anchors": ["rates.ts::fee", "rates.ts::Cart.total", "rates.ts::base", "rates.ts:1-3", "util.ts::round"]})
+DEP_PY = {
+    "src/app/pricing.py": "from .util import round_up, LIMIT\nfrom app.tax import vat as v\n\n\ndef fee(w):\n    if w > LIMIT:\n        raise ValueError('round_up')\n    return round_up(base(w)) + v(w)\n\n\ndef base(w):\n    return 25 + w * 4\n",
+    "src/app/util.py": "LIMIT = 30\n\n\ndef round_up(x):\n    return int(x + 0.5)\n",
+    "src/app/tax.py": "def vat(x):\n    return x * 0.2\n",
+    "src/app/__init__.py": "",
+}
+case("deps-python", "deps", "Direct dependencies of Python functions, through relative and package imports.", DEP_PY, {"anchors": ["app/pricing.py::fee", "app/pricing.py::base"]})
+case("check-review", "check", "A symbol anchor whose own text is unchanged but whose dependency changed is `review`; a change to an unused export is not.",
+     {"input.template.hcs": "HCS/0.3\n@root src\n[claims]\n#fee Fee is 25 plus 4 per kg, rounded.\n  > rates.ts::fee #HASH_DEPS_FEE\n#total Total doubles the sum.\n  > rates.ts::Cart.total #HASH_DEPS_TOTAL\n",
+      "src/rates.ts": DEP_TS["src/rates.ts"].replace("return 1;", "return 2;"),
+      "src/util.ts": DEP_TS["src/util.ts"].replace("Math.round(x)", "Math.ceil(x)").replace("return 0", "return 9")},
+     {"seal_against": "before"})
+for rel, content in DEP_TS.items():
+    pth = os.path.join(ROOT, "check-review", "before", rel[len("src/"):])
+    os.makedirs(os.path.dirname(pth), exist_ok=True)
+    with open(pth, "w") as f:
+        f.write(content)
+case("seal-deps", "seal", "seal with deps records dependency hashes on JS/TS/Python symbol anchors that have dependencies, and only there.",
+     {"input.hcs": "HCS/0.2\n@root src\n[claims]\n#a Fee.\n  > rates.ts::fee\n#b Base.\n  > rates.ts::base\n#c Lines.\n  > util.ts:1-3\n", **DEP_TS},
+     {"deps": True})
+
 # ---------- seal ----------
 case("seal-basic", "seal", "Sealing hashes unsealed anchors and follows moved ones; stale anchors stay unless rehash.",
      {"input.hcs": "HCS/0.2\n@root src\n[claims]\n#a New.\n  > x.txt:2\n#b Shifted.\n  > x.txt:1 #HASH_LINE_TWO\n#c Stale.\n  > x.txt:3 #000000000000\n",

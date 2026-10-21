@@ -29,6 +29,7 @@ from hcs import (  # noqa: E402
     root_dir,
     serialize,
 )
+from hcs.deps import dependencies, deps_hash, supports_deps  # noqa: E402
 from hcs.sources import collect_sources  # noqa: E402
 
 NODE = r"""
@@ -38,11 +39,16 @@ import { renderContext } from "./dist/src/render.js";
 import { hashForCertificate } from "./dist/src/score.js";
 import { collectSources } from "./dist/src/sources.js";
 import { listSymbols } from "./dist/src/symbols.js";
+import { dependencies, depsHash, supportsDeps } from "./dist/src/deps.js";
 import { readFileSync } from "node:fs";
 const job = JSON.parse(readFileSync(0, "utf8"));
 const plain = (x) => JSON.parse(JSON.stringify(x));
-const out = { files: collectSources("."), symbols: {}, documents: {}, fuzz: [] };
-for (const f of out.files) out.symbols[f] = listSymbols(f, normalizeLines(readFileSync(f, "utf8")));
+const out = { files: collectSources("."), symbols: {}, deps: {}, documents: {}, fuzz: [] };
+const repo = new SourceCache(".");
+for (const f of out.files) {
+  out.symbols[f] = listSymbols(f, normalizeLines(readFileSync(f, "utf8")));
+  if (supportsDeps(f)) out.deps[f] = out.symbols[f].map((s) => { const a = { path: f, symbol: s.name }; return [dependencies(a, repo), depsHash(a, repo) ?? null]; });
+}
 for (const f of job.documents) {
   const doc = parse(readFileSync(f, "utf8"));
   const reports = checkDocument(doc, new SourceCache(rootDir(doc, f)));
@@ -111,11 +117,21 @@ def main():
     if files != ts["files"]:
         failures.append("source file lists differ")
     n_symbols = 0
+    n_deps = 0
+    repo = SourceCache(".")
     for f in files:
         syms = list_symbols(f, normalize_lines(read(f)))
         n_symbols += len(syms)
         if syms != ts["symbols"].get(f):
             failures.append("symbols differ in " + f)
+        if supports_deps(f):
+            mine = []
+            for s in syms:
+                a = {"path": f, "symbol": s["name"]}
+                mine.append([dependencies(a, repo), deps_hash(a, repo)])
+                n_deps += len(mine[-1][0])
+            if mine != ts["deps"].get(f):
+                failures.append("dependencies differ in " + f)
     for f in documents:
         doc = parse(read(f))
         reports = check_document(doc, SourceCache(root_dir(doc, f)))
@@ -139,7 +155,7 @@ def main():
         if mine != ts["fuzz"][i]:
             failures.append("fuzz input %d parses differently" % i)
 
-    print("cross-check: %d files and %d symbols, %d documents, %d mutated inputs" % (len(files), n_symbols, len(documents), len(fuzz)))
+    print("cross-check: %d files, %d symbols, %d dependency edges, %d documents, %d mutated inputs" % (len(files), n_symbols, n_deps, len(documents), len(fuzz)))
     for f in failures[:20]:
         print("  DIFF " + f)
     print("OK: the Python implementation matches the TypeScript reference" if not failures else "FAIL: %d difference(s)" % len(failures))

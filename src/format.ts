@@ -17,6 +17,8 @@ export interface Anchor {
   end?: number;
   /** Truncated SHA-256 of the normalized anchored text; undefined means unsealed. */
   hash?: string;
+  /** (since 0.3, symbol anchors) Hash of the symbols this symbol uses directly; written `#hash/deps`. */
+  deps?: string;
 }
 
 export interface Claim {
@@ -66,7 +68,7 @@ export function emptyDocument(title = "Untitled"): HcsDocument {
   };
 }
 
-const ANCHOR_RE = /^(?:"([^"]+)"|([^\s"]+?))(?:::(?:"([^"]+)"|([^\s"#]+))|:(\d+)(?:-(\d+))?)?(?:\s+#([0-9a-f]{6,64}))?$/;
+const ANCHOR_RE = /^(?:"([^"]+)"|([^\s"]+?))(?:::(?:"([^"]+)"|([^\s"#]+))|:(\d+)(?:-(\d+))?)?(?:\s+#([0-9a-f]{6,64})(?:\/([0-9a-f]{6,64}))?)?$/;
 
 export function parseAnchor(raw: string, line = 0): Anchor {
   const m = ANCHOR_RE.exec(raw.trim());
@@ -83,6 +85,7 @@ export function parseAnchor(raw: string, line = 0): Anchor {
     }
   }
   if (m[7]) anchor.hash = m[7];
+  if (m[8]) anchor.deps = m[8];
   return anchor;
 }
 
@@ -90,7 +93,7 @@ export function formatAnchor(a: Anchor, withHash = true): string {
   let s = /\s/.test(a.path) ? `"${a.path}"` : a.path;
   if (a.symbol !== undefined) s += /[\s"#]/.test(a.symbol) ? `::"${a.symbol.replace(/"/g, "'")}"` : `::${a.symbol}`;
   else if (a.start !== undefined) s += a.end !== undefined && a.end !== a.start ? `:${a.start}-${a.end}` : `:${a.start}`;
-  if (withHash && a.hash) s += ` #${a.hash}`;
+  if (withHash && a.hash) s += ` #${a.hash}${a.deps ? `/${a.deps}` : ""}`;
   return s;
 }
 
@@ -211,8 +214,8 @@ export function parse(text: string): HcsDocument {
 }
 
 export function serialize(doc: HcsDocument): string {
-  const probeTags = doc.probes.some((p) => p.tags?.length);
-  const out: string[] = [probeTags ? MAGIC : "HCS/0.2"];
+  const needs03 = doc.probes.some((p) => p.tags?.length) || [...doc.claims, ...doc.probes].some((i) => i.anchors.some((a) => a.deps));
+  const out: string[] = [needs03 ? MAGIC : "HCS/0.2"];
   const order = ["title", "root", "created", "updated", "generator", "source-files", "source-tokens"];
   const keys = [...order.filter((k) => k in doc.headers), ...Object.keys(doc.headers).filter((k) => !order.includes(k))];
   for (const k of keys) out.push(`@${k} ${doc.headers[k]}`.trimEnd());

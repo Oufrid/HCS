@@ -31,7 +31,9 @@ Deterministic commands (no LLM, no network; except \`models\`, which asks the pr
   hcs check <file.hcs> [--strict] [--json]    Verify every anchor against the sources; exit 1 if stale
                                               (--strict: also unsealed anchors and suspect claims)
   hcs seal <file.hcs> [--rehash] [--ids a,b]  Fill missing hashes, follow moved anchors
-                                              (--rehash: accept current content of stale anchors)
+            [--deps]                          (--rehash: accept current content of stale or review anchors;
+                                              --deps: also hash what each JS/TS/Python symbol uses, so that
+                                              check reports "review" when a dependency changes)
   hcs render <file.hcs> [--budget N]          Print the context block to give an LLM
              [--decoder] [--no-anchors] [--keep-stale]
   hcs stats <file.hcs>                        Sizes, token estimates, compression ratio
@@ -90,7 +92,7 @@ function claimStatus(reports: ItemReport[]): Map<string, AnchorStatus> {
 
 const pct = (x: number) => `${(x * 100).toFixed(1)}%`;
 
-const ICON: Record<AnchorStatus, string> = { ok: "ok", moved: "moved", unsealed: "unsealed", stale: "STALE", missing: "MISSING" };
+const ICON: Record<AnchorStatus, string> = { ok: "ok", moved: "moved", review: "review", unsealed: "unsealed", stale: "STALE", missing: "MISSING" };
 
 function requireFile(positionals: string[], what = "<file.hcs>"): string {
   if (!positionals[0]) throw new UsageError(`missing ${what}`);
@@ -194,6 +196,7 @@ async function main(argv: string[]): Promise<number> {
       rpm: { type: "string" },
       "reasoning-effort": { type: "string" },
       "allow-write": { type: "boolean" },
+      deps: { type: "boolean" },
       base: { type: "string" },
       format: { type: "string" },
       "link-base": { type: "string" },
@@ -280,7 +283,7 @@ async function main(argv: string[]): Promise<number> {
       }
       console.log(`${file}: ${doc.claims.length} claims, ${doc.probes.length} probes`);
       for (const k of ["claim", "probe"] as const) {
-        const parts = (["ok", "moved", "unsealed", "stale", "missing"] as AnchorStatus[])
+        const parts = (["ok", "moved", "review", "unsealed", "stale", "missing"] as AnchorStatus[])
           .map((s) => [s, count(k, s)] as const)
           .filter(([, n]) => n)
           .map(([s, n]) => `${n} ${s}`);
@@ -307,6 +310,9 @@ async function main(argv: string[]): Promise<number> {
       for (const c of certs) {
         console.log(`  certificate ${c.fields.model} fidelity=${c.fields.fidelity}: ${c.current ? "current" : "OUTDATED (context changed since it was scored)"}`);
       }
+      if (reports.some((r) => r.status === "review")) {
+        console.log(`  hint: "review" claims cite unchanged code that uses changed code; re-read them, then \`hcs seal ${file} --rehash --ids ...\``);
+      }
       if (reports.some((r) => r.status === "moved" || r.status === "unsealed")) console.log(`  hint: run \`hcs seal ${file}\` to update moved/unsealed anchors`);
       if (doc.headers.incomplete) {
         console.log(`  note: partial file, ${doc.headers.incomplete.split(",").length} source chunk(s) not compiled yet (@incomplete); finish with \`hcs compile --update\``);
@@ -325,13 +331,13 @@ async function main(argv: string[]): Promise<number> {
       const doc = load(file);
       const cache = new SourceCache(rootDir(doc, file));
       const ids = o.ids ? new Set(o.ids.split(",").map((s) => s.trim())) : undefined;
-      const r = seal(doc, cache, { rehash: o.rehash, ids });
-      if (r.sealed + r.relocated + r.rehashed) {
+      const r = seal(doc, cache, { rehash: o.rehash, ids, deps: o.deps });
+      if (r.sealed + r.relocated + r.rehashed + r.deps) {
         if (r.rehashed) doc.certificates = []; // sources changed: earlier scores no longer apply
         doc.headers.updated = new Date().toISOString();
         save(file, doc);
       }
-      console.log(`${file}: ${r.sealed} sealed, ${r.relocated} relocated, ${r.rehashed} re-hashed`);
+      console.log(`${file}: ${r.sealed} sealed, ${r.relocated} relocated, ${r.rehashed} re-hashed${r.deps ? `, ${r.deps} dependency hash(es) updated` : ""}`);
       return 0;
     }
 
@@ -610,7 +616,7 @@ async function main(argv: string[]): Promise<number> {
         const probeDoc = load(o.probes);
         const reports = checkDocument(probeDoc, new SourceCache(rootDir(probeDoc, o.probes)));
         const status = statusMap(reports);
-        const probes = probeDoc.probes.filter((p) => ["ok", "moved"].includes(status.get(`probe:${p.id}`) ?? ""));
+        const probes = probeDoc.probes.filter((p) => ["ok", "moved", "review"].includes(status.get(`probe:${p.id}`) ?? ""));
         const opts = {
           answerer: llm(requireModel(o.model)),
           judge: judges(),
@@ -630,7 +636,7 @@ async function main(argv: string[]): Promise<number> {
       if (!probeFile) throw new UsageError("no probes: pass --probes file.hcs, or make one side an .hcs file");
       const probeDoc = load(probeFile);
       const status = statusMap(checkDocument(probeDoc, new SourceCache(rootDir(probeDoc, probeFile))));
-      const probes = probeDoc.probes.filter((p) => ["ok", "moved"].includes(status.get(`probe:${p.id}`) ?? ""));
+      const probes = probeDoc.probes.filter((p) => ["ok", "moved", "review"].includes(status.get(`probe:${p.id}`) ?? ""));
       if (!probes.length) throw new UsageError(`no verified probes in ${probeFile}`);
       const contextOf = (side: string): string | null => {
         if (side === "none") return null;
