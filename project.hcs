@@ -1,7 +1,7 @@
 HCS/0.2
 @title HCS - Holographic Context Standard (reference CLI)
 @root .
-@updated 2026-10-21T14:00:35.443Z
+@updated 2026-10-21T14:01:26.715Z
 @meta license=MIT language=TypeScript
 
 [claims]
@@ -101,8 +101,8 @@ HCS/0.2
 #sandbox[manual] Every source read goes through SourceCache, which refuses paths outside the project root (relative escapes, absolute paths, symlinks): such anchors are reported missing, and `hcs serve` refuses an @root outside the working directory unless --root is given.
   > src/anchors.ts::insideRoot #b3487c7f0572
   > src/anchors.ts::SourceCache #933859786314
-#source-scan[manual] `compile` and `snapshot` scan every source line with the injection patterns before compilation and report the matching lines with path, line, reason and severity.
-  > src/guard.ts::scanSource #4653fed397c1
+#source-scan[manual] `compile` and `snapshot` scan every source line with the injection patterns before compilation and report each matching line with its path, line number, reason and severity.
+  > src/guard.ts::scanSource #6ac46d7d7e06
 #fuzz[manual] Fuzz tests feed thousands of mutated and random files to the parser: each must parse and round-trip stably, or raise HcsSyntaxError.
   > test/fuzz.test.ts::assertWellBehaved #13847c57eb6e
 

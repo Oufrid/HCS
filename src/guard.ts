@@ -66,9 +66,9 @@ export interface SourceFinding extends Finding {
  * even when no claim repeats it. Reporting only: the compiler still extracts, and tags suspect claims.
  */
 export function scanSource(path: string, text: string): SourceFinding[] {
-  const out: SourceFinding[] = [];
+  const findings: SourceFinding[] = [];
   text.split(/\r?\n/).forEach((l, i) => {
-    for (const f of injectionFindings(l)) out.push({ path, line: i + 1, ...f });
+    for (const f of injectionFindings(l)) findings.push({ path, line: i + 1, ...f });
   });
-  return out;
+  return findings;
 }
