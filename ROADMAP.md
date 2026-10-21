@@ -171,11 +171,19 @@ benchmark result, private security link), a pull-request template, and `rfcs/` (
 pre-1.0 versioning policy). Remaining: SPEC 1.0 is **not** tagged, on purpose: its condition is not met, since
 D1 (public benchmark) is not published. Tagging is also a release, which needs the maintainer's approval.
 
-### D3. Documentation and examples `[ ]`
+### D3. Documentation and examples `[x]`
 - `examples/`: a small project in several languages with its `.hcs` file, a conversation snapshot, an audited
   AGENTS.md, and an MCP config.
 - A short tutorial ("from zero to a certified context in 10 minutes") and an FAQ covering honest limits.
 - **Done when:** a new user can follow the tutorial end to end without help. Test it in a clean session.
+
+Done: `examples/shop/` (TypeScript, Python, Markdown) with `shop.hcs` compiled by Groq and scored by Gemini with a
+Groq judge (75.0%, 95% CI 50.0%-100.0%, 12 probes), an `AGENTS.md` audited (1 broken reference, 0.0% on the same
+probes), a conversation snapshot, and an MCP config; each artifact's command and limits are in its README.
+`docs/tutorial.md` and `docs/faq.md`. A fresh agent session with no prior context followed the tutorial from a
+clean clone end to end without help (every step worked, about 3 minutes of commands); the points where it had to
+guess were fixed (probe ids when re-sealing, the `abstained` column, and `compile`'s suggested score command, which
+now asks for a judge from another family). Limit: the tester was an agent, not a human newcomer.
 
 ---
 

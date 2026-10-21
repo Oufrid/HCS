@@ -524,7 +524,7 @@ async function main(argv: string[]): Promise<number> {
         console.log(`  the partial file was saved; run the same command with --update later to finish it`);
         return 1;
       }
-      console.log(`  context ~${ctxTokens} tokens for ~${stats.sourceTokens} tokens of source. Next: hcs score ${out} --model ${model} --baseline --write`);
+      console.log(`  context ~${ctxTokens} tokens for ~${stats.sourceTokens} tokens of source. Next: hcs score ${out} --model <answering model> --judge <a model from another family> --write`);
       return 0;
     }
 

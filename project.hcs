@@ -1,7 +1,7 @@
 HCS/0.2
 @title HCS - Holographic Context Standard (reference CLI)
 @root .
-@updated 2026-10-21T23:29:31.707Z
+@updated 2026-10-21T23:34:09.984Z
 @meta license=MIT language=TypeScript
 
 [claims]
@@ -45,6 +45,10 @@ HCS/0.2
   > src/anchors.ts::seal #15fc15a95ec5
 
 ## Conformance
+#tutorial[manual] docs/tutorial.md takes a new user from install to a compiled, checked, deliberately broken and scored context on examples/shop in about 10 minutes, using free Groq or Gemini models with --rpm 8; examples/shop keeps every artifact with the command that produced it.
+  > docs/tutorial.md::"3. Compile a context file (2 minutes)" #3fa46ff708b6
+  > docs/tutorial.md::"5. Score it (3 minutes)" #c4db8228287f
+  > examples/shop/README.md::"How each artifact was made" #133b735cf738
 #rfc[manual] Changes to the format (syntax, hashing, verification, certificate meaning) need an RFC in rfcs/ open for comments at least 7 days before code is merged; until SPEC 1.0, a minor version may add features but must not change the meaning or hash of anything older files contain.
   > rfcs/README.md::Process #d221ed5362e8
   > rfcs/README.md::"Versioning policy (current, pre-1.0)" #32487af6a0b5

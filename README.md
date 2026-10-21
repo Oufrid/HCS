@@ -46,6 +46,9 @@ npm link            # puts `hcs` on your PATH
 
 ## Quick start
 
+New to HCS? The [tutorial](docs/tutorial.md) goes from install to a scored, checked context in about 10 minutes on
+the [example project](examples/shop/README.md), and the [FAQ](docs/faq.md) states the limits.
+
 ### 1. Compile a context file from your project
 
 ```bash
@@ -381,7 +384,8 @@ src/            CLI, MCP server and library (TypeScript, no runtime dependencies
 python/         second implementation of the deterministic core (Python >= 3.9, no dependencies)
 conformance/    language-agnostic test cases both implementations pass in CI
 test/           node:test suite, including mock OpenAI/Anthropic-compatible servers
-docs/           MCP client setup and a recorded session
+docs/           tutorial, FAQ, MCP client setup and a recorded session
+examples/       a small TS/Python/Markdown project with its .hcs file, snapshot, audit and MCP configs
 bench/          reproducible benchmark harness
 rfcs/           the RFC process for spec changes, and its template
 project.hcs     HCS describing itself (checked in CI)
