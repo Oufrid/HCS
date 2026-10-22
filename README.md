@@ -100,7 +100,8 @@ not recovered from the context:
   claims from the probes' cited sources (quote verification still applies), and keeps them only if training
   fidelity rises. 30% of the probes are held out (recorded in an `@holdout` header) and never shown to refine: judge
   the gain on them. `--prune` also drops sections the training probes do not need (it costs requests). A quota stop
-  resumes on the next run. Whether it helps on real projects is being measured (roadmap C2).
+  resumes on the next run. **Measured, it did not help:** on two repositories the held-out fidelity did not improve
+  (once it got worse) while training fidelity rose; see bench/REPORT.md, C2. Treat it as an experiment.
 - **`--tokenizer M`** counts the context with model M's tokenizer instead of estimating it (also on `curve`, and
   `hcs stats --tokenizer M`); the certificate then records `tokenizer=M`. Anthropic and Gemini (with
   `GEMINI_API_KEY` set) have free counting endpoints; other providers are asked a 1-token completion whose

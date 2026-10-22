@@ -129,10 +129,10 @@ Done so far: `hcs refine` (src/refine.ts). It splits the probes deterministicall
 question and cited source but not its answer, keeps only quote-verified new claims, accepts a round only when
 training fidelity rises and stops when a gain stays inside the confidence interval; `--prune` drops whole sections
 the training probes do not need. A quota stop resumes from saved probe results and writer replies. Tests cover
-held-out isolation, rejected rounds, pruning and resume. First real run (`bench/REPORT.md`, C2): on this repository at a
-1,000-token budget, training fidelity rose from 7.7% to 19.2% but held-out fidelity stayed at 4.5%: no
-generalization, partly because only 3 of the 29 added claims fit in the budget. Remaining: the same file without a
-budget, and the second repository (pallets/itsdangerous).
+held-out isolation, rejected rounds, pruning and resume. Measured (`bench/REPORT.md`, C2), negative result: on this repository at a 1,000-token budget, held-out fidelity
+stayed at 4.5%; without a budget, training went from 38.5% to 100% while held-out fell from 50.0% to 40.9%; on
+pallets/itsdangerous, held-out stayed at 44.4%. The "Done when" criterion (held-out gain on two repositories) is
+**not met**; refine is kept as a documented experiment. Reopen only with a different method.
 
 ### C3. Dependency-aware invalidation `[x]`
 Done: `hcs seal --deps` stores, on JS/TS and Python symbol anchors, a hash of the symbols they use directly

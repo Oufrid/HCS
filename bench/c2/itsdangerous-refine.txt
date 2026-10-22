@@ -1,0 +1,20 @@
+--- 2026-10-22T11:01:19Z
+hcs: refine needs at least 4 verified probes, found 0
+exit 1
+--- 2026-10-22T11:01:34Z rerun from bench/d1/hcs (the copy in bench/c2 broke @root)
+hold-out: 9 of 30 probes, never shown to refine
+before: training fidelity 90.5%
+round 1: 2 gaps, 3 claims proposed, 2 new and verified
+round 1: training fidelity 90.5% -> 95.2%
+bench/d1/hcs/pallets__itsdangerous.hcs: refined with gemini:gemini-3.8-flash; 9 hold-out probes never shown to refine (@holdout)
+train before     fidelity  90.5% [95% CI 76.2%-100.0%]   misled   0.0%   abstained   9.5%   (21 probes)
+train after      fidelity  95.2% [95% CI 85.7%-100.0%]   misled   0.0%   abstained   4.8%   (21 probes)
+hold-out before  fidelity  44.4% [95% CI 11.1%-77.8%]   misled   0.0%   abstained  55.6%   (9 probes)
+hold-out after   fidelity  44.4% [95% CI 11.1%-77.8%]   misled   0.0%   abstained  55.6%   (9 probes)
+  round 1: 2 gaps, 3 claims proposed, 2 new and verified, training 95.2%
+  stopped: the last gain was within the confidence interval
+  wrote bench/d1/hcs/pallets__itsdangerous.refined.hcs: 2 claims added
+  judge the gain on the hold-out probes only; with few probes the intervals are wide
+usage gemini:gemini-3.8-flash: 62 requests, 282597 input + 1857 output tokens (as reported by the provider)
+usage groq:openai/gpt-oss-20b: 12 requests, 2844 input + 974 output tokens (as reported by the provider)
+exit 0

@@ -1,0 +1,203 @@
+{
+ "repo": "antirez__kilo",
+ "commit": "323d93b29bd89a2cb446de90c4ed4fea1764176e",
+ "condition": "hcs",
+ "answerer": "groq:openai/gpt-oss-120b",
+ "judge": "gemini:gemini-3.8-flash",
+ "budget": 2000,
+ "tokens": 1425,
+ "results": {
+  "p1": {
+   "id": "p1",
+   "question": "Which tool was used to verify that Kilo has less than 1K lines of code?",
+   "expected": "cloc",
+   "answer": "It was measured with the cloc tool.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p2": {
+   "id": "p2",
+   "question": "What errno value is set if enableRawMode is called on a file descriptor where isatty returns false?",
+   "expected": "ENOTTY",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p3": {
+   "id": "p3",
+   "question": "What heap pointers are freed when editorFreeRow is called on an erow?",
+   "expected": "row->render, row->chars, and row->hl.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p4": {
+   "id": "p4",
+   "question": "What macro defines the number of times Ctrl-Q must be pressed to quit when the file is dirty?",
+   "expected": "KILO_QUIT_TIMES (set to 3)",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p5": {
+   "id": "p5",
+   "question": "What terminal escape sequence standard does Kilo utilize?",
+   "expected": "VT100",
+   "answer": "Kilo relies on standard VT100 escape sequences for terminal control.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p6": {
+   "id": "p6",
+   "question": "What escape sequence is transmitted by getCursorPosition to query the terminal's cursor location?",
+   "expected": "\\x1b[6n",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p7": {
+   "id": "p7",
+   "question": "What delimiter separates each row in the buffer allocated by editorRowsToString?",
+   "expected": "A newline character ('\\n').",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p8": {
+   "id": "p8",
+   "question": "What does editorProcessKeypress do upon receiving a CTRL_C keypress?",
+   "expected": "It ignores the keypress and does nothing.",
+   "answer": "It ignores the Ctrl‑C keypress, taking no action.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p9": {
+   "id": "p9",
+   "question": "From which two projects did the author take code to write Kilo?",
+   "expected": "load81 and linenoise",
+   "answer": "Kilo incorporates code from the author's previous projects **load81** and **linenoise**.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p10": {
+   "id": "p10",
+   "question": "Which terminal color code is returned by editorSyntaxToColor for HL_KEYWORD1?",
+   "expected": "33 (yellow)",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p11": {
+   "id": "p11",
+   "question": "What occurs in editorDelChar when invoked at column 0 of a line past row 0?",
+   "expected": "It appends the current row's text to the previous row and deletes the current row via editorDelRow.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p12": {
+   "id": "p12",
+   "question": "Which keys trigger editorDelChar in editorProcessKeypress?",
+   "expected": "BACKSPACE, CTRL_H, and DEL_KEY.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p13": {
+   "id": "p13",
+   "question": "Under which license is Kilo released?",
+   "expected": "BSD 2 clause license",
+   "answer": "Kilo is released under the BSD 2‑clause license. (c14)",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p14": {
+   "id": "p14",
+   "question": "Which terminal color code is assigned to HL_MATCH in editorSyntaxToColor?",
+   "expected": "34 (blu)",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p15": {
+   "id": "p15",
+   "question": "What permissions mask does editorSave pass to open() when creating or opening E.filename?",
+   "expected": "0644",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p16": {
+   "id": "p16",
+   "question": "How many rows does updateWindowSize subtract from E.screenrows to make room for the status bar?",
+   "expected": "2",
+   "answer": "updateWindowSize subtracts 2 from E.screenrows to reserve space for the status bar.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  }
+ }
+}

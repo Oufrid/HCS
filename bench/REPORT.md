@@ -335,3 +335,26 @@ What this shows, and what it does not:
 
 Not yet measured: a second answering family, larger budgets, and whether `--filter-known` (dropping probes models
 answer without context) changes the comparison with no context.
+
+### 2026-10-22: without a budget, and a second repository: no held-out gain either
+
+With a paid key, refine was run without a budget, so that every added claim reaches the answering model.
+gemini-3.8-flash wrote the claims and answered; gpt-oss-20b judged. Same deterministic hold-out split.
+
+| File | Training before -> after | **Held-out before -> after** | Claims added |
+|---|---|---|---|
+| this repository (`bench/a1/gemini.hcs`, 26 + 11 probes) | 38.5% -> 100.0% | **50.0% [27.3%-77.3%] -> 40.9% [18.2%-63.6%]** (misled 9.1% -> 18.2%) | 24 |
+| pallets/itsdangerous (`bench/d1/hcs/pallets__itsdangerous.hcs`, 21 + 9 probes) | 90.5% -> 95.2% | **44.4% [11.1%-77.8%] -> 44.4%** | 2 |
+
+Outputs: `bench/c2/a1-refine-nobudget.txt`, `bench/c2/a1-refined-nobudget.hcs`, `bench/c2/itsdangerous-refine.txt`,
+`bench/d1/hcs/pallets__itsdangerous.refined.hcs`; model replies in `bench/c2/logs/`. Cost: 670,299 input and 6,307
+output tokens on gemini-3.8-flash.
+
+**Conclusion for C2: refine does not improve held-out fidelity on either repository.** On this repository it reached
+100% on the training probes in one round and made the held-out probes slightly worse, with more wrong answers:
+claims written to answer specific failed questions do not carry over to other questions, and can mislead. On
+itsdangerous there was little to fill (90% training fidelity before) and nothing changed on the held-out probes.
+With 9 to 11 held-out probes the intervals are very wide, so a small real effect in either direction cannot be
+excluded, but there is no evidence of a gain. `refine` stays available as an experiment; the README says it did not
+generalize. Ideas not tried: asking the writer for claims about the whole cited symbol rather than the question,
+and ranking added claims by ablation over many probes.

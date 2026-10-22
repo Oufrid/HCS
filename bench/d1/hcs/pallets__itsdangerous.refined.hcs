@@ -1,0 +1,334 @@
+HCS/0.2
+@title pallets__itsdangerous
+@root ../../.work/d1/pallets__itsdangerous
+@created 2026-10-22T09:14:48.899Z
+@updated 2026-10-22T09:14:53.897Z
+@generator hcs-cli compile (gemini:gemini-3.8-flash)
+@source-files 22
+@source-tokens 15838
+@holdout p22,p20,p3,p9,p26,p17,p11,p25,p24
+
+[claims]
+
+## Overview
+#c1[overview,i5] Signer appends cryptographic signatures to bytes using secret keys and salts, while Serializer subclasses wrap signers to serialize arbitrary data structures into signed strings.
+  > docs/concepts.rst:8-11 #8446375b6053
+  > docs/concepts.rst:60-63 #8cb3ba5bc309
+  > docs/serializer.rst:6-9 #0887e43dd873
+  > docs/signer.rst:16 #7fcc7475b4f4
+#c2[overview,i5] Secret keys can be supplied as an ordered list, enabling key rotation by signing with the newest key and validating across historical keys.
+  > docs/concepts.rst:116-119 #343f8b7f541a
+  > docs/serializer.rst:85-86 #ad005ffb454c
+  > src/itsdangerous/serializer.py:208 #4ef723528107
+  > src/itsdangerous/signer.py:139 #631f9f46207d
+#c3[overview,i5] TimestampSigner and TimedSerializer record generation timestamps alongside payloads, allowing unsign operations to enforce expiration limits via max_age.
+  > docs/timed.rst:6-8 #7742c3101efb
+  > docs/timed.rst:8-9 #4ff9c5b49a9d
+  > docs/timed.rst:19-22 #d4b5b9f5fa22
+  > src/itsdangerous/timed.py::TimestampSigner.sign #58138f9920de
+  > src/itsdangerous/timed.py::TimedSerializer #7aae72ea6cd9
+#c4[overview,i5] URLSafeSerializer and URLSafeTimedSerializer mix in compact JSON serialization, optional zlib compression, and URL-safe base64 encoding to produce web-safe tokens.
+  > docs/url_safe.rst:7-8 #89cc291f0098
+  > src/itsdangerous/_json.py::_CompactJSON #9510131aae41
+  > src/itsdangerous/url_safe.py::URLSafeSerializerMixin #1b2723627ade
+  > src/itsdangerous/url_safe.py::URLSafeSerializerMixin.dump_payload #337cc17a522e
+  > src/itsdangerous/url_safe.py::URLSafeSerializer #f82417cd241a
+  > src/itsdangerous/url_safe.py::URLSafeTimedSerializer #2ef0e70571b8
+#c5[overview,i5] All exceptions derive from BadData, with BadSignature and BadPayload exposing failed payloads or underlying exceptions to aid debugging.
+  > docs/exceptions.rst:1-22 #a5862d4c7c89
+  > docs/serializer.rst:39-43 #bf9811e03d98
+  > src/itsdangerous/exc.py::BadData #dd4e1e9667a0
+  > src/itsdangerous/exc.py::BadSignature.__init__ #8c23f8689345
+  > src/itsdangerous/exc.py::BadPayload #564bc548d3f2
+#c6[overview,i5] Cryptographic verification ensures data round-tripping through untrusted client environments cannot be modified without knowledge of the secret key.
+  > README.md::ItsDangerous #9862506eae8f
+  > docs/index.rst:11-12 #e8afec3a3971
+  > docs/index.rst:18-20 #61a539573aaa
+  > docs/index.rst:45-47 #e67e612e02ac
+  > docs/signer.rst:28-29 #a08adebe4972
+
+## (root)
+#c7[i5] ItsDangerous cryptographically signs data to ensure tokens passed to untrusted environments have not been tampered with.
+  > README.md::ItsDangerous #9862506eae8f
+#c8[i4] ItsDangerous allows customizing data serialization, compresses data as needed, and can automatically add and verify timestamps when loading tokens.
+  > README.md::ItsDangerous #9862506eae8f
+#c9[i3] Tokens can be generated and loaded using the URLSafeSerializer class with a secret key and salt.
+  > README.md::"A Simple Example" #b1a9b67142d2
+#c10[i2] The Pallets organization develops and supports ItsDangerous and accepts donations at palletsprojects.com/donate.
+  > README.md::Donate #d5eca4501200
+
+## docs
+#c11[i3] The docs Makefile sets SPHINXBUILD to sphinx-build, SOURCEDIR to ., and BUILDDIR to _build by default.
+  > docs/Makefile:6-8 #7a6c3999b76c
+#c12[i4] The default target help runs SPHINXBUILD in make mode (-M help) using SOURCEDIR, BUILDDIR, SPHINXOPTS, and O.
+  > docs/Makefile:11-12 #b30f15b65725
+#c13[i4] The catch-all pattern target routes all unknown targets to SPHINXBUILD in make mode using target name $@.
+  > docs/Makefile:18-19 #e66fb0e51be7
+#c14[i2] The variable O functions as a shortcut for SPHINXOPTS when invoking build targets.
+  > docs/Makefile:17 #b12166e9967f
+#c15[i4] In docs/changes.rst, the Changes document includes content from ../CHANGES.rst using the include directive.
+  > docs/changes.rst:4 #b0937da7f837
+#c16[i4] ItsDangerous Signer signs bytes values, while Serializer wraps a signer to serialize and sign other data types.
+  > docs/concepts.rst:8-11 #8446375b6053
+#c17[i4] Changing the secret_key invalidates all existing tokens, which can be used to recover if an attacker discovers the key.
+  > docs/concepts.rst:23 #bf56f58663ce
+#c18[i4] The salt is combined with the secret key to distinguish contexts, and unlike the secret key, does not need to be private or random.
+  > docs/concepts.rst:60-63 #8cb3ba5bc309
+#c19[i3] Serializers using differing salts cannot load each other's dumped data and will raise BadSignature.
+  > docs/concepts.rst:83-84 #b93dd6a16c99
+#c20[i5] ItsDangerous accepts a list of secret keys ordered oldest to newest, signing with the newest key and validating from newest to oldest.
+  > docs/concepts.rst:116-119 #343f8b7f541a
+#c21[i4] The default HMAC digest method in ItsDangerous signers is hashlib.sha1.
+  > docs/concepts.rst:141-142 #cbee4a331587
+#c22[i3] Configuring a signer with hashlib.sha512 produces longer tokens that consume more space in cookies and URLs.
+  > docs/concepts.rst:153-154 #75fd3d8eaf0a
+#c23[i3] The documentation release and version are resolved dynamically for 'itsdangerous' using get_version from pallets_sphinx_themes.
+  > docs/conf.py:9 #6c76fe2f2cf3
+#c24[i3] Sphinx extensions configured include autodoc, extlinks, intersphinx, log_cabinet, and pallets_sphinx_themes.
+  > docs/conf.py:14-20 #0b7d72641fca
+#c25[i2] Autodoc is configured to document both class and __init__ docstrings in source order with type hints in descriptions and preserved defaults.
+  > docs/conf.py:21-24 #c8f7578f51a4
+#c26[i2] The documentation HTML output uses the 'flask' theme with index_sidebar_logo disabled and sourcelink hidden.
+  > docs/conf.py:35-36 #62923d51e83e
+#c27[i2] External link patterns are established for GitHub issues and pull requests under pallets/itsdangerous.
+  > docs/conf.py:25-28 #5416bcefd8f3
+#c28[i4] The docs/encoding.rst document covers the itsdangerous.encoding module.
+  > docs/encoding.rst:1 #40b196ac3da0
+#c29[i5] The module itsdangerous.exc defines the BadData, BadSignature, BadTimeSignature, SignatureExpired, BadHeader, and BadPayload exceptions.
+  > docs/exceptions.rst:1-22 #a5862d4c7c89
+#c30[i5] Data sent to untrusted environments must be cryptographically signed to detect changes and ensure nobody has tampered with it upon return.
+  > docs/index.rst:11-12 #e8afec3a3971
+#c31[i4] Receivers can view the data, but cannot modify it without knowing the secret signing key.
+  > docs/index.rst:18-20 #61a539573aaa
+#c32[i3] ItsDangerous can be installed and updated via pip using the command `pip install -U itsdangerous`.
+  > docs/index.rst:30 #77ecf647ba56
+#c33[i3] Signing user IDs for unsubscribe or activation links eliminates the need to generate and store one-time tokens in a database.
+  > docs/index.rst:38-40 #cbba0e00cb61
+#c34[i3] Storing signed objects in cookies avoids server-stored sessions and reduces database queries.
+  > docs/index.rst:42-44 #adad5cdead64
+#c35[i3] Signed data safely round-trips between server and client, enabling passing server-side state to a client and back.
+  > docs/index.rst:45-47 #e67e612e02ac
+#c36[i3] If not previously defined, docs/make.bat sets the SPHINXBUILD environment variable to sphinx-build.
+  > docs/make.bat:7-9 #811d12550ff8
+#c37[i3] docs/make.bat assigns SOURCEDIR to . and BUILDDIR to _build.
+  > docs/make.bat:10-11 #311b35e6d4ac
+#c38[i3] Invoking docs/make.bat without arguments redirects execution to the help label.
+  > docs/make.bat:13 #b567965c9820
+#c39[i4] If running SPHINXBUILD results in errorlevel 9009, docs/make.bat echoes installation instructions and exits with code 1.
+  > docs/make.bat:16-26 #2319dbe439be
+#c40[i5] docs/make.bat builds documentation by invoking SPHINXBUILD with -M, the first argument, SOURCEDIR, BUILDDIR, and SPHINXOPTS.
+  > docs/make.bat:28 #3ad05fb7e182
+#c41[i3] Under the help label, docs/make.bat executes SPHINXBUILD with -M help %SOURCEDIR% %BUILDDIR% %SPHINXOPTS%.
+  > docs/make.bat:32 #08d3c05a6b2e
+#c42[i5] The Serializer class provides a dumps/loads interface to serialize objects to strings and sign them, unlike Signer which only signs bytes.
+  > docs/serializer.rst:6-9 #0887e43dd873
+#c43[i4] By default, Serializer serializes data to JSON using Python's built-in json module, but the internal serializer can be customized by subclassing.
+  > docs/serializer.rst:28-29 #61d44463d6d8
+#c44[i3] When a signature check fails, BadSignature exceptions provide a payload attribute to inspect tampered data for debugging purposes.
+  > docs/serializer.rst:39-43 #bf9811e03d98
+#c45[i4] A list of fallback_signers can be provided to validate old signatures when unsigning with the current signer fails.
+  > docs/serializer.rst:85-86 #ad005ffb454c
+#c46[i5] The Signer class attaches a signature to a specific string, appending the signature separated by a dot.
+  > docs/signer.rst:16 #7fcc7475b4f4
+#c47[i5] The Signer.unsign method validates a signed string and retrieves the original value.
+  > docs/signer.rst:16-17 #57acdb8db8ef
+#c48[i3] If unicode strings are passed to the signer, they are implicitly encoded to UTF-8.
+  > docs/signer.rst:24 #266254aac97a
+#c49[i3] After unsigning, it is not possible to distinguish whether the original input was a unicode string or a bytestring.
+  > docs/signer.rst:25-26 #46366a283467
+#c50[i4] If a signed value is modified, the signature fails to match and unsigning raises a BadSignature exception.
+  > docs/signer.rst:28-29 #a08adebe4972
+#c51[i5] The TimestampSigner class enables expiring signatures by appending timestamp information and signing it.
+  > docs/timed.rst:6-8 #7742c3101efb
+#c52[i4] During unsigning with TimestampSigner, the timestamp can be validated to confirm it is not older than a specified maximum age.
+  > docs/timed.rst:8-9 #4ff9c5b49a9d
+#c53[i4] Passing max_age to TimestampSigner.unsign raises an itsdangerous.exc.SignatureExpired exception if the signature's age exceeds the limit.
+  > docs/timed.rst:19-22 #d4b5b9f5fa22
+#c54[i4] ItsDangerous provides URL-safe serializers for passing trusted strings where only a limited character set is available.
+  > docs/url_safe.rst:7-8 #89cc291f0098
+#c55[i4] URLSafeSerializer can be imported from itsdangerous.url_safe to serialize and deserialize data with a secret key.
+  > docs/url_safe.rst:12 #f1c40a2fe73b
+#c56[i3] The itsdangerous.url_safe module provides the URLSafeTimedSerializer class.
+  > docs/url_safe.rst:21 #a08f23eb5918
+
+## src/itsdangerous
+#c57[i3] The itsdangerous package exposes base64_decode, base64_encode, and want_bytes from its encoding module.
+  > src/itsdangerous/__init__.py:1-3 #164d39b0e85e
+#c58[i4] The package exposes exception classes BadData, BadHeader, BadPayload, BadSignature, BadTimeSignature, and SignatureExpired from its exc module.
+  > src/itsdangerous/__init__.py:4-9 #9fd05afd1421
+#c59[i4] The package re-exports Serializer from serializer, and HMACAlgorithm, NoneAlgorithm, and Signer from signer.
+  > src/itsdangerous/__init__.py:10-13 #1adafc6dc096
+#c60[i4] TimedSerializer and TimestampSigner are imported and re-exported from the timed module.
+  > src/itsdangerous/__init__.py:14-15 #b0f048ff2731
+#c61[i4] URLSafeSerializer and URLSafeTimedSerializer are imported and re-exported from the url_safe module.
+  > src/itsdangerous/__init__.py:16-17 #7f3d64f8272a
+#c62[i3] _CompactJSON wraps the json module to strip whitespace when serializing JSON data.
+  > src/itsdangerous/_json.py::_CompactJSON #9510131aae41
+#c63[i4] _CompactJSON.loads deserializes a str or bytes payload using json.loads.
+  > src/itsdangerous/_json.py::_CompactJSON.loads #ff9e48a0e634
+#c64[i5] _CompactJSON.dumps defaults ensure_ascii to False and separators to (',', ':') before delegating to json.dumps.
+  > src/itsdangerous/_json.py::_CompactJSON.dumps #afad4d46d4aa
+#c65[i5] base64_encode converts input to bytes via want_bytes, generates URL-safe base64, and strips trailing '=' padding characters.
+  > src/itsdangerous/encoding.py::base64_encode #afcca8ea5167
+#c66[i3] int_to_bytes packs an integer as a big-endian 64-bit unsigned int and strips leading null bytes.
+  > src/itsdangerous/encoding.py::int_to_bytes #f8e965df86f5
+#c67[i3] bytes_to_int left-pads a byte string to 8 bytes with null bytes and unpacks it as a big-endian 64-bit unsigned int.
+  > src/itsdangerous/encoding.py::bytes_to_int #672e94702b08
+#c68[i5] BadData inherits from Exception and serves as the base class for all exceptions defined in ItsDangerous.
+  > src/itsdangerous/exc.py::BadData #dd4e1e9667a0
+#c69[i4] BadSignature inherits from BadData and stores the payload that failed the signature verification in self.payload.
+  > src/itsdangerous/exc.py::BadSignature.__init__ #8c23f8689345
+#c70[i4] BadTimeSignature is a subclass of BadSignature that optionally records the signature creation timestamp in date_signed.
+  > src/itsdangerous/exc.py::BadTimeSignature #20a1bf2bb0a7
+#c71[i4] SignatureExpired subclasses BadTimeSignature and is raised when a signature timestamp exceeds max_age.
+  > src/itsdangerous/exc.py::SignatureExpired #5b7d75349cb2
+#c72[i3] BadHeader inherits from BadSignature and holds optional malformed header data as well as an optional original_error exception.
+  > src/itsdangerous/exc.py::BadHeader #53ceced8b022
+#c73[i4] BadPayload inherits directly from BadData and stores the underlying loading exception in original_error.
+  > src/itsdangerous/exc.py::BadPayload #564bc548d3f2
+#c74[i3] The secret_key property returns the newest, last item in the Serializer instance's secret_keys list.
+  > src/itsdangerous/serializer.py:208 #4ef723528107
+#c75[i4] Serializer.load_payload wraps unserialization errors into a BadPayload exception containing the original error.
+  > src/itsdangerous/serializer.py:264-270 #cec35b6b2f4b
+#c76[i3] Serializer.dump_payload always returns bytes, encoding text output from text serializers as UTF-8.
+  > src/itsdangerous/serializer.py::Serializer.dump_payload #257e5945c1a3
+#c77[i4] Serializer.loads_unsafe never fails, returning a (signature_valid, payload) tuple where signature_valid is a boolean indicating whether the signature was valid.
+  > src/itsdangerous/serializer.py:354-358 #e045117c8bc5
+#c78[i4] SigningAlgorithm.verify_signature uses hmac.compare_digest to safely compare the candidate signature against get_signature.
+  > src/itsdangerous/signer.py::SigningAlgorithm.verify_signature #b4c5b21d12cf
+#c79[i3] _lazy_sha1 defers importing or calling hashlib.sha1 to runtime so FIPS builds without SHA-1 do not fail on import.
+  > src/itsdangerous/signer.py::_lazy_sha1 #63568e118815
+#c80[i4] Signer rejects separator characters present in _base64_alphabet to ensure the separator cannot appear in the signature itself.
+  > src/itsdangerous/signer.py:146-151 #00bb91caa000
+#c81[i4] Signer uses the newest secret key, located at the end of secret_keys, when signing and when deriving keys without an explicit key.
+  > src/itsdangerous/signer.py:139 #631f9f46207d
+#c82[i4] derive_key supports 'concat', 'django-concat', 'hmac', and 'none', raising TypeError for unrecognized derivation methods.
+  > src/itsdangerous/signer.py::Signer.derive_key #2806bf6119c7
+#c83[i4] Signer.get_signature encodes algorithm-generated signatures with base64_encode after deriving the key.
+  > src/itsdangerous/signer.py::Signer.get_signature #5f8eadd2fbc7
+#c84[i2] TimestampSigner.get_timestamp returns the current time as an integer using int(time.time()).
+  > src/itsdangerous/timed.py::TimestampSigner.get_timestamp #de77c2431b9b
+#c85[i3] TimestampSigner.timestamp_to_datetime converts an integer timestamp into a UTC timezone-aware datetime instance.
+  > src/itsdangerous/timed.py::TimestampSigner.timestamp_to_datetime #2241fa332731
+#c86[i4] TimestampSigner.sign encodes the integer timestamp as base64 and appends it between the payload value and signature using sep.
+  > src/itsdangerous/timed.py::TimestampSigner.sign #58138f9920de
+#c87[i3] TimestampSigner.unsign raises BadTimeSignature if the separator is missing or the timestamp bytes cannot be decoded.
+  > src/itsdangerous/timed.py:106 #7bbf3cb843b4
+#c88[i3] TimestampSigner.validate returns True if unsigning succeeds, catching BadSignature and returning False otherwise.
+  > src/itsdangerous/timed.py::TimestampSigner.validate #b483961f1082
+#c89[i4] TimedSerializer.loads iterates through unsigners and immediately re-raises SignatureExpired without attempting subsequent signers.
+  > src/itsdangerous/timed.py::TimedSerializer #7aae72ea6cd9
+#c90[i3] TimedSerializer uses TimestampSigner as its default_signer class.
+  > src/itsdangerous/timed.py::TimedSerializer #7aae72ea6cd9
+#c91[i3] URLSafeSerializerMixin uses _CompactJSON as its default_serializer.
+  > src/itsdangerous/url_safe.py::URLSafeSerializerMixin #1b2723627ade
+#c92[i4] In URLSafeSerializerMixin.dump_payload, payloads are zlib-compressed only if the compressed length is strictly less than len(json) - 1.
+  > src/itsdangerous/url_safe.py::URLSafeSerializerMixin.dump_payload #337cc17a522e
+#c93[i4] When URLSafeSerializerMixin dumps compressed payload bytes, it prefixes the base64-encoded output with b'.'.
+  > src/itsdangerous/url_safe.py::URLSafeSerializerMixin.dump_payload #337cc17a522e
+#c94[i4] In load_payload, URLSafeSerializerMixin checks for a leading b'.' to strip it and mark the payload for zlib decompression.
+  > src/itsdangerous/url_safe.py::URLSafeSerializerMixin #1b2723627ade
+#c95[i3] Failure to base64-decode a payload in URLSafeSerializerMixin raises a BadPayload exception wrapping the original error.
+  > src/itsdangerous/url_safe.py::URLSafeSerializerMixin #1b2723627ade
+#c96[i3] Failure during zlib decompression in URLSafeSerializerMixin raises a BadPayload exception.
+  > src/itsdangerous/url_safe.py::URLSafeSerializerMixin #1b2723627ade
+#c97[i2] URLSafeSerializer combines URLSafeSerializerMixin and Serializer[str].
+  > src/itsdangerous/url_safe.py::URLSafeSerializer #f82417cd241a
+#c98[i2] URLSafeTimedSerializer combines URLSafeSerializerMixin and TimedSerializer[str].
+  > src/itsdangerous/url_safe.py::URLSafeTimedSerializer #2ef0e70571b8
+#c99[i5] In itsdangerous.serializer, is_text_serializer checks whether a given data serializer generates text or binary output by testing if serializer.dumps({}) returns a str.
+  > src/itsdangerous/serializer.py:33-37 #35d089511225
+#c100[i3] TimestampSigner.unsign returns a tuple of the value and decoded datetime when return_timestamp is True.
+  > src/itsdangerous/timed.py:155-156 #9a3eaf098eac
+
+[probes]
+?p1 Which class from itsdangerous is used in the simple example to serialize data safely?
+  = URLSafeSerializer
+  > README.md::"A Simple Example" #b1a9b67142d2
+?p2 What is the default build directory defined in docs/Makefile?
+  = _build
+  > docs/Makefile:8 #de3ab7db9ef7
+?p3 Which file does docs/changes.rst include?
+  = ../CHANGES.rst
+  > docs/changes.rst:4 #b0937da7f837
+?p4 What is the default digest method used by an ItsDangerous signer?
+  = hashlib.sha1
+  > docs/concepts.rst:141-142 #cbee4a331587
+?p5 What Sphinx theme is set for HTML documentation?
+  = flask
+  > docs/conf.py:35 #51a7eaa9a87a
+?p6 Which module is documented in docs/encoding.rst?
+  = itsdangerous.encoding
+  > docs/encoding.rst:1 #40b196ac3da0
+?p7 Which module documents the BadData and BadSignature exceptions in docs/exceptions.rst?
+  = itsdangerous.exc
+  > docs/exceptions.rst:1 #825f5c9d309a
+?p8 What pip command installs and updates itsdangerous?
+  = pip install -U itsdangerous
+  > docs/index.rst:30 #77ecf647ba56
+?p9 Which file is included under the BSD-3-Clause License heading?
+  = ../LICENSE.txt
+  > docs/license.rst:4 #3dbfb9101b84
+?p10 What exit code is returned when SPHINXBUILD is not found (errorlevel 9009)?
+  = 1
+  > docs/make.bat:25 #0b1482903959
+?p11 What module does Serializer use by default to serialize data?
+  = The built-in json module.
+  > docs/serializer.rst:28-29 #61d44463d6d8
+?p12 What separates the appended signature from the original string?
+  = A dot
+  > docs/signer.rst:16 #7fcc7475b4f4
+?p13 Which class is used to add timestamp information and sign it to enable expiring signatures?
+  = TimestampSigner
+  > docs/timed.rst:6-8 #7742c3101efb
+?p14 Which module defines URLSafeSerializer and URLSafeTimedSerializer?
+  = itsdangerous.url_safe
+  > docs/url_safe.rst:1 #1a55f386d819
+?p15 Which signing algorithms are re-exported in the top-level itsdangerous module?
+  = HMACAlgorithm and NoneAlgorithm
+  > src/itsdangerous/__init__.py:11-12 #b9a8758dc95e
+?p16 What default separators does _CompactJSON.dumps set if not provided?
+  = (",", ":")
+  > src/itsdangerous/_json.py::_CompactJSON.dumps #afad4d46d4aa
+?p17 What exception does base64_decode raise when base64 decoding fails?
+  = BadData
+  > src/itsdangerous/encoding.py::base64_decode #1fbcb5935c76
+?p18 What is the direct parent class of SignatureExpired?
+  = BadTimeSignature
+  > src/itsdangerous/exc.py::SignatureExpired #5b7d75349cb2
+?p19 What function determines whether a serializer generates text or binary output?
+  = is_text_serializer
+  > src/itsdangerous/serializer.py:33-37 #35d089511225
+?p20 What is the default key derivation scheme used by Signer?
+  = django-concat
+  > src/itsdangerous/signer.py:127 #a70c2631b89d
+?p21 What exception does TimestampSigner.unsign raise if the signature has an age less than 0 when max_age is set?
+  = SignatureExpired
+  > src/itsdangerous/timed.py:148-153 #815f11b5b2e0
+?p22 Under what exact size condition does URLSafeSerializerMixin.dump_payload adopt zlib compression?
+  = When len(compressed) < (len(json) - 1).
+  > src/itsdangerous/url_safe.py::URLSafeSerializerMixin.dump_payload #337cc17a522e
+?p23 What organization develops and maintains ItsDangerous?
+  = The Pallets organization
+  > README.md::Donate #d5eca4501200
+?p24 Which targets are declared as .PHONY in docs/Makefile?
+  = help and Makefile
+  > docs/Makefile:14 #1a0271f54eb1
+?p25 When a list of keys is provided for key rotation, in what order should they be passed?
+  = Oldest to newest.
+  > docs/concepts.rst:116-117 #335d2884c9bf
+?p26 What is the default role configured for inline markup in docs/conf.py?
+  = code
+  > docs/conf.py:13 #669b9a53e8d6
+?p27 Under what condition can a receiver modify signed data?
+  = Only if they also have the secret key.
+  > docs/index.rst:18-19 #7b7cb41d6355
+?p28 What directory value is assigned to BUILDDIR in docs/make.bat?
+  = _build
+  > docs/make.bat:11 #912b64621482
+?p29 What does the first item returned by Serializer.loads_unsafe represent?
+  = A boolean indicating whether the signature was correct.
+  > docs/serializer.rst:73-74 #064458848f14
+?p30 Which exception is raised when unsigning fails due to a mismatched signature?
+  = BadSignature
+  > docs/signer.rst:29 #9f09e4635073

@@ -35,5 +35,7 @@ HCS complements the formats above rather than competing with them. `hcs audit` c
   this repository's context it was 11% above Groq's count for gpt-oss-120b (bench/c5/tokens-groq.txt); other
   tokenizers differ.
 - The symbol locator is heuristic and dependency-free, not a full parser. It reports what it cannot resolve as missing rather than guessing, but unusual syntax can still produce a wrong range. The optional tree-sitter back-end (`--parser tree-sitter`) covers TypeScript, JavaScript and Python only, and the Python implementation (hcs-py) does not have it: it refuses files sealed with it.
+- `hcs refine` overfits: on two repositories it raised fidelity on the probes it optimized for, not on held-out
+  probes (bench/REPORT.md, C2).
 - The injection guard is pattern-based. It stops common attacks, not a determined adversary: on a held-out
   set it caught 7 of 15 novel attacks (see README, Security).
