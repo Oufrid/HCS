@@ -1,0 +1,63 @@
+--- 2026-10-22T07:53:48Z --rpm 3
+[1/37] readme.md:1-585 -> 7 claims, 3 probes
+[2/37] readme.md:586-1184 -> 2 claims, 1 probes
+[3/37] readme.md:1185-1783 -> 5 claims, 3 probes
+[4/37] readme.md:1784-1958 -> 5 claims, 2 probes
+[5/37] source/core/Ky.ts:1-599 -> 3 claims, 2 probes
+[6/37] source/core/Ky.ts:600-1195 -> 3 claims, 1 probes
+[7/37] source/core/Ky.ts:1196-1376 -> 5 claims, 2 probes
+[8/37] source/core/constants.ts:1-307 -> 5 claims, 3 probes
+[9/37] source/core/retry-timing.ts:1-173 -> 5 claims, 2 probes
+[10/37] source/errors/ForceRetryError.ts:1-52 -> 5 claims, 2 probes
+[11/37] source/errors/HTTPError.ts:1-34 -> 1 claims, 1 probes
+[12/37] source/errors/KyError.ts:1-14 -> 4 claims, 2 probes
+[13/37] source/errors/NetworkError.ts:1-19 -> 3 claims, 2 probes
+[14/37] source/errors/NonError.ts:1-37 -> 4 claims, 2 probes
+[15/37] source/errors/ResponseSizeError.ts:1-30 -> 3 claims, 1 probes
+[16/37] source/errors/SchemaValidationError.ts:1-33 -> 2 claims, 2 probes
+[17/37] source/errors/TimeoutError.ts:1-15 -> 3 claims, 2 probes
+[18/37] source/index.ts:1-114 -> 2 claims, 1 probes
+[19/37] source/types/ResponsePromise.ts:1-71 -> 2 claims, 1 probes
+[20/37] source/types/common.ts:1-6 -> 2 claims, 1 probes
+[21/37] source/types/hooks.ts:1-424 -> 4 claims, 2 probes
+[22/37] source/types/ky.ts:1-205 -> 3 claims, 1 probes
+[23/37] source/types/options.ts:1-555 -> 3 claims, 3 probes
+[24/37] source/types/request.ts:1-4 -> 3 claims, 2 probes
+[25/37] source/types/response.ts:1-4 -> 3 claims, 3 probes
+[26/37] source/types/retry.ts:1-189 -> 3 claims, 3 probes
+[27/37] source/types/standard-schema.ts:1-48 -> 4 claims, 2 probes
+[28/37] source/utils/body.ts:1-242 -> 5 claims, 3 probes
+[29/37] source/utils/delay.ts:1-29 -> 4 claims, 2 probes
+[30/37] source/utils/is-network-error.ts:1-46 -> 5 claims, 2 probes
+[31/37] source/utils/is.ts:1-24 -> 6 claims, 2 probes
+[32/37] source/utils/merge.ts:1-501 -> 3 claims, 2 probes
+[33/37] source/utils/normalize.ts:1-100 -> 5 claims, 2 probes
+[34/37] source/utils/options.ts:1-61 -> no usable JSON in the reply (truncated or malformed)
+[35/37] source/utils/timeout.ts:1-46 -> no usable JSON in the reply (truncated or malformed)
+[36/37] source/utils/type-guards.ts:1-155 -> 8 claims, 2 probes
+[37/37] source/utils/types.ts:1-3 -> 1 claims, 1 probes
+synthesized 6 overview claims
+wrote /home/user/HCS/bench/d1/hcs/sindresorhus__ky.hcs: 137 claims, 30 probes from 32 files (32 compiled)
+  rejected by quote verification: 30/161 claims, 7/75 probes
+  source scan: 4 line(s) with injection-like text in 2 file(s), 4 high risk
+    HIGH readme.md:119  contains chat-template markers
+    HIGH readme.md:121  contains chat-template markers
+    HIGH readme.md:741  sends private data to a URL
+    HIGH source/types/hooks.ts:379  sends private data to a URL
+  claims quoting such text are tagged suspect and not rendered; review these files if you did not expect it
+  INCOMPLETE: 2 chunk(s) returned no usable JSON (truncated or malformed reply)
+  not compiled yet: 2 chunk(s): source/utils/options.ts:1-61, source/utils/timeout.ts:1-46
+  the partial file was saved; run the same command with --update later to finish it
+usage gemini:gemini-3.5-flash-lite: 38 requests, 127843 input + 26131 output tokens (as reported by the provider)
+sindresorhus__ky: compile stopped (exit 1); rerun this step later to resume
+exit 3
+--- 2026-10-22T08:07:09Z retry --rpm 3
+incremental: 30 files unchanged, 2 to compile
+[1/2] source/utils/options.ts:1-61 -> 5 claims, 2 probes
+[2/2] source/utils/timeout.ts:1-46 -> 4 claims, 2 probes
+synthesized 7 overview claims
+wrote /home/user/HCS/bench/d1/hcs/sindresorhus__ky.hcs: 147 claims, 30 probes from 32 files (2 compiled)
+  rejected by quote verification: 1/10 claims, 0/4 probes
+  context ~7352 tokens for ~76207 tokens of source. Next: hcs score /home/user/HCS/bench/d1/hcs/sindresorhus__ky.hcs --model <answering model> --judge <a model from another family> --write
+usage gemini:gemini-3.5-flash-lite: 3 requests, 7894 input + 1760 output tokens (as reported by the provider)
+exit 0
