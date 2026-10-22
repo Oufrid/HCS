@@ -1,0 +1,86 @@
+{
+  "budget": 2000,
+  "chunkLines": 600,
+  "repos": [
+    {
+      "name": "antirez__kilo",
+      "url": "https://github.com/antirez/kilo",
+      "commit": "323d93b29bd89a2cb446de90c4ed4fea1764176e",
+      "language": "C",
+      "size": "tiny",
+      "paths": [
+        "kilo.c",
+        "README.md"
+      ],
+      "readme": "README.md",
+      "agents": null
+    },
+    {
+      "name": "pallets__itsdangerous",
+      "url": "https://github.com/pallets/itsdangerous",
+      "commit": "672971d66a2ef9f85151e53283113f33d642dabd",
+      "language": "Python",
+      "size": "small",
+      "paths": [
+        "src",
+        "README.md",
+        "docs"
+      ],
+      "readme": "README.md",
+      "agents": null
+    },
+    {
+      "name": "dtolnay__anyhow",
+      "url": "https://github.com/dtolnay/anyhow",
+      "commit": "2cbb4e1bcbf8e7015f8d8b04a291c4c0597030b4",
+      "language": "Rust",
+      "size": "medium",
+      "paths": [
+        "src",
+        "README.md"
+      ],
+      "readme": "README.md",
+      "agents": null
+    },
+    {
+      "name": "spf13__cobra",
+      "url": "https://github.com/spf13/cobra",
+      "commit": "adbc8813901bba65827259daa8e22ff94ec1f30e",
+      "language": "Go",
+      "size": "medium",
+      "paths": [
+        "active_help.go",
+        "args.go",
+        "bash_completions.go",
+        "bash_completionsV2.go",
+        "cobra.go",
+        "command.go",
+        "command_notwin.go",
+        "command_win.go",
+        "completions.go",
+        "fish_completions.go",
+        "flag_groups.go",
+        "powershell_completions.go",
+        "shell_completions.go",
+        "zsh_completions.go",
+        "README.md"
+      ],
+      "readme": "README.md",
+      "agents": null
+    },
+    {
+      "name": "sindresorhus__ky",
+      "url": "https://github.com/sindresorhus/ky",
+      "commit": "3541888878c4d303a8bc2ad61815f4e048f55a5d",
+      "language": "TypeScript",
+      "size": "medium",
+      "paths": [
+        "source",
+        "readme.md"
+      ],
+      "readme": "readme.md",
+      "agents": "AGENTS.md"
+    }
+  ],
+  "maxProbes": 30
+}

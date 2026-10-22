@@ -1,0 +1,3 @@
+{
+  "text": "HCS/0.2\n@title Shop \"backend\"\n@root src\n@created 2026-01-01T00:00:00Z\n@generator hand\n@meta lang=ts note=\"two words\" empty=x\n\n[claims]\n\n## Billing\n#c1[i5,manual] Shipping costs a base fee plus 4 per kg.\n  > rates.ts::shippingFee #0123456789ab\n  > \"docs/refund policy.md\"::\"Refund policy\"\n#c2 Refunds take 14 days.\n  > docs/policy.md:3-4\n  > docs/policy.md:7\n  > notes.txt\n\n## Other\n#c3[overview] Overview claim.\n  > rates.ts\n\n[probes]\n?p1 How much per kg? (in EUR)\n  = 4 per kg\n  > rates.ts:5 #aaaaaa\n  ~ c1 c2\n\n[certificates]\n!score model=m:x judge=j:y fidelity=0.500 digest=abc123 date=2026-01-01T00:00:00Z\n"
+}

@@ -1,0 +1,14 @@
+project.hcs
+  claims            38 (38 hand-written)
+  probes            10
+  files cited       22
+  .hcs file         ~4061 tokens
+  rendered context  ~3012 tokens
+  --budget 500      keeps 6 claims
+  --budget 1000     keeps 11 claims
+  --budget 2000     keeps 25 claims
+  counted by groq:openai/gpt-oss-120b (prompt size of a 1-token completion):
+  .hcs file         3914 tokens  (estimate 103.8% of it)
+  rendered context  2704 tokens  (estimate 111.4% of it)
+  (other counts are tokenizer-free estimates; budgets always use the estimate)
+usage groq:openai/gpt-oss-120b: 3 requests, 6832 input + 3 output tokens (as reported by the provider)

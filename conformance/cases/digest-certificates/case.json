@@ -1,0 +1,7 @@
+{
+  "op": "digest",
+  "description": "Certificate digests: computed on the render without stale or missing claims, at the certificate's budget; current or outdated.",
+  "args": {
+    "seal_against": "src"
+  }
+}

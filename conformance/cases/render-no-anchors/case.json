@@ -1,0 +1,8 @@
+{
+  "op": "render",
+  "description": "Without anchors.",
+  "args": {
+    "anchors": false,
+    "seal_against": "src"
+  }
+}

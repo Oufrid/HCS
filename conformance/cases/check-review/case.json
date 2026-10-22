@@ -1,0 +1,7 @@
+{
+  "op": "check",
+  "description": "A symbol anchor whose own text is unchanged but whose dependency changed is `review`; a change to an unused export is not.",
+  "args": {
+    "seal_against": "before"
+  }
+}

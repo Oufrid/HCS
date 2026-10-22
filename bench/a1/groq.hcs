@@ -1,0 +1,528 @@
+HCS/0.2
+@title a1
+@root ../.work/a1
+@created 2026-10-21T11:57:32.421Z
+@updated 2026-10-21T12:43:56.239Z
+@generator hcs-cli compile (groq:openai/gpt-oss-20b)
+@source-files 15
+@source-tokens 57630
+@meta sources-commit=681f82e reproduce="git worktree add bench/.work/a1 681f82e"
+
+[claims]
+
+## Overview
+#c1[overview,i5] HCS documents are parsed, validated, and compiled into claims and probes, then scored against LLMs to produce certificates.
+  > README.md:7-9 #e4958ca1597e
+  > README.md:15-17 #46c742fb364d
+  > README.md::Install #c24666a9bbdc
+  > README.md::"1. Compile a context file from your project" #ef515161ea43
+  > README.md:22-29 #407bf13fa08e
+  > README.md::"2. Measure it" #05f9e4c17028
+#c2[overview,i5] The compiler builds anchors from source files, ensuring deterministic hashes and secure path resolution within a sandboxed root.
+  > src/anchors.ts::HASH_LENGTH #0330f2780307
+  > src/anchors.ts::normalizeLines #1f9f0385cd31
+  > src/anchors.ts::insideRoot #b3487c7f0572
+  > src/anchors.ts::SourceCache #933859786314
+  > src/anchors.ts:116-120 #720f5adad96b
+  > src/anchors.ts::seal #e21386b51b66
+#c3[overview,i5] The rendering pipeline selects claims by status, importance, and token budget, producing a compact <hcs-context> block for LLM consumption.
+  > src/render.ts:1 #21e972c5e23a
+  > src/render.ts::RenderOptions #da5202237ba2
+  > src/render.ts:28-35 #bc96d0d1701f
+  > src/render.ts::selectClaims #c510bd10896d
+  > src/render.ts::claimLine #c7708f4778f1
+  > src/render.ts::renderContext #31ee6bf0bfa6
+#c4[overview,i5] Scoring evaluates probes against rendered contexts, computing fidelity, confidence intervals, and informative/novel metrics, optionally comparing two contexts.
+  > src/score.ts::Verdict #312aa6bf5d46
+  > src/score.ts::ProbeResult #1650e753ea3b
+  > src/score.ts::ScoreSummary #0bb744a7bb01
+  > src/score.ts::answer #1f2769f469c7
+  > src/score.ts::scoreContext #2bd796d2fbfb
+  > src/score.ts::judgesOf #d01411649f69
+#c5[overview,i5] The MCP server exposes JSON‑RPC tools to query claims, expand sources, and score individual claims within a sandboxed root.
+  > src/mcp.ts:80-82 #5daa2065448f
+  > src/mcp.ts::HcsMcpServer.load #4875c12ec86a
+  > src/mcp.ts:89-101 #9de636ce65c7
+  > src/mcp.ts::HcsMcpServer.dispatch #11173eee8eb7
+  > src/mcp.ts:144-149 #cfa69f038d0e
+  > src/mcp.ts:151-159 #44a9b55373ff
+#c6[overview,i5] LLM interactions are wrapped with rate limiting, debugging, and retry logic, ensuring robust completion calls and usage tracking.
+  > src/llm.ts::LLM #09dc2ae89fee
+  > src/llm.ts::createLLM #e1653e3a53e5
+  > src/llm.ts::withDebugLog #3b77fdca4cf6
+  > src/llm.ts::authHint #ffdcc6547ae0
+  > src/llm.ts::retryDelayMs #53c59bd9ac2f
+  > src/llm.ts::openAICompatible #7d293a9da481
+#c7[overview,i5] Source discovery respects .gitignore, .hcsignore, and file size limits, recursively collecting text files for compilation.
+  > src/sources.ts::collectSources #c0440aacf4c2
+  > src/sources.ts::loadIgnores #e51bd33b0c75
+  > src/sources.ts::gitFiles #ced6ce479d51
+  > src/sources.ts::walk #62a8544b7420
+  > src/sources.ts::isText #b543fad325a5
+  > src/sources.ts::chunkFile #ffc6242f4452
+#c8[overview,i5] Symbol extraction identifies functions, classes, and markdown headings to create meaningful anchors, supporting both brace and indentation‑based languages.
+  > src/symbols.ts::findEnd #537b9e9d3841
+  > src/symbols.ts::braceSymbols #b0597fd3f215
+  > src/symbols.ts::indentSymbols #955bf38311b8
+  > src/symbols.ts::BRACE_DEFS #98e93eb37253
+  > src/symbols.ts::SymbolRange #dea7c7fce18e
+  > src/symbols.ts::CONTROL #d6ecb6396141
+
+## (root)
+#c9[i5] Typical context summaries suffer three blind spots: unknown loss, silent rot, and lack of traceability.
+  > README.md:7-9 #e4958ca1597e
+#c10[i5] HCS provides three core capabilities—Traceable, Verifiable, and Measured—without requiring an LLM for the first two, but measurement needs a model.
+  > README.md:15-17 #46c742fb364d
+#c11[i3] Installing HCS requires Node.js version 18.17 or higher and has zero runtime dependencies.
+  > README.md::Install #c24666a9bbdc
+#c12[i4] The compiler reads every text file, respects .gitignore and .hcsignore, and discards any claim or probe whose quoted source is not present.
+  > README.md::"1. Compile a context file from your project" #ef515161ea43
+#c13[i4] In a sample run, `hcs check` reported 64 claims, 30 probes, with 2 moved claims and 1 stale claim.
+  > README.md:22-29 #407bf13fa08e
+#c14[i4] `hcs score` outputs fidelity with a 95% bootstrap confidence interval and also reports misled and abstention rates for context and no‑context runs.
+  > README.md::"2. Measure it" #05f9e4c17028
+#c15[i4] `hcs init` creates an empty file for hand-written claims.
+  > README.md::Commands #2893e350bcce
+#c16[i3] `hcs validate <f>` performs a syntax check.
+  > README.md::Commands #2893e350bcce
+#c17[i5] `hcs check <f>` verifies all anchors, certificates and suspect claims (exits 1 on stale/missing).
+  > README.md::Commands #2893e350bcce
+#c18[i4] `hcs render --decoder` prepends short vendor‑neutral instructions for the decoder prompt.
+  > README.md::"Decoder prompt" #eb9c14110845
+#c19[i3] `openai` provider uses `OPENAI_API_KEY` and optionally `OPENAI_BASE_URL`.
+  > README.md::Commands #2893e350bcce
+#c20[i4] When `HTTPS_PROXY` is set, hcs re‑runs itself with Node's `--use-env-proxy` flag (Node ≥ 22.21 or 24.5) so requests go through the proxy; `NO_PROXY` is honored.
+  > README.md::Commands #2893e350bcce
+#c21[i2] HCS is not lossless; it measures the loss instead of hiding it.
+  > README.md::"What HCS is not" #e26393a1e153
+#c22[i3] The repository layout includes SPEC.md (normative v0.3), src/, test/, bench/, project.hcs, action.yml and the .github/ directory.
+  > README.md::"Repository layout" #17f22e9bc351
+#c23[i5] The HCS specification version is 0.3.
+  > SPEC.md:1 #e855b8e08802
+#c24[i5] An HCS file must begin with a magic line that names its version, e.g., "HCS/0.2".
+  > SPEC.md::"1. File structure" #8419e4a65a6d
+#c25[i5] A 0.3 reader MUST accept files whose magic line is "HCS/0.1" or "HCS/0.2".
+  > SPEC.md::"1. File structure" #8419e4a65a6d
+#c26[i4] A probe tagged `known` indicates that models answer it correctly without any context.
+  > SPEC.md::"4. Probes" #6ad42d520ab7
+#c27[i4] A certificate records scoring runs with fields such as `model`, `judge`, `fidelity`, `ci95`, `baseline`, `informative`, `novel`, `judge-agreement`, `tokens`, `budget`, `digest`, and `date`.
+  > SPEC.md::"7. Certificates" #3eff969f8f76
+
+## src
+#c28[i4] The module exports a constant HASH_LENGTH set to 12, used to truncate SHA‑256 hashes for anchors.
+  > src/anchors.ts::HASH_LENGTH #0330f2780307
+#c29[i5] normalizeLines removes CRLF line endings, trims trailing whitespace from each line, and discards trailing empty lines, guaranteeing deterministic line arrays.
+  > src/anchors.ts::normalizeLines #1f9f0385cd31
+#c30[i5] insideRoot resolves a path against a root directory and throws an Error if the resolved path escapes the root, including via symlinks, enforcing a security boundary.
+  > src/anchors.ts::insideRoot #b3487c7f0572
+#c31[i4] SourceCache.lines returns an array of normalized lines for a file under the root, caches results, and returns null for non‑existent or outside‑root files, providing a safe read interface.
+  > src/anchors.ts::SourceCache #933859786314
+#c32[i4] currentHash returns the hash of the text covered by an anchor (using symbol‑aware or plain hashing) or null if the target does not exist, enabling up‑to‑date verification.
+  > src/anchors.ts:116-120 #720f5adad96b
+#c33[i5] seal can fill hashes of unsealed anchors, update path/start/end of moved anchors, and optionally rehash stale anchors when opts.rehash is true, returning counts of sealed, relocated, and rehashed operations.
+  > src/anchors.ts::seal #e21386b51b66
+#c34[i3] worst aggregates multiple AnchorStatus values by selecting the one with highest severity according to the order ["ok","moved","unsealed","stale","missing"].
+  > src/anchors.ts::worst #d581b5f114a4
+#c35[i5] The module exports a PathReference interface describing a file reference with fields path, line, exists, and bare, where bare indicates a generic file name that only triggers a warning if missing.
+  > src/audit.ts::PathReference #84a49e01386c
+#c36[i4] looksLikePath returns false for strings shorter than 3 or longer than 200 characters, URLs, whitespace, or any of the characters * < > { } $ |.
+  > src/audit.ts::looksLikePath #f26ac1eac79d
+#c37[i3] looksLikePath rejects strings that start with "@" or "-" and also rejects lone extensions such as ".md".
+  > src/audit.ts::looksLikePath #f26ac1eac79d
+#c38[i5] findPathReferences extracts candidates from backtick‑enclosed text and markdown link URLs, trims them, removes leading "./" and trailing line‑number suffixes, then validates with looksLikePath before adding.
+  > src/audit.ts::findPathReferences #062b34fc2880
+#c39[i5] The CLI's `load` function throws a `UsageError` if the specified file does not exist and otherwise parses the file content into an `HcsDocument`.
+  > src/cli.ts::load #dd9a05582ee8
+#c40[i4] `requireModel` validates that the `--model` option is a non‑empty string and throws a `UsageError` with a specific message when it is missing or invalid.
+  > src/cli.ts::requireModel #58df363b410a
+#c41[i3] `anchorMode` only accepts the strings "symbols" or "lines" (or undefined) and throws a `UsageError` for any other value.
+  > src/cli.ts::anchorMode #bc71a3bae5b4
+#c42[i5] The CLI registers a process `exit` handler that iterates over all created LLM clients and writes their usage statistics (requests, token counts, retries, truncations) to `stderr`.
+  > src/cli.ts:176-186 #875cab14aa14
+#c43[i4] In the `init` command, the CLI refuses to overwrite an existing file, creates an empty HCS document with optional title and root header, and writes a starter template with comment instructions.
+  > src/cli.ts:189-200 #552e2d287082
+#c44[i5] The `check` command builds a `SourceCache` rooted at the document's root directory, runs `checkDocument` to produce `ItemReport`s, and determines failing reports based on status (`stale`, `missing`, optionally `unsealed` or suspect) respecting the `--strict` flag.
+  > src/cli.ts:213-227 #f4b2a26ee541
+#c45[i3] `printSourceFindings` logs a summary of injection‑like lines, prioritizes high‑severity findings, limits displayed entries to 20, and notes that claims quoting such text are tagged suspect and not rendered.
+  > src/cli.ts::printSourceFindings #e918cff42a51
+#c46[i3] The helper `num` converts a string option to a positive number and throws a `UsageError` if the value is non‑finite or ≤ 0.
+  > src/cli.ts:161-166 #2f9621f93bf5
+#c47[i5] When any anchors are re‑hashed during a seal operation, the document’s certificate list is cleared to invalidate previous scores.
+  > src/cli.ts:279 #906e967e049c
+#c48[i5] After a successful seal, the document header field "updated" is set to the current ISO timestamp.
+  > src/cli.ts:280 #72d87094b8be
+#c49[i5] The "--filter-known" option tags probes as "known" after querying the specified filter models and records the filter specifications in the document header "known-filter".
+  > src/cli.ts:356 #482b2bf7a8d8
+#c50[i5] When the "--write" flag is used with the score command, the generated certificate is appended to the document’s certificates array and the file is saved.
+  > src/cli.ts:389-390 #2ec740729d04
+#c51[i5] If any failing items remain after a check, the command prints a FAIL message and exits with code 1.
+  > src/cli.ts:264-265 #027aabd6ba05
+#c52[i4] The render command respects the "--keep-stale" and "--no-anchors" flags to control inclusion of stale anchors and anchor markup in the generated context.
+  > src/cli.ts:293-295 #d79ce6a4f872
+#c53[i3] The stats command reports how many claims would be kept for each budget threshold (500, 1000, 2000, 4000) that is lower than the current context token count.
+  > src/cli.ts:317 #43ad50007ea1
+#c54[i3] Claims flagged as suspect or containing high‑severity injection findings are printed with a "SUSPECT" label and are omitted from rendering.
+  > src/cli.ts:256-257 #b72ff2924e86
+#c55[i5] The "audit" command checks that the specified context file exists and throws a UsageError if it does not.
+  > src/cli.ts:454 #606731a77afe
+#c56[i4] It logs a summary line showing token estimate, total file references, broken references, and unresolved names.
+  > src/cli.ts:460 #6c50a22f6ef9
+#c57[i4] The "audit" command returns exit code 1 if any broken references are found, otherwise 0.
+  > src/cli.ts:478 #e0d98aca158d
+#c58[i5] The "compare" command requires exactly two positional arguments and throws a UsageError with a usage message otherwise.
+  > src/cli.ts:482 #eaa6a69b9bb3
+#c59[i4] It determines the probe file from the "--probes" flag or any positional ending with ".hcs", throwing a UsageError if none is found.
+  > src/cli.ts:483-485 #4cacfecce3a1
+#c60[i5] The helper function "contextOf" returns null for side "none", throws a UsageError if a side file is missing, reads raw text for non‑.hcs files, and renders context for .hcs files after verification.
+  > src/cli.ts:489-496 #933b6682c56b
+#c61[i5] The "serve" command refuses to serve a document whose @root escapes the current working directory unless the user explicitly supplies "--root", throwing a UsageError otherwise.
+  > src/cli.ts:533-542 #184273172cb1
+#c62[i5] The CompileOptions interface defines the public configuration contract for the compiler, including required fields root and llm and optional fields such as previous, claimsPerChunk, anchorMode, and onProgress.
+  > src/compile.ts::CompileOptions #8949b05efdb3
+#c63[i5] The CompileStats interface reports compilation outcomes, tracking counts of files, chunks, proposed and rejected claims and probes, kept claims, source token usage, source findings, and an optional incomplete field when quota limits are hit.
+  > src/compile.ts::CompileStats #1741d3fbe7f1
+#c64[i3] MAX_ANCHOR_LINES limits an anchor's line span to 40 lines to avoid staleness after unrelated edits.
+  > src/compile.ts::MAX_ANCHOR_LINES #795821f22731
+#c65[i5] anchorFor creates an Anchor by locating the quoted text, optionally expanding to a provided line range if it stays within MAX_ANCHOR_LINES, and prefers a symbol‑based anchor when a surrounding function, class, or heading is found.
+  > src/compile.ts::anchorFor #5e3194b4874f
+#c66[i5] extractChunk orchestrates LLM interaction: it builds a prompt, calls llm.complete, parses JSON, validates and filters raw claims and probes, computes claim weight, tags high‑risk content, and returns structured data; malformed JSON yields an empty result marked unusable.
+  > src/compile.ts::extractChunk #b8d51ae71481
+#c67[i3] spreadProbes distributes probes across chunks in a round‑robin fashion, adding one probe per chunk per round until the maximum count is reached or no more probes remain.
+  > src/compile.ts:219-233 #2b95d15ab960
+#c68[i5] In incremental mode, only files that are dirty, uncovered, or have resumed chunks are compiled; unchanged files are excluded.
+  > src/compile.ts:276 #a7f47e8d16dd
+#c69[i4] Claims tagged with "manual" are always retained and never automatically dropped during incremental compilation.
+  > src/compile.ts:280 #d06e74f7627a
+#c70[i4] Claims tagged with "overview" are removed during incremental compilation and later regenerated by synthesis.
+  > src/compile.ts:281 #5da8216c562a
+#c71[i3] Chunks whose extraction result has `unusable` set are counted, added to `unfinished`, logged, and the result is returned without claims or probes.
+  > src/compile.ts:324-329 #9cc54a11f0ef
+#c72[i4] After collecting claims, they are sorted by section order, then renumbered sequentially as `c1`, `c2`, ….
+  > src/compile.ts:344-346 #caf7e8d34e1d
+#c73[i4] The `sortBySection` function orders sections with "(root)" first, then alphabetically, and returns claims grouped by that order.
+  > src/compile.ts::sortBySection #99415a20128b
+#c74[i4] If synthesis is enabled and quota is not exhausted, an overview is generated, prepended to claims, and claims are renumbered again; quota exhaustion during synthesis aborts the overview.
+  > src/compile.ts:348-359 #488a717704b1
+#c75[i4] The module defines `FORMAT_VERSION` as "0.3" and constructs `MAGIC` as `HCS/${FORMAT_VERSION}`.
+  > src/format.ts:3-4 #8047bc15982d
+#c76[i4] `SUPPORTED_VERSIONS` lists the three format versions the reader accepts: "0.1", "0.2", "0.3".
+  > src/format.ts::SUPPORTED_VERSIONS #bfa61b8b8d04
+#c77[i5] The `Anchor` interface requires a `path` string and optionally a `symbol`, 1‑based inclusive `start`/`end` line range, and a `hash`; undefined `hash` means the anchor is unsealed.
+  > src/format.ts::Anchor #a1011c696164
+#c78[i5] `HcsSyntaxError` extends `Error` and prefixes its message with the line number where the error occurred.
+  > src/format.ts::HcsSyntaxError #0d6ff762b304
+#c79[i5] `parseAnchor` validates a raw anchor string against `ANCHOR_RE`; on mismatch or an invalid line range it throws `HcsSyntaxError` with a descriptive message.
+  > src/format.ts::parseAnchor #78fc2655735c
+#c80[i4] `serialize` writes the magic line as `MAGIC` (0.3) when any probe has tags; otherwise it writes the older "HCS/0.2" header.
+  > src/format.ts::serialize #ae589dcd81a8
+#c81[i5] The code adds a blank line and a "[certificates]" section header to the output only when `doc.certificates.length` is non‑zero.
+  > src/format.ts::serialize #ae589dcd81a8
+#c82[i5] For each certificate `c` in `doc.certificates`, a line beginning with `!score ` followed by space‑separated `key=value` pairs is appended to the output.
+  > src/format.ts::serialize #ae589dcd81a8
+#c83[i4] The `key=value` pairs are generated by iterating over `c.fields` entries and applying the `quote` function to each value.
+  > src/format.ts::serialize #ae589dcd81a8
+#c84[i4] The `quote` function replaces every double‑quote character (`"`) in the input string with a single‑quote (`'`).
+  > src/format.ts::quote #c59249a65a00
+#c85[i4] After replacing double quotes, `quote` returns the string wrapped in double quotes if it contains any whitespace; otherwise it returns the string unchanged.
+  > src/format.ts::quote #c59249a65a00
+#c86[i3] Key‑value strings have no escapes: double quotes become single quotes, then values containing spaces are quoted.
+  > src/format.ts:252 #91104502e4db
+#c87[i3] The final output string is produced by joining the `out` array with newline characters and appending an additional newline.
+  > src/format.ts::serialize #ae589dcd81a8
+#c88[i5] The module exports a `Severity` type that can be either "high" or "low".
+  > src/guard.ts::Severity #d5b3ee9a8b74
+#c89[i4] `PATTERNS` is an array of objects each containing a RegExp `re`, a `reason` string, and a `severity` of type `Severity`, defining the injection detection rules.
+  > src/guard.ts::PATTERNS #467c0d579d52
+#c90[i5] `injectionFindings(text: string): Finding[]` returns a list of `{reason, severity}` for every pattern whose regex matches the input text.
+  > src/guard.ts::injectionFindings #d46ba4de4ee2
+#c91[i5] `isHighRisk(text: string): boolean` returns true if any finding from `injectionFindings` has severity "high".
+  > src/guard.ts::isHighRisk #70492a90d9bb
+#c92[i3] `SUSPECT_TAG` is the constant string "suspect" used to tag claims identified as high‑risk.
+  > src/guard.ts::SUSPECT_TAG #bd0e626c3173
+#c93[i5] `scanSource(path, text)` splits the source text into lines, runs `injectionFindings` on each line, and returns an array of `SourceFinding` objects containing the file path, line number, reason, and severity.
+  > src/guard.ts::scanSource #4653fed397c1
+#c94[i4] `SourceFinding` extends `Finding` by adding `path: string` and `line: number` fields.
+  > src/guard.ts::SourceFinding #0d12cceeb60f
+#c95[i2] All exported functions are pure; they only allocate local arrays and do not modify external state.
+  > src/guard.ts::scanSource #4653fed397c1
+#c96[i5] The public `LLM` interface requires an `id` string, an async `complete` method returning a string, and optionally a `usage` object tracking request and token counts.
+  > src/llm.ts::LLM #09dc2ae89fee
+#c97[i5] `createLLM` validates a `provider:model` spec, throws on invalid format or unknown provider, creates a usage record, applies optional reasoning effort from options or `HCS_REASONING_EFFORT`, and may wrap the client with debug logging.
+  > src/llm.ts::createLLM #e1653e3a53e5
+#c98[i4] If an `rpm` value is provided, `createLLM` creates or reuses a single `RateLimiter` per model spec to space requests evenly, and returns a wrapper LLM whose `complete` method awaits the limiter before delegating.
+  > src/llm.ts::createLLM #e1653e3a53e5
+#c99[i3] `withDebugLog` checks `HCS_DEBUG_LOG`; when set, it returns a wrapper that logs each request and its reply or error as a JSON line to the specified file, without logging HTTP headers.
+  > src/llm.ts::withDebugLog #3b77fdca4cf6
+#c100[i3] `authHint` examines response status, body, and the `x-proxy-error` header to generate a helpful message indicating a missing API key or a proxy‑rejected secret.
+  > src/llm.ts::authHint #ffdcc6547ae0
+#c101[i2] `retryDelayMs` extracts a retry delay from a `Retry-After` header (seconds or HTTP date) or from a JSON `"retryDelay"` field in the response body, returning the delay in milliseconds.
+  > src/llm.ts::retryDelayMs #53c59bd9ac2f
+#c102[i5] openAICompatible builds the request URL by removing trailing slashes from baseURL and appending '/chat/completions'.
+  > src/llm.ts::openAICompatible #7d293a9da481
+#c103[i5] LLM.complete posts a JSON payload to the URL with optional Bearer Authorization, extraHeaders, model, temperature 0, max_tokens, optional reasoning_effort, and messages containing system and user content.
+  > src/llm.ts::openAICompatible.complete #e699f36cd40d
+#c104[i4] After each call, countUsage updates the usage object with prompt and completion token counts from the response.
+  > src/llm.ts::openAICompatible.complete #e699f36cd40d
+#c105[i5] If the response lacks content, has finish_reason "length", and the original maxTokens is below REASONING_BUDGET, the method retries once with REASONING_BUDGET tokens and increments usage.retriedForReasoning.
+  > src/llm.ts::openAICompatible.complete #e699f36cd40d
+#c106[i4] The method throws an Error when the returned content is not a string, including a truncated preview of the raw response.
+  > src/llm.ts::openAICompatible.complete #e699f36cd40d
+#c107[i4] registerProvider registers providers like openrouter using openAICompatible with environment-configured base URL, API key, and adds the header "x-title": "hcs-cli".
+  > src/llm.ts:291-295 #42d5f8401a9d
+#c108[i5] The HcsMcpServer constructor takes a .hcs file path and optional root directory, where the root overrides any @root header and defines the sandbox for all source reads.
+  > src/mcp.ts:80-82 #5daa2065448f
+#c109[i5] The private load() method throws an Error if the specified .hcs file does not exist, otherwise parses it and creates a SourceCache using the provided root or the document's root directory.
+  > src/mcp.ts::HcsMcpServer.load #4875c12ec86a
+#c110[i5] The handle() method distinguishes JSON-RPC notifications (id undefined or null) from requests, returns null for notifications, and on errors returns a JSON-RPC error object with code -32603 unless the error provides its own code.
+  > src/mcp.ts:89-101 #9de636ce65c7
+#c111[i4] The initialize method returns the requested protocolVersion if it is in the PROTOCOL_VERSIONS list; otherwise it falls back to the first listed version, and includes serverInfo with name "hcs" and version "0.2.0".
+  > src/mcp.ts::HcsMcpServer.dispatch #11173eee8eb7
+#c112[i3] The hcs_context tool respects an optional numeric budget argument, excludes claims whose status is "stale" or "missing", and appends a note indicating how many stale claims were omitted.
+  > src/mcp.ts:144-149 #cfa69f038d0e
+#c113[i3] The hcs_expand tool throws an error when the requested id does not match any claim or probe, and limits the displayed source excerpt to a default of 120 lines unless a positive max_lines argument is supplied.
+  > src/mcp.ts:151-159 #44a9b55373ff
+#c114[i4] The hcs_source tool validates that the requested path resides inside the server's root using insideRoot; it throws "file not found" if the file is absent, and determines the excerpt range via symbol lookup or explicit start/end, defaulting to the whole file.
+  > src/mcp.ts:198-212 #198f568e3ce7
+#c115[i3] The rangeOf helper returns null when the underlying file cannot be read, otherwise computes a line range based on relocated paths, symbols, or explicit start/end, defaulting to the full file when no bounds are given.
+  > src/mcp.ts::rangeOf #b27d384c1294
+#c116[i3] scoreClaim builds a lowercase haystack string from the claim text, optional section, and each anchor's path and optional symbol.
+  > src/mcp.ts::scoreClaim #deb2b38225db
+#c117[i3] scoreClaim splits the haystack on any non‑alphanumeric or underscore characters, discarding empty tokens, to produce a list of words.
+  > src/mcp.ts::scoreClaim #deb2b38225db
+#c118[i3] scoreClaim returns the sum of terms for which at least one word in the haystack starts with the term.
+  > src/mcp.ts::scoreClaim #deb2b38225db
+#c119[i5] serveStdio creates an HcsMcpServer using the resolved file path and, if provided, the resolved root directory.
+  > src/mcp.ts::serveStdio #d92f15dce5a4
+#c120[i5] serveStdio writes a readiness message to stderr, ensuring logs are not mixed with protocol output.
+  > src/mcp.ts::serveStdio #d92f15dce5a4
+#c121[i5] serveStdio reads stdin line‑by‑line, ignoring lines that are empty or whitespace only.
+  > src/mcp.ts::serveStdio #d92f15dce5a4
+#c122[i5] If a line cannot be parsed as JSON, serveStdio writes a JSON‑RPC parse error (code -32700) to stdout and continues processing.
+  > src/mcp.ts::serveStdio #d92f15dce5a4
+#c123[i5] For each successfully parsed request, serveStdio forwards it to server.handle; if the handler returns a response, it is serialized and written to stdout, otherwise no output is produced.
+  > src/mcp.ts::serveStdio #d92f15dce5a4
+#c124[i5] The module converts an .hcs document into a compact context block that an LLM reads.
+  > src/render.ts:1 #21e972c5e23a
+#c125[i5] RenderOptions lets callers control claim status handling, anchor inclusion (default true), token budget, and whether to keep stale or suspect claims.
+  > src/render.ts::RenderOptions #da5202237ba2
+#c126[i4] importance() returns a claim's priority from an iN tag, defaults to 5 for manual claims and 3 otherwise.
+  > src/render.ts:28-35 #bc96d0d1701f
+#c127[i5] selectClaims filters out stale or missing claims unless keepStale is true, and excludes suspect or high‑risk claims unless keepSuspect is true.
+  > src/render.ts::selectClaims #c510bd10896d
+#c128[i5] When a budget is set, selectClaims ranks eligible claims by importance then original order, estimates token cost, and keeps a claim only if cumulative cost stays within the budget.
+  > src/render.ts::selectClaims #c510bd10896d
+#c129[i3] claimLine formats a claim as "id: text" and optionally appends formatted anchors and an "(unverified)" suffix for stale or missing claims.
+  > src/render.ts::claimLine #c7708f4778f1
+#c130[i4] renderContext outputs an <hcs-context> block, escapes double quotes in the title, inserts section headers when the section changes, and marks stale/missing claims with "(unverified)".
+  > src/render.ts::renderContext #31ee6bf0bfa6
+#c131[i3] contextDigest returns a hash of the rendered context, optionally respecting a token‑budget limit.
+  > src/render.ts:84-87 #1ea4f7fd61d6
+#c132[i5] The module exports a `Verdict` type limited to the four string literals "correct", "partial", "incorrect", and "unknown".
+  > src/score.ts::Verdict #312aa6bf5d46
+#c133[i5] `ProbeResult` records the raw answer, the first‑run verdict, how that verdict was reached ("match", "judge", or "abstain"), all verdicts across runs, and the mean points.
+  > src/score.ts::ProbeResult #1650e753ea3b
+#c134[i5] `ScoreSummary` reports overall fidelity (mean points), a 95 % bootstrap confidence interval, shares of misled and abstained answers, probe and run counts, detailed results, and optionally judge‑agreement statistics.
+  > src/score.ts::ScoreSummary #0bb744a7bb01
+#c135[i5] `answer` sends a prompt to the LLM that forces it to answer only from the supplied context and requires the exact response "UNKNOWN" when it cannot answer.
+  > src/score.ts::answer #1f2769f469c7
+#c136[i5] `scoreContext` grades each probe (optionally multiple runs), aggregates verdicts, computes per‑probe points, overall fidelity, confidence intervals, misled/abstained shares, and when two judges are used also calculates agreement and Cohen's kappa.
+  > src/score.ts::scoreContext #2bd796d2fbfb
+#c137[i4] `judgesOf` returns the configured judge LLMs, defaults to the answerer when none are supplied, and throws an error if more than two judges are provided.
+  > src/score.ts::judgesOf #d01411649f69
+#c138[i5] compareContexts scores two contexts (or null) with scoreContext, computes per‑probe point differences, and returns a Comparison object containing average difference, 95% CI, and counts of better, worse and same probes.
+  > src/score.ts::compareContexts #33e4f30e26c2
+#c139[i5] scoreDocument filters probes to those whose status is "ok" or "moved" and throws an Error with a specific message if none remain.
+  > src/score.ts::scoreDocument #a8ee4b9d71ce
+#c140[i4] When opts.baseline is true, scoreDocument also scores a baseline by calling scoreContext with a null context and onProgress disabled.
+  > src/score.ts::scoreDocument #a8ee4b9d71ce
+#c141[i4] The informative metric is calculated only if a baseline exists; it averages points of probes that were unknown (0 points) in the baseline but have context scores.
+  > src/score.ts::scoreDocument #a8ee4b9d71ce
+#c142[i4] The novel metric is computed when the document has a "known-filter" header or any usable probe is tagged "known"; it averages points of probes not tagged known.
+  > src/score.ts::scoreDocument #a8ee4b9d71ce
+#c143[i4] hashForCertificate returns a context digest that excludes claims whose status is "stale" or "missing"; if all claim statuses are "ok" or "moved" it hashes the original document.
+  > src/score.ts::hashForCertificate #450fab6aa93f
+#c144[i3] The selfJudged flag in DocumentScore is true when the answering model's id appears among the judges returned by judgesOf(opts).
+  > src/score.ts::scoreDocument #a8ee4b9d71ce
+#c145[i5] The module exports a Message interface with string properties role and text.
+  > src/snapshot.ts::Message #a6dcabac3cf6
+#c146[i5] The private function textOf returns a string by extracting text from strings, arrays of strings or objects with a text field, and objects with a parts array; otherwise it returns an empty string.
+  > src/snapshot.ts::textOf #c211aa2339c2
+#c147[i5] parseConversation accepts JSON in three common shapes: an array of messages, an object with a messages or chat_messages array, or an object with a mapping of messages (OpenAI/Anthropic style).
+  > src/snapshot.ts::parseConversation #44e353c78333
+#c148[i5] If parseConversation cannot recognize the input shape, it throws an Error with message "unrecognized conversation format (expected an array of messages or {messages: [...]})".
+  > src/snapshot.ts::parseConversation #44e353c78333
+#c149[i4] parseConversation filters out messages whose role is "system" and excludes empty text after trimming; only messages with non‑empty text and non‑system role are added to the output array.
+  > src/snapshot.ts::parseConversation #44e353c78333
+#c150[i4] If no messages remain after processing, parseConversation throws an Error with message "conversation contains no messages".
+  > src/snapshot.ts::parseConversation #44e353c78333
+#c151[i3] toTranscript creates a markdown transcript starting with the HTML comment `<!-- hcs:transcript -->`, a level‑1 title, and formats each message as a level‑3 heading containing its index and role followed by the message text.
+  > src/snapshot.ts::toTranscript #c919125008f9
+#c152[i3] When determining a message's role, parseConversation uses the first defined of m.role, m.sender, m.author.role, or defaults to "unknown".
+  > src/snapshot.ts::parseConversation #44e353c78333
+#c153[i5] collectSources returns a sorted list of text files under the given paths, respecting .gitignore (when in a git repo) and .hcsignore, and excludes files larger than maxBytes (default 256 KB) or non‑text files.
+  > src/sources.ts::collectSources #c0440aacf4c2
+#c154[i3] loadIgnores merges DEFAULT_IGNORES with extra patterns and any non‑comment, non‑blank lines from a .hcsignore file, then converts each pattern to a RegExp.
+  > src/sources.ts::loadIgnores #e51bd33b0c75
+#c155[i3] gitFiles runs "git ls-files -co --exclude-standard -z" in the repository root and returns an array of file paths, or null if the command fails.
+  > src/sources.ts::gitFiles #ced6ce479d51
+#c156[i3] walk recursively traverses directories, skipping any sub‑directory named ".git" or "node_modules", and adds each file's path (with forward slashes) to the output array.
+  > src/sources.ts::walk #62a8544b7420
+#c157[i2] isText inspects up to the first 8192 bytes of a Buffer and returns false if any byte is zero, otherwise true.
+  > src/sources.ts::isText #b543fad325a5
+#c158[i4] chunkFile splits normalized lines into chunks of at most maxLines (default 250), preferring to end a chunk at a blank line after 60 % of maxLines.
+  > src/sources.ts::chunkFile #ffc6242f4452
+#c159[i4] locateQuote normalizes whitespace and case, requires the quote to be at least three characters, and returns the 1‑based line range of the quote within a chunk or null if not found.
+  > src/sources.ts::locateQuote #f12f16ff2c54
+#c160[i5] The function `findEnd` scans up to 2000 lines from a start index, tracking brace depth, parentheses, and semicolons to determine the end of a definition in block, value, or JSON mode, returning the line number and whether a body was opened.
+  > src/symbols.ts::findEnd #537b9e9d3841
+#c161[i5] The `braceSymbols` function scans lines of a brace language file, uses `codeOnly` to ignore non-code, applies `BRACE_DEFS` regexes to detect definitions, filters out imports and local variables, and uses `findEnd` to set the symbol range.
+  > src/symbols.ts::braceSymbols #b0597fd3f215
+#c162[i4] The `indentSymbols` function extracts symbols from indentation-sensitive languages by matching a regex, determining the block’s indentation level, extending the block until a line with equal or less indentation, and optionally including preceding decorator lines.
+  > src/symbols.ts::indentSymbols #955bf38311b8
+#c163[i4] The `BRACE_DEFS` array contains regular expressions that match common definition patterns in brace languages, such as functions, classes, constants, and object members, capturing the identifier name.
+  > src/symbols.ts::BRACE_DEFS #98e93eb37253
+#c164[i3] The exported `SymbolRange` interface defines a symbol’s qualified name and its 1‑based inclusive start and end line numbers.
+  > src/symbols.ts::SymbolRange #dea7c7fce18e
+#c165[i3] The `CONTROL` set lists language keywords that should not be treated as definitions when matched by the `BRACE_DEFS` regexes.
+  > src/symbols.ts::CONTROL #d6ecb6396141
+#c166[i5] markdownSymbols identifies markdown headings outside code fences and returns an array of objects containing the heading text, its level, and the start and end line numbers of the section.
+  > src/symbols.ts::markdownSymbols #3c9107298a0d
+#c167[i5] listSymbols selects a parsing strategy based on the file language: markdown uses markdownSymbols, python uses indentSymbols with a regex for async def/class, yaml uses indentSymbols with a key regex, and other languages use braceSymbols with flags for JSON and file extensions.
+  > src/symbols.ts::listSymbols #20db3769bf48
+#c168[i5] listSymbols qualifies symbol names by nesting: the innermost strictly enclosing symbol becomes the parent, producing dot‑separated names such as Parent.Child.
+  > src/symbols.ts::listSymbols #20db3769bf48
+#c169[i4] findSymbol first returns an exact match; if none, for markdown it performs a case‑insensitive unique match; otherwise it returns a symbol whose name ends with .symbol, or null if ambiguous.
+  > src/symbols.ts::findSymbol #7635cce106d5
+#c170[i4] enclosingSymbol filters symbols that fully contain the requested line range and are smaller than a configurable maxLines threshold (default 80).
+  > src/symbols.ts::enclosingSymbol #c9e2964b3c56
+#c171[i4] enclosingSymbol selects the smallest qualifying symbol and verifies that its name resolves back to the same range via findSymbol before returning it, ensuring consistency.
+  > src/symbols.ts::enclosingSymbol #c9e2964b3c56
+#c172[i3] markdownSymbols toggles a fence flag when encountering lines that start with ``` or ~~~, ensuring headings inside code fences are ignored.
+  > src/symbols.ts::markdownSymbols #3c9107298a0d
+#c173[i3] In listSymbols, the flat array is sorted by start ascending and end descending to guarantee that outer symbols are processed before inner ones when building the containment stack.
+  > src/symbols.ts::listSymbols #20db3769bf48
+
+[probes]
+?p1 What version status is indicated for HCS in the README?
+  = v0.2, early
+  > README.md:33-34 #02decff950f1
+?p2 Which command verifies all anchors, certificates and suspect claims?
+  = hcs check <f>
+  > README.md::Commands #2893e350bcce
+?p3 What is the default importance value for a claim without an explicit importance tag?
+  = 3
+  > SPEC.md::"Standard tags" #18bde28f30c7
+?p4 What error message is thrown by insideRoot when a path escapes the project root?
+  = path must be inside the project root
+  > src/anchors.ts::insideRoot #b3487c7f0572
+?p5 What regular expression is used to detect URLs in looksLikePath?
+  = /^[a-z][a-z0-9+.-]*:\/\//i
+  > src/audit.ts::URL_RE #e779de950e0c
+?p6 What is the minimum required Node.js version for HCS?
+  = ≥ 18.17
+  > README.md::Install #c24666a9bbdc
+?p7 What environment variable sets the HTTP proxy for hcs?
+  = HTTPS_PROXY
+  > README.md::Commands #2893e350bcce
+?p8 Which header key specifies the directory against which anchor paths are resolved?
+  = `root`
+  > SPEC.md::"2. Headers" #48c2630722d3
+?p9 Which hash algorithm is used to compute anchor hashes?
+  = SHA-256
+  > src/anchors.ts::hashText #bc4793117b78
+?p10 Which characters cause looksLikePath to reject a string according to the code?
+  = any whitespace character or any of * < > { } $ |
+  > src/audit.ts::looksLikePath #f26ac1eac79d
+?p11 How many claims were rejected by quote verification in the example compile output?
+  = 7
+  > README.md::"1. Compile a context file from your project" #ef515161ea43
+?p12 What is the default host for the ollama provider?
+  = http://localhost:11434
+  > README.md::Commands #2893e350bcce
+?p13 If any anchor of a claim has status `missing`, what status does the claim receive?
+  = `missing`
+  > SPEC.md::"5.3 Verification" #de21bf4e4bab
+?p14 What status is assigned to an anchor that has no hash field during verification?
+  = unsealed
+  > src/anchors.ts::checkSymbolAnchor #707de082a68e
+?p15 Which filesystem function is used to determine if a candidate path exists?
+  = existsSync
+  > src/audit.ts::findPathReferences #062b34fc2880
+?p16 What exit codes does the CLI define and what do they mean?
+  = 0 ok, 1 verification failed, 2 usage or syntax error
+  > src/cli.ts:59 #f5b114954bc5
+?p17 When the --json flag is used, what exit code does the check command return if there are failing items?
+  = 1
+  > src/cli.ts:231 #7a33f4d8418d
+?p18 What exit code does the "audit" command return when broken references are present?
+  = 1
+  > src/cli.ts:478 #e0d98aca158d
+?p19 What is the default maximum number of lines an anchor may cover?
+  = 40
+  > src/compile.ts::MAX_ANCHOR_LINES #795821f22731
+?p20 Under what conditions is a file added to the `resume` map?
+  = When the file still splits into the same chunks (same chunkKey), is covered, and not dirty.
+  > src/compile.ts:271-274 #e479faab3372
+?p21 Which function creates an empty HcsDocument with default headers?
+  = emptyDocument
+  > src/format.ts::emptyDocument #373e80a2100b
+?p22 What transformation does the `quote` function apply to double‑quote characters in the input string?
+  = It replaces them with single quotes.
+  > src/format.ts::quote #c59249a65a00
+?p23 What boolean value does `isHighRisk` return when the input text matches a pattern with severity "high"?
+  = true
+  > src/guard.ts::isHighRisk #70492a90d9bb
+?p24 Which environment variable enables request/response logging in `withDebugLog`?
+  = HCS_DEBUG_LOG
+  > src/llm.ts::withDebugLog #3b77fdca4cf6
+?p25 Which HTTP header carries the OpenAI API key in requests made by openAICompatible?
+  = authorization: Bearer <apiKey>
+  > src/llm.ts::openAICompatible.complete #e699f36cd40d
+?p26 What default maximum number of lines does hcs_expand use when max_lines is not provided?
+  = 120
+  > src/mcp.ts:155-156 #2a9f11346ad6
+?p27 What condition ends the line‑reading loop in serveStdio?
+  = When stdin closes, causing the async iterator to finish.
+  > src/mcp.ts::serveStdio #d92f15dce5a4
+?p28 What is the default value for RenderOptions.anchors?
+  = true
+  > src/render.ts::RenderOptions #da5202237ba2
+?p29 What numeric point value is assigned to a "partial" verdict?
+  = 0.5
+  > src/score.ts::POINTS #f5b535d01ef1
+?p30 What error message is thrown if no usable probes are found?
+  = no verified probes to score with (run `hcs check`; stale probes are skipped)
+  > src/score.ts::scoreDocument #a8ee4b9d71ce
+?p31 What error message does parseConversation throw for an unrecognized conversation format?
+  = unrecognized conversation format (expected an array of messages or {messages: [...]})
+  > src/snapshot.ts::parseConversation #44e353c78333
+?p32 Which environment variables are used for provider authentication according to the HELP text?
+  = OPENAI_API_KEY, OPENAI_BASE_URL, ANTHROPIC_API_KEY, GEMINI_API_KEY, GROQ_API_KEY, OPENROUTER_API_KEY, OLLAMA_HOST
+  > src/cli.ts:55-57 #065aec8c26e1
+?p33 What console hint is printed when any report has status "moved" or "unsealed"?
+  = hint: run `hcs seal ${file}` to update moved/unsealed anchors
+  > src/cli.ts:262 #6ca09e742e5e
+?p34 Which probe status values are considered verified for scoring and comparison?
+  = "ok" and "moved"
+  > src/cli.ts:467 #9f45bf691259
+?p35 Which function returns the section name derived from a file path?
+  = sectionOf
+  > src/compile.ts::sectionOf #c73c03a08e1f
+?p36 What is the default maximum number of concurrent extractions if `opts.concurrency` is not set?
+  = 4
+  > src/compile.ts:307 #90a0a3201d83
+?p37 What error is thrown when a probe lacks an "= answer" line?
+  = HcsSyntaxError with message `probe "${p.id}" has no "= expected answer" line`
+  > src/format.ts:208 #2d0268169dd6
+?p38 When does `quote` wrap the processed string in double quotes?
+  = When the string contains whitespace.
+  > src/format.ts::quote #c59249a65a00
+?p39 Which exported constant is used to tag suspect claims?
+  = SUSPECT_TAG
+  > src/guard.ts::SUSPECT_TAG #bd0e626c3173
+?p40 What is the maximum retry wait time constant used to decide quota exhaustion?
+  = 120000
+  > src/llm.ts:152-153 #1381e5aa5ebe
+
+[certificates]
+!score model=groq:openai/gpt-oss-20b judge=gemini:gemini-flash-lite-latest fidelity=0.163 ci95=0.050-0.287 baseline=0.200 informative=0.172 informative-probes=32 misled=0.000 probes=40 tokens=3918 budget=4000 digest=19cd7b3c3dea date=2026-10-21T13:19:01.147Z

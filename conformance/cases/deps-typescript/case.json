@@ -1,0 +1,13 @@
+{
+  "op": "deps",
+  "description": "Direct dependencies of TS symbols: same-file symbols, class siblings, names imported from project files; words inside strings do not count.",
+  "args": {
+    "anchors": [
+      "rates.ts::fee",
+      "rates.ts::Cart.total",
+      "rates.ts::base",
+      "rates.ts:1-3",
+      "util.ts::round"
+    ]
+  }
+}

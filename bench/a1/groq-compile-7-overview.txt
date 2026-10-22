@@ -1,0 +1,7 @@
+incremental: 15 files unchanged, 0 to compile
+synthesized 8 overview claims
+wrote groq.hcs: 173 claims, 40 probes from 15 files (0 compiled)
+  rejected by quote verification: 0/0 claims, 0/0 probes
+  context ~9109 tokens for ~57630 tokens of source. Next: hcs score groq.hcs --model groq:openai/gpt-oss-20b --baseline --write
+usage groq:openai/gpt-oss-20b: 1 requests, 6830 input + 708 output tokens (as reported by the provider)
+exit=0

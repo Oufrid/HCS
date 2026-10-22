@@ -1,0 +1,7 @@
+HCS/0.3
+@root src
+[claims]
+#fee Fee is 25 plus 4 per kg, rounded.
+  > rates.ts::fee #HASH_DEPS_FEE
+#total Total doubles the sum.
+  > rates.ts::Cart.total #HASH_DEPS_TOTAL

@@ -1,0 +1,9 @@
+HCS/0.2
+@root nowhere
+[claims]
+#c1 Symbol.
+  > a.ts::f #0123456789ab
+#c2 Line.
+  > a.ts:1 #0123456789ab
+#c3 Unsealed.
+  > a.ts:1

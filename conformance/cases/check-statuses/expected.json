@@ -1,0 +1,119 @@
+{
+  "items": [
+    {
+      "kind": "claim",
+      "id": "ok1",
+      "status": "ok",
+      "anchors": [
+        {
+          "status": "ok"
+        }
+      ]
+    },
+    {
+      "kind": "claim",
+      "id": "ok2",
+      "status": "moved",
+      "anchors": [
+        {
+          "status": "moved",
+          "relocated": {
+            "start": 8,
+            "end": 8
+          }
+        }
+      ]
+    },
+    {
+      "kind": "claim",
+      "id": "moved1",
+      "status": "moved",
+      "anchors": [
+        {
+          "status": "moved",
+          "relocated": {
+            "start": 4,
+            "end": 6
+          }
+        }
+      ]
+    },
+    {
+      "kind": "claim",
+      "id": "stale1",
+      "status": "stale",
+      "anchors": [
+        {
+          "status": "stale"
+        }
+      ]
+    },
+    {
+      "kind": "claim",
+      "id": "stale2",
+      "status": "stale",
+      "anchors": [
+        {
+          "status": "stale"
+        }
+      ]
+    },
+    {
+      "kind": "claim",
+      "id": "missing1",
+      "status": "missing",
+      "anchors": [
+        {
+          "status": "missing"
+        }
+      ]
+    },
+    {
+      "kind": "claim",
+      "id": "missing2",
+      "status": "missing",
+      "anchors": [
+        {
+          "status": "missing"
+        }
+      ]
+    },
+    {
+      "kind": "claim",
+      "id": "unsealed1",
+      "status": "unsealed",
+      "anchors": [
+        {
+          "status": "unsealed"
+        }
+      ]
+    },
+    {
+      "kind": "claim",
+      "id": "worst",
+      "status": "missing",
+      "anchors": [
+        {
+          "status": "ok"
+        },
+        {
+          "status": "missing"
+        }
+      ]
+    },
+    {
+      "kind": "probe",
+      "id": "q1",
+      "status": "moved",
+      "anchors": [
+        {
+          "status": "moved",
+          "relocated": {
+            "start": 5,
+            "end": 5
+          }
+        }
+      ]
+    }
+  ]
+}

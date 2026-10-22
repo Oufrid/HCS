@@ -1,6 +1,6 @@
 {
   "name": "hcs-cli",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Holographic Context Standard: verifiable, fidelity-scored context files for any LLM.",
   "license": "MIT",
   "type": "module",
@@ -18,7 +18,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "npm run build && node --test dist/test/*.test.js",
-    "check:self": "node dist/src/cli.js check project.hcs"
+    "check:self": "node dist/src/cli.js check project.hcs",
+    "conformance": "npm run build && node conformance/run.mjs"
   },
   "keywords": [
     "llm",
@@ -34,6 +35,10 @@
   },
   "devDependencies": {
     "@types/node": "^22.9.0",
-    "typescript": "^5.6.3"
+    "tree-sitter-javascript": "0.25.0",
+    "tree-sitter-python": "0.25.0",
+    "tree-sitter-typescript": "0.23.2",
+    "typescript": "^5.6.3",
+    "web-tree-sitter": "0.27.1"
   }
 }

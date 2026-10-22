@@ -1,0 +1,8 @@
+name: app
+build:
+  steps:
+    - run: make
+  env:
+    A: 1
+deploy:
+  target: prod

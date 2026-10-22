@@ -1,0 +1,12 @@
+gemini-compile.jsonl: 2 chunks (1 unparsable), 11 quotes; accepted v1 9 (81.8%), v2 11 (100.0%); docs v1 81.8% -> v2 100.0% of 11; code v1 n/a -> v2 n/a of 0
+gemini2.jsonl: 8 chunks (0 unparsable), 88 quotes; accepted v1 68 (77.3%), v2 80 (90.9%); docs v1 18.2% -> v2 72.7% of 22; code v1 97.0% -> v2 97.0% of 66
+gemini3.jsonl: 7 chunks (0 unparsable), 57 quotes; accepted v1 56 (98.2%), v2 56 (98.2%); docs v1 n/a -> v2 n/a of 0; code v1 98.2% -> v2 98.2% of 57
+groq-compile.jsonl: 3 chunks (0 unparsable), 33 quotes; accepted v1 30 (90.9%), v2 31 (93.9%); docs v1 90.9% -> v2 93.9% of 33; code v1 n/a -> v2 n/a of 0
+groq2.jsonl: 2 chunks (0 unparsable), 22 quotes; accepted v1 22 (100.0%), v2 22 (100.0%); docs v1 100.0% -> v2 100.0% of 22; code v1 n/a -> v2 n/a of 0
+groq3.jsonl: 5 chunks (0 unparsable), 55 quotes; accepted v1 45 (81.8%), v2 45 (81.8%); docs v1 84.8% -> v2 84.8% of 33; code v1 77.3% -> v2 77.3% of 22
+groq4.jsonl: 16 chunks (0 unparsable), 176 quotes; accepted v1 161 (91.5%), v2 161 (91.5%); docs v1 n/a -> v2 n/a of 0; code v1 91.5% -> v2 91.5% of 176
+groq7.jsonl: 2 chunks (0 unparsable), 22 quotes; accepted v1 20 (90.9%), v2 20 (90.9%); docs v1 n/a -> v2 n/a of 0; code v1 90.9% -> v2 90.9% of 22
+compile4.jsonl: 14 chunks (0 unparsable), 140 quotes; accepted v1 129 (92.1%), v2 133 (95.0%); docs v1 n/a -> v2 n/a of 0; code v1 92.1% -> v2 95.0% of 140
+local.jsonl: 3 chunks (2 unparsable), 11 quotes; accepted v1 0 (0.0%), v2 8 (72.7%); docs v1 n/a -> v2 n/a of 0; code v1 0.0% -> v2 72.7% of 11
+local7.jsonl: 2 chunks (0 unparsable), 22 quotes; accepted v1 12 (54.5%), v2 12 (54.5%); docs v1 n/a -> v2 n/a of 0; code v1 54.5% -> v2 54.5% of 22
+groq6.jsonl: 1 chunks (0 unparsable), 11 quotes; accepted v1 10 (90.9%), v2 10 (90.9%); docs v1 n/a -> v2 n/a of 0; code v1 90.9% -> v2 90.9% of 11

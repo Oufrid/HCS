@@ -1,0 +1,13 @@
+[1/40] p1 unknown
+[2/40] p2 correct
+[3/40] p3 unknown
+[4/40] p4 unknown
+[5/40] p5 unknown
+[6/40] p6 unknown
+[7/40] p7 unknown
+[8/40] p8 unknown
+[9/40] p9 unknown
+[10/40] p10 unknown
+hcs: rate limit or quota exhausted at https://api.groq.com/openai/v1/chat/completions (server asks to wait 1109s; Rate limit reached for model `qwen/qwen3.8-27b` in organization `org_01kq6dek8kf3ptkrbhwjhgsk0f` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 198586, Requested 3980. Please try again in 18m28.512s. Need more tokens? ). Try later, lower --rpm, or use another model.
+usage groq:qwen/qwen3.8-27b: 10 requests, 38838 input + 43 output tokens (as reported by the provider)
+exit=1

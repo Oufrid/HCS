@@ -1,0 +1,7 @@
+{
+  "op": "symbols",
+  "description": "Java class, constructor and methods with modifiers.",
+  "args": {
+    "file": "Account.java"
+  }
+}

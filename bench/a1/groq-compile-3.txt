@@ -1,0 +1,29 @@
+incremental: 4 files unchanged, 11 to compile
+[1/19] src/cli.ts:1-228 -> 8 claims, 3 probes
+[2/19] src/cli.ts:229-451 -> 8 claims, 3 probes
+[3/19] src/cli.ts:452-582 -> 7 claims, 3 probes
+[4/19] src/compile.ts:1-245 -> 6 claims, 3 probes
+[5/19] src/compile.ts:246-403 -> 7 claims, 3 probes
+[6/19] src/format.ts:1-242 -> 6 claims, 2 probes
+[7/19] src/format.ts:243-256 -> 7 claims, 3 probes
+[8/19] src/guard.ts:1-74 -> 8 claims, 3 probes
+[9/19] src/llm.ts:1-219 -> 6 claims, 3 probes
+[10/19] src/llm.ts:220-450 -> 6 claims, 3 probes
+[11/19] src/mcp.ts:1-247 -> 8 claims, 3 probes
+[12/19] src/mcp.ts:248-272 -> 8 claims, 3 probes
+[13/19] src/render.ts:1-102 -> 8 claims, 3 probes
+[14/19] src/score.ts:1-248 -> 6 claims, 3 probes
+[15/19] src/score.ts:249-369 -> 7 claims, 3 probes
+[16/19] src/snapshot.ts:1-63 -> 8 claims, 3 probes
+[17/19] src/sources.ts:1-193 -> not compiled: quota exhausted
+wrote groq.hcs: 144 claims, 40 probes from 15 files (11 compiled)
+  rejected by quote verification: 14/128 claims, 1/48 probes
+  source scan: 3 line(s) with injection-like text in 1 file(s), 0 high risk
+    low  src/guard.ts:19  mentions system or developer prompts
+    low  src/guard.ts:33  mentions system or developer prompts
+    low  src/guard.ts:37  announces new instructions
+  INCOMPLETE: rate limit or quota exhausted at https://api.groq.com/openai/v1/chat/completions (server asks to wait 1062s). Try later, lower --rpm, or use another model.
+  not compiled yet: 3 chunk(s): src/sources.ts:1-193, src/symbols.ts:1-233, src/symbols.ts:234-302
+  the partial file was saved; run the same command with --update later to finish it
+usage groq:openai/gpt-oss-120b: 16 requests, 44028 input + 66431 output tokens (as reported by the provider)
+exit=1

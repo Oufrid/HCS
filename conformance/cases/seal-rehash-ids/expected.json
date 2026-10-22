@@ -1,0 +1,9 @@
+{
+  "result": {
+    "sealed": 0,
+    "relocated": 0,
+    "rehashed": 1,
+    "deps": 0
+  },
+  "text": "HCS/0.2\n@root src\n\n[claims]\n#a One.\n  > x.txt:1 #000000000000\n#b Two.\n  > x.txt:2 #3fc4ccfe7458\n"
+}

@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "shop": {
+      "command": "hcs",
+      "args": ["serve", "shop.hcs"]
+    }
+  }
+}

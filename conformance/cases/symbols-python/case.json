@@ -1,0 +1,7 @@
+{
+  "op": "symbols",
+  "description": "Classes, methods, decorators (included in the range), async and nested functions.",
+  "args": {
+    "file": "cart.py"
+  }
+}

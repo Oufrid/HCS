@@ -31,6 +31,9 @@ HCS complements the formats above rather than competing with them. `hcs audit` c
 
 - Fidelity scores depend on the answering model, the judge model and the probe set. A probe set produced by the same compiler model can share that model's blind spots. Use a different `--judge`, and add hand-written probes for what matters most.
 - Line-range anchors can flag a claim as stale after an edit that did not change its meaning. That is a false positive, and it is safe: a human re-seals the anchor. The opposite case is not covered: a change *outside* every anchor that makes a claim false goes unnoticed. Anchor claims to the code that enforces them.
-- Token counts are tokenizer-free estimates.
-- The symbol locator is heuristic and dependency-free, not a full parser. It reports what it cannot resolve as missing rather than guessing, but unusual syntax can still produce a wrong range. A tree-sitter back-end is a possible future option.
-- The injection guard is pattern-based. It stops common attacks, not a determined adversary.
+- Token counts are tokenizer-free estimates unless `--tokenizer` is given, and budgets always use the estimate. On
+  this repository's context it was 11% above Groq's count for gpt-oss-120b (bench/c5/tokens-groq.txt); other
+  tokenizers differ.
+- The symbol locator is heuristic and dependency-free, not a full parser. It reports what it cannot resolve as missing rather than guessing, but unusual syntax can still produce a wrong range. The optional tree-sitter back-end (`--parser tree-sitter`) covers TypeScript, JavaScript and Python only, and the Python implementation (hcs-py) does not have it: it refuses files sealed with it.
+- The injection guard is pattern-based. It stops common attacks, not a determined adversary: on a held-out
+  set it caught 7 of 15 novel attacks (see README, Security).

@@ -1,0 +1,8 @@
+{
+  "op": "render",
+  "description": "A token budget keeps the most important claims (importance, then document order), in document order.",
+  "args": {
+    "budget": 60,
+    "seal_against": "src"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "items": [
+    {
+      "kind": "claim",
+      "id": "c1",
+      "status": "missing",
+      "anchors": [
+        {
+          "status": "missing"
+        }
+      ]
+    },
+    {
+      "kind": "claim",
+      "id": "c2",
+      "status": "missing",
+      "anchors": [
+        {
+          "status": "missing"
+        }
+      ]
+    },
+    {
+      "kind": "claim",
+      "id": "c3",
+      "status": "missing",
+      "anchors": [
+        {
+          "status": "missing"
+        }
+      ]
+    }
+  ]
+}

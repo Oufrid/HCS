@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { checkAnchor, checkDocument, hashLines, normalizeLines, seal, SourceCache } from "../src/anchors.js";
+import { checkAnchor, checkDocument, hashLines, normalizeLines, rootDir, seal, SourceCache } from "../src/anchors.js";
 import { findPathReferences } from "../src/audit.js";
 import { parse, serialize, HcsSyntaxError } from "../src/format.js";
 import { estimateTokens, renderContext, selectClaims } from "../src/render.js";
@@ -52,7 +52,7 @@ test("parse and serialize round-trip", () => {
 });
 
 test("parse rejects malformed files with line numbers", () => {
-  assert.throws(() => parse("[claims]\n"), /missing "HCS\/0.2"/);
+  assert.throws(() => parse("[claims]\n"), /missing "HCS\/0.3"/);
   assert.throws(() => parse("HCS/9.0\n"), /unsupported version/);
   assert.throws(() => parse("HCS/0.1\n[claims]\n#a x\n#a y\n"), (e: unknown) => e instanceof HcsSyntaxError && e.line === 4);
   assert.throws(() => parse("HCS/0.1\n[claims]\n#a x\n  > f.ts:9-3\n"), /invalid line range/);
@@ -131,6 +131,13 @@ test("chunking, quote location and ignore globs", () => {
   assert.deepEqual(locateQuote(c, "return 1 + 2;"), { start: 2, end: 3 });
   assert.equal(locateQuote(c, "return 3"), null);
 
+  // Real Gemini quotes of README.md dropped the Markdown markup; the words still have to match.
+  const md = chunkFile("README.md", "# T\n\n- **Fidelity** comes with a 95% bootstrap CI.\n\n`hcs serve project.hcs` is a [Model Context Protocol](https://modelcontextprotocol.io) server.\nIt\u2019s \u201cfast\u201d.\n")[0];
+  assert.deepEqual(locateQuote(md, "Fidelity comes with a 95% bootstrap CI."), { start: 3, end: 3 });
+  assert.deepEqual(locateQuote(md, "hcs serve project.hcs is a Model Context Protocol server."), { start: 5, end: 5 });
+  assert.deepEqual(locateQuote(md, `It's "fast".`), { start: 6, end: 6 });
+  assert.equal(locateQuote(md, "Fidelity comes with a 99% bootstrap CI."), null, "words must still match");
+
   assert.ok(globToRegExp("*.lock").test("deep/dir/yarn.lock"));
   assert.ok(globToRegExp("node_modules/").test("a/node_modules/x.js"));
   assert.ok(globToRegExp("/src/gen/**").test("src/gen/a/b.ts"));
@@ -171,5 +178,15 @@ test("audit finds broken file references", () => {
     refs.map((r) => [r.path, r.exists, r.bare]),
     [["src/rates.ts", true, false], ["docs/policy.md", true, false], ["src/legacy/old.ts", false, false], ["NOTES.md", false, true]],
   );
+  rmSync(dir, { recursive: true });
+});
+
+test("check reports claims as missing, without crashing, when @root does not exist", () => {
+  // Found in CI: bench/a1/*.hcs point to a worktree that only exists on the machine that made them.
+  const dir = tempProject({ "project.hcs": "HCS/0.2\n@root ../nowhere\n[claims]\n#c1 Moved symbol?\n  > a.ts::f #0123456789ab\n#c2 Line.\n  > a.ts:1 #0123456789ab\n" });
+  const doc = parse(readFileSync(join(dir, "project.hcs"), "utf8"));
+  const reports = checkDocument(doc, new SourceCache(rootDir(doc, join(dir, "project.hcs"))));
+  assert.deepEqual(reports.map((r) => r.status), ["missing", "missing"]);
+  assert.deepEqual(collectSources(join(dir, "nowhere")), []);
   rmSync(dir, { recursive: true });
 });

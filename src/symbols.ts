@@ -14,6 +14,23 @@ type Lang = "brace" | "python" | "markdown" | "yaml" | "json";
 
 type Flat = Omit<SymbolRange, "name"> & { short: string };
 
+/** Qualified symbols of a file from an optional back-end (tree-sitter), or null to use the heuristic. */
+export type SymbolBackend = (path: string, lines: string[]) => SymbolRange[] | null;
+
+let backend: SymbolBackend | undefined;
+let backendName = "heuristic";
+
+/** Replace the heuristic for the files a back-end handles (see src/treesitter.ts). Pass undefined to reset. */
+export function setSymbolBackend(fn: SymbolBackend | undefined, name = "heuristic"): void {
+  backend = fn;
+  backendName = fn ? name : "heuristic";
+}
+
+/** "heuristic" by default, or the name of the active back-end. */
+export function symbolBackend(): string {
+  return backendName;
+}
+
 export function languageOf(path: string): Lang {
   const ext = /\.([A-Za-z0-9]+)$/.exec(path)?.[1]?.toLowerCase() ?? "";
   if (["py", "pyi"].includes(ext)) return "python";
@@ -138,6 +155,16 @@ function regexClose(line: string, from: number): number {
   return -1;
 }
 
+/** Code of each line with string literals, regex literals and comments blanked out (state carried across lines). */
+export function codeLines(path: string, lines: string[]): string[] {
+  const st = newState(!/\.(rs|c|h|cc|cpp|hpp|cxx|java|kt|kts|scala|swift|cs|go|dart)$/i.test(path));
+  return lines.map((l) => {
+    const inside = st.comment || st.template;
+    const code = codeOnly(l, st);
+    return inside && !code ? "" : code;
+  });
+}
+
 /**
  * "block": a definition with a body; braces count only outside the parameter list, and a body must open.
  * "value": an initializer (const x = ...); all brackets count, and it ends at the statement's end.
@@ -153,7 +180,13 @@ function findEnd(lines: string[], startIdx: number, mode: EndMode, singleQuoteSt
   const opens = mode === "block" ? "{" : "{[(";
   const closes = mode === "block" ? "}" : "}])";
   for (let i = startIdx; i < lines.length && i < startIdx + 2000; i++) {
+    const inTemplate = st.template;
     const code = codeOnly(lines[i], st);
+    // A multi-line template literal in an initializer (`const HELP = \`...`) is a bracket of its own.
+    if (mode === "value" && !inTemplate && st.template) {
+      depth++;
+      opened = true;
+    } else if (mode === "value" && inTemplate && !st.template) depth--;
     for (const ch of code) {
       if (mode === "block" && ch === "(") parens++;
       else if (mode === "block" && ch === ")") parens = Math.max(0, parens - 1);
@@ -188,7 +221,9 @@ function braceSymbols(lines: string[], json: boolean, singleQuoteStrings: boolea
       const nested = /^\s/.test(code);
       BRACE_DEFS.some((re, k) => {
         const m = re.exec(code);
-        if (!m || CONTROL.has(m[1])) return false;
+        // After an explicit keyword (`fn new`, `def match`) the name is a definition even if it is a keyword
+        // elsewhere; the call-like patterns must skip control words (`if (`, `new Foo(`).
+        if (!m || (k !== 0 && CONTROL.has(m[1]))) return false;
         // Local variables are not useful anchors; only top-level const/let/var count.
         if (k === 1 && nested) return false;
         // A call taking a callback (`test("x", () => {`) is not a definition.
@@ -255,6 +290,8 @@ function markdownSymbols(lines: string[]): (Flat & { level: number })[] {
 /** All symbols in a file with qualified names derived from nesting. */
 export function listSymbols(path: string, lines: string[]): SymbolRange[] {
   const lang = languageOf(path);
+  const parsed = backend?.(path, lines);
+  if (parsed) return parsed;
   let flat: Flat[];
   if (lang === "markdown") {
     // Headings are addressed by their own text; nesting would make names fragile.

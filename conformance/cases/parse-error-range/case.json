@@ -1,0 +1,4 @@
+{
+  "op": "parse",
+  "description": "An anchor range must not be reversed."
+}

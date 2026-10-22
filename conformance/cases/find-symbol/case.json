@@ -1,0 +1,40 @@
+{
+  "op": "find",
+  "description": "Qualified names, unique unqualified tails, ambiguous tails and case-insensitive Markdown headings.",
+  "args": {
+    "queries": [
+      [
+        "a.ts",
+        "A.run"
+      ],
+      [
+        "a.ts",
+        "B.run"
+      ],
+      [
+        "a.ts",
+        "run"
+      ],
+      [
+        "a.ts",
+        "stop"
+      ],
+      [
+        "a.ts",
+        "nope"
+      ],
+      [
+        "g.md",
+        "refund policy"
+      ],
+      [
+        "g.md",
+        "Refund Policy"
+      ],
+      [
+        "g.md",
+        "Title"
+      ]
+    ]
+  }
+}

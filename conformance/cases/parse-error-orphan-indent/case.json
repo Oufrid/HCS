@@ -1,0 +1,4 @@
+{
+  "op": "parse",
+  "description": "An indented line before any claim is an error."
+}

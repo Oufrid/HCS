@@ -1,0 +1,8 @@
+incremental: 14 files unchanged, 1 to compile
+[1/2] src/symbols.ts:1-233 -> 6 claims, 3 probes
+[2/2] src/symbols.ts:234-302 -> 8 claims, 3 probes
+wrote groq.hcs: 165 claims, 40 probes from 15 files (1 compiled)
+  rejected by quote verification: 2/16 claims, 0/6 probes
+  context ~8356 tokens for ~57630 tokens of source. Next: hcs score groq.hcs --model groq:openai/gpt-oss-20b --baseline --write
+usage groq:openai/gpt-oss-20b: 3 requests, 12217 input + 17147 output tokens (as reported by the provider); 1 replies cut by the output limit (reasoning models: try --reasoning-effort low)
+exit=0

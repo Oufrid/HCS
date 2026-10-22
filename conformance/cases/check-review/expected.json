@@ -1,0 +1,24 @@
+{
+  "items": [
+    {
+      "kind": "claim",
+      "id": "fee",
+      "status": "review",
+      "anchors": [
+        {
+          "status": "review"
+        }
+      ]
+    },
+    {
+      "kind": "claim",
+      "id": "total",
+      "status": "review",
+      "anchors": [
+        {
+          "status": "review"
+        }
+      ]
+    }
+  ]
+}

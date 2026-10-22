@@ -1,0 +1,9 @@
+HCS/0.2
+@root src
+[claims]
+#a Fee.
+  > rates.ts::fee
+#b Base.
+  > rates.ts::base
+#c Lines.
+  > util.ts:1-3

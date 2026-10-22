@@ -1,9 +1,13 @@
 // Parser and serializer for the .hcs text format (see SPEC.md).
 
-export const FORMAT_VERSION = "0.2";
+export const FORMAT_VERSION = "0.3";
 export const MAGIC = `HCS/${FORMAT_VERSION}`;
-/** Versions this reader accepts. 0.2 added `path::Symbol` anchors; 0.1 files are valid 0.2 files. */
-export const SUPPORTED_VERSIONS = ["0.1", "0.2"];
+/**
+ * Versions this reader accepts. 0.2 added `path::Symbol` anchors, 0.3 added probe tags (`?id[known] ...`),
+ * dependency hashes and the `@parser` header.
+ * Older files are valid newer files. The writer emits the oldest version that can express the document.
+ */
+export const SUPPORTED_VERSIONS = ["0.1", "0.2", "0.3"];
 
 export interface Anchor {
   path: string;
@@ -14,6 +18,8 @@ export interface Anchor {
   end?: number;
   /** Truncated SHA-256 of the normalized anchored text; undefined means unsealed. */
   hash?: string;
+  /** (since 0.3, symbol anchors) Hash of the symbols this symbol uses directly; written `#hash/deps`. */
+  deps?: string;
 }
 
 export interface Claim {
@@ -30,6 +36,8 @@ export interface Probe {
   answer: string;
   anchors: Anchor[];
   claims: string[];
+  /** Optional tags (since 0.3), e.g. `known`: models answer it correctly without any context. */
+  tags?: string[];
 }
 
 export interface Certificate {
@@ -61,7 +69,7 @@ export function emptyDocument(title = "Untitled"): HcsDocument {
   };
 }
 
-const ANCHOR_RE = /^(?:"([^"]+)"|([^\s"]+?))(?:::(?:"([^"]+)"|([^\s"#]+))|:(\d+)(?:-(\d+))?)?(?:\s+#([0-9a-f]{6,64}))?$/;
+const ANCHOR_RE = /^(?:"([^"]+)"|([^\s"]+?))(?:::(?:"([^"]+)"|([^\s"#]+))|:(\d+)(?:-(\d+))?)?(?:\s+#([0-9a-f]{6,64})(?:\/([0-9a-f]{6,64}))?)?$/;
 
 export function parseAnchor(raw: string, line = 0): Anchor {
   const m = ANCHOR_RE.exec(raw.trim());
@@ -78,6 +86,7 @@ export function parseAnchor(raw: string, line = 0): Anchor {
     }
   }
   if (m[7]) anchor.hash = m[7];
+  if (m[8]) anchor.deps = m[8];
   return anchor;
 }
 
@@ -85,7 +94,7 @@ export function formatAnchor(a: Anchor, withHash = true): string {
   let s = /\s/.test(a.path) ? `"${a.path}"` : a.path;
   if (a.symbol !== undefined) s += /[\s"#]/.test(a.symbol) ? `::"${a.symbol.replace(/"/g, "'")}"` : `::${a.symbol}`;
   else if (a.start !== undefined) s += a.end !== undefined && a.end !== a.start ? `:${a.start}-${a.end}` : `:${a.start}`;
-  if (withHash && a.hash) s += ` #${a.hash}`;
+  if (withHash && a.hash) s += ` #${a.hash}${a.deps ? `/${a.deps}` : ""}`;
   return s;
 }
 
@@ -136,9 +145,9 @@ export function parse(text: string): HcsDocument {
     }
 
     if (block === "certificates") {
-      const m = /^!score\s+(.*)$/.exec(t);
+      const m = /^!score(?:\s+(.*))?$/.exec(t);
       if (!m) throw new HcsSyntaxError(n, `expected "!score key=value ...", got "${t}"`);
-      doc.certificates.push({ fields: parseKeyValues(m[1]) });
+      doc.certificates.push({ fields: parseKeyValues(m[1] ?? "") });
       continue;
     }
 
@@ -150,12 +159,13 @@ export function parse(text: string): HcsDocument {
       } else if (block === "probes" && t.startsWith("=")) {
         const p = current as Probe;
         const ans = t.slice(1).trim();
-        p.answer = p.answer ? `${p.answer} ${ans}` : ans;
+        if (ans) p.answer = p.answer ? `${p.answer} ${ans}` : ans;
       } else if (block === "probes" && t.startsWith("~")) {
         (current as Probe).claims.push(...t.slice(1).trim().split(/[\s,]+/).filter(Boolean));
       } else if (t.startsWith("|")) {
         // Continuation of the claim text or probe question.
         const more = t.slice(1).trim();
+        if (!more) continue;
         if (block === "claims") (current as Claim).text += ` ${more}`;
         else (current as Probe).question += ` ${more}`;
       } else {
@@ -187,11 +197,13 @@ export function parse(text: string): HcsDocument {
     }
 
     // probes
-    const m = /^\?([A-Za-z0-9_.-]+)\s+(.+)$/.exec(t);
+    const m = /^\?([A-Za-z0-9_.-]+)(?:\[([^\]]*)\])?\s+(.+)$/.exec(t);
     if (!m) throw new HcsSyntaxError(n, `expected a probe "?id question", got "${t}"`);
     if (ids.has(m[1])) throw new HcsSyntaxError(n, `duplicate id "${m[1]}"`);
     ids.add(m[1]);
-    const probe: Probe = { id: m[1], question: m[2].trim(), answer: "", anchors: [], claims: [] };
+    const probe: Probe = { id: m[1], question: m[3].trim(), answer: "", anchors: [], claims: [] };
+    const tags = m[2]?.split(",").map((x) => x.trim()).filter(Boolean);
+    if (tags?.length) probe.tags = tags;
     doc.probes.push(probe);
     current = probe;
   }
@@ -203,7 +215,9 @@ export function parse(text: string): HcsDocument {
 }
 
 export function serialize(doc: HcsDocument): string {
-  const out: string[] = [MAGIC];
+  const needs03 =
+    "parser" in doc.headers || doc.probes.some((p) => p.tags?.length) || [...doc.claims, ...doc.probes].some((i) => i.anchors.some((a) => a.deps));
+  const out: string[] = [needs03 ? MAGIC : "HCS/0.2"];
   const order = ["title", "root", "created", "updated", "generator", "source-files", "source-tokens"];
   const keys = [...order.filter((k) => k in doc.headers), ...Object.keys(doc.headers).filter((k) => !order.includes(k))];
   for (const k of keys) out.push(`@${k} ${doc.headers[k]}`.trimEnd());
@@ -225,7 +239,7 @@ export function serialize(doc: HcsDocument): string {
   if (doc.probes.length) {
     out.push("", "[probes]");
     for (const p of doc.probes) {
-      out.push(`?${p.id} ${p.question}`, `  = ${p.answer}`);
+      out.push(`?${p.id}${p.tags?.length ? `[${p.tags.join(",")}]` : ""} ${p.question}`, `  = ${p.answer}`);
       for (const a of p.anchors) out.push(`  > ${formatAnchor(a)}`);
       if (p.claims.length) out.push(`  ~ ${p.claims.join(" ")}`);
     }
@@ -240,6 +254,8 @@ export function serialize(doc: HcsDocument): string {
   return out.join("\n") + "\n";
 }
 
+/** Key=value values have no escapes: double quotes become single quotes, then values with spaces are quoted. */
 function quote(v: string): string {
-  return /[\s"]/.test(v) ? `"${v.replace(/"/g, "'")}"` : v;
+  const safe = v.replace(/"/g, "'");
+  return /\s/.test(safe) ? `"${safe}"` : safe;
 }

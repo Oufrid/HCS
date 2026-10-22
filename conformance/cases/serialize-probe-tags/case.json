@@ -1,0 +1,4 @@
+{
+  "op": "serialize",
+  "description": "A document with probe tags is written as HCS/0.3; one without as HCS/0.2."
+}

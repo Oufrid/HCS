@@ -1,0 +1,8 @@
+{
+  "op": "render",
+  "description": "keepStale renders stale claims marked (unverified).",
+  "args": {
+    "keepStale": true,
+    "seal_against": "src"
+  }
+}

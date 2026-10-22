@@ -1,0 +1,39 @@
+{
+  "symbols": [
+    {
+      "name": "Cart",
+      "start": 4,
+      "end": 15
+    },
+    {
+      "name": "Cart.__init__",
+      "start": 7,
+      "end": 8
+    },
+    {
+      "name": "Cart.size",
+      "start": 10,
+      "end": 12
+    },
+    {
+      "name": "Cart.total",
+      "start": 14,
+      "end": 15
+    },
+    {
+      "name": "helper",
+      "start": 18,
+      "end": 22
+    },
+    {
+      "name": "helper.inner",
+      "start": 19,
+      "end": 20
+    },
+    {
+      "name": "decorated",
+      "start": 25,
+      "end": 27
+    }
+  ]
+}

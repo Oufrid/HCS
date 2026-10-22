@@ -2,12 +2,12 @@
 
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { checkDocument, hashLines, hashSymbolLines, SourceCache, seal } from "./anchors.js";
+import { checkDocument, hashLines, hashSymbolLines, recordParser, SourceCache, seal } from "./anchors.js";
 import { emptyDocument, formatAnchor, type Anchor, type Claim, type HcsDocument, type Probe } from "./format.js";
-import { extractJSON, mapLimit, type LLM } from "./llm.js";
+import { extractJSON, mapLimit, QuotaError, type LLM } from "./llm.js";
 import { estimateTokens } from "./render.js";
 import { chunkFile, collectSources, locateQuote, numbered, profileFor, type Chunk, type Profile } from "./sources.js";
-import { isHighRisk, SUSPECT_TAG } from "./guard.js";
+import { isHighRisk, scanSource, SUSPECT_TAG, type SourceFinding } from "./guard.js";
 import { enclosingSymbol } from "./symbols.js";
 
 export interface CompileOptions {
@@ -45,6 +45,15 @@ export interface CompileStats {
   probesRejected: number;
   claimsKept: number;
   sourceTokens: number;
+  /** Lines of the compiled sources that look like instructions aimed at a model. */
+  sourceFindings: SourceFinding[];
+  /**
+   * Set when the quota ran out mid-run or replies were unusable: the chunks (`path:start-end`) not compiled, also
+   * written to the `@incomplete` header so that `compile --update` finishes them later, and why.
+   */
+  incomplete?: { chunks: string[]; reason: string };
+  /** Set when the overview step failed; the extracted claims are kept and `--update` tries again. */
+  overview?: string;
 }
 
 /** Longest anchor range a claim may have; wider ranges go stale on unrelated edits. */
@@ -97,7 +106,7 @@ interface RawProbe {
   lines?: unknown;
 }
 
-function anchorFor(chunk: Chunk, quote: unknown, lines: unknown, fileLines?: string[]): Anchor | null {
+export function anchorFor(chunk: Chunk, quote: unknown, lines: unknown, fileLines?: string[]): Anchor | null {
   if (typeof quote !== "string") return null;
   const at = locateQuote(chunk, quote);
   if (!at) return null;
@@ -122,16 +131,20 @@ interface Extracted {
   probes: Probe[];
   proposedClaims: number;
   proposedProbes: number;
+  /** The reply contained no parsable JSON. */
+  unusable?: boolean;
 }
 
 async function extractChunk(llm: LLM, chunk: Chunk, profile: Profile, opts: CompileOptions, fileLines?: string[]): Promise<Extracted> {
   const { system, prompt } = extractionPrompt(chunk, profile, opts.claimsPerChunk ?? 8, opts.probesPerChunk ?? 3);
-  const reply = await llm.complete({ system, prompt, maxTokens: 3000 });
+  // Generous cap: reasoning models spend part of it on hidden reasoning, and unused tokens cost nothing.
+  const reply = await llm.complete({ system, prompt, maxTokens: 8192 });
   let data: { claims?: RawClaim[]; probes?: RawProbe[] };
   try {
     data = extractJSON(reply);
   } catch {
-    return { claims: [], probes: [], proposedClaims: 0, proposedProbes: 0 };
+    // Truncated or malformed output: the chunk is retried by `--update` instead of silently yielding nothing.
+    return { claims: [], probes: [], proposedClaims: 0, proposedProbes: 0, unusable: true };
   }
   const rawClaims = Array.isArray(data.claims) ? data.claims : [];
   const rawProbes = Array.isArray(data.probes) ? data.probes : [];
@@ -157,7 +170,7 @@ async function extractChunk(llm: LLM, chunk: Chunk, profile: Profile, opts: Comp
   return { claims, probes, proposedClaims: rawClaims.length, proposedProbes: rawProbes.length };
 }
 
-function oneLine(s: string): string {
+export function oneLine(s: string): string {
   return s.replace(/\s+/g, " ").trim();
 }
 
@@ -178,13 +191,13 @@ Below are verified claims extracted from the sources. Write up to 8 overview cla
 Return: {"overview":[{"text":"one sentence, max 40 words","supports":["c3","c17"]}]}
 
 ${listing}`,
-    maxTokens: 2000,
+    maxTokens: 4096,
   });
   let data: { overview?: { text?: unknown; supports?: unknown }[] };
   try {
     data = extractJSON(reply);
   } catch {
-    return [];
+    throw new Error(`overview reply had no usable JSON (${reply.trim() ? "malformed or truncated" : "empty"})`);
   }
   const byId = new Map(claims.map((c) => [c.id, c]));
   const out: Claim[] = [];
@@ -228,16 +241,23 @@ export async function compile(opts: CompileOptions): Promise<{ doc: HcsDocument;
   const cache = new SourceCache(root);
 
   // Incremental mode: keep what still verifies, re-read only files that changed or are new.
+  const chunkLines = opts.chunkLines ?? 250;
+  const texts = new Map(files.map((f) => [f, readFileSync(resolve(root, f), "utf8")]));
+  const chunkKey = (c: Chunk) => `${c.path}:${c.start}-${c.end}`;
+
+  // Incremental mode: keep what still verifies, re-read only files that changed or are new.
   let kept: Claim[] = [];
   let keptProbes: Probe[] = [];
   let toCompile = files;
+  /** Unchanged files that a quota-interrupted run left unfinished: only their missing chunks are compiled. */
+  const resume = new Map<string, Set<string>>();
   if (opts.previous) {
     const prev = structuredClone(opts.previous);
     seal(prev, cache); // follow moved anchors
     const status = new Map(checkDocument(prev, cache).map((r) => [`${r.kind}:${r.id}`, r.status]));
     const fresh = (kind: string, id: string) => {
       const s = status.get(`${kind}:${id}`);
-      return s === "ok" || s === "moved";
+      return s === "ok" || s === "moved" || s === "review";
     };
     const dirty = new Set<string>();
     for (const item of [...prev.claims, ...prev.probes]) {
@@ -247,8 +267,16 @@ export async function compile(opts: CompileOptions): Promise<{ doc: HcsDocument;
     // Hand-written claims do not count: a file only they cite was never machine-compiled.
     const generated = [...prev.claims.filter((c) => !c.tags.includes("manual")), ...prev.probes];
     const covered = new Set(generated.flatMap((i) => i.anchors.map((a) => a.path)));
-    toCompile = files.filter((f) => dirty.has(f) || !covered.has(f));
-    const recompiled = new Set(toCompile);
+    for (const key of (prev.headers.incomplete ?? "").split(",").filter(Boolean)) {
+      const path = key.replace(/:\d+-\d+$/, "");
+      if (!texts.has(path)) continue;
+      // Resume chunk by chunk only if the file still splits into the same chunks; otherwise redo the file.
+      const same = chunkFile(path, texts.get(path)!, chunkLines).some((c) => chunkKey(c) === key);
+      if (same && covered.has(path) && !dirty.has(path)) resume.set(path, (resume.get(path) ?? new Set()).add(key));
+      else dirty.add(path);
+    }
+    toCompile = files.filter((f) => dirty.has(f) || !covered.has(f) || resume.has(f));
+    const recompiled = new Set(toCompile.filter((f) => !resume.has(f)));
     const touchesRecompiled = (i: Claim | Probe) => i.anchors.some((a) => recompiled.has(a.path));
     kept = prev.claims.filter((c) => {
       if (c.tags.includes("manual")) return true; // human claims are never dropped automatically
@@ -256,24 +284,53 @@ export async function compile(opts: CompileOptions): Promise<{ doc: HcsDocument;
       return fresh("claim", c.id) && !touchesRecompiled(c);
     });
     keptProbes = prev.probes.filter((p) => fresh("probe", p.id) && !touchesRecompiled(p));
-    log(`incremental: ${files.length - toCompile.length} files unchanged, ${toCompile.length} to compile`);
+    log(`incremental: ${files.length - toCompile.length} files unchanged, ${toCompile.length} to compile${resume.size ? ` (${resume.size} resumed after a quota stop)` : ""}`);
   }
 
   const chunks: { chunk: Chunk; profile: Profile }[] = [];
   let sourceTokens = 0;
+  const sourceFindings: SourceFinding[] = [];
   for (const f of files) {
-    const text = readFileSync(resolve(root, f), "utf8");
+    const text = texts.get(f)!;
     sourceTokens += estimateTokens(text);
     if (!toCompile.includes(f)) continue;
+    sourceFindings.push(...scanSource(f, text));
     const profile = profileFor(f, text);
-    for (const chunk of chunkFile(f, text, opts.chunkLines ?? 250)) chunks.push({ chunk, profile });
+    const only = resume.get(f);
+    for (const chunk of chunkFile(f, text, chunkLines)) if (!only || only.has(chunkKey(chunk))) chunks.push({ chunk, profile });
   }
 
   let done = 0;
+  // A free-tier quota can run out mid-run. Keep what was extracted, stop sending requests, and record the
+  // chunks that were not compiled (`@incomplete`) so that `--update` resumes exactly there.
+  let quota: QuotaError | undefined;
+  const unfinished: string[] = [];
+  let unusable = 0;
   const results = await mapLimit(chunks, opts.concurrency ?? 4, async ({ chunk, profile }) => {
+    const empty = { claims: [], probes: [], proposedClaims: 0, proposedProbes: 0 };
+    if (quota) {
+      unfinished.push(chunkKey(chunk));
+      return empty;
+    }
     const fileLines = opts.anchorMode === "lines" ? undefined : cache.lines(chunk.path) ?? undefined;
-    const r = await extractChunk(opts.llm, chunk, profile, opts, fileLines);
-    log(`[${++done}/${chunks.length}] ${chunk.path}:${chunk.start}-${chunk.end} -> ${r.claims.length} claims, ${r.probes.length} probes`);
+    let r: Awaited<ReturnType<typeof extractChunk>>;
+    try {
+      r = await extractChunk(opts.llm, chunk, profile, opts, fileLines);
+    } catch (e) {
+      // Any provider failure (quota, overload, a request the provider refuses) stops the run without losing
+      // what was already extracted.
+      quota ??= e instanceof QuotaError ? e : new QuotaError(e instanceof Error ? e.message : String(e));
+      unfinished.push(chunkKey(chunk));
+      log(`[${++done}/${chunks.length}] ${chunkKey(chunk)} -> not compiled: ${e instanceof QuotaError ? "quota exhausted" : "provider error"}`);
+      return empty;
+    }
+    if (r.unusable) {
+      unusable++;
+      unfinished.push(chunkKey(chunk));
+      log(`[${++done}/${chunks.length}] ${chunkKey(chunk)} -> no usable JSON in the reply (truncated or malformed)`);
+      return r;
+    }
+    log(`[${++done}/${chunks.length}] ${chunkKey(chunk)} -> ${r.claims.length} claims, ${r.probes.length} probes`);
     return r;
   });
 
@@ -291,11 +348,20 @@ export async function compile(opts: CompileOptions): Promise<{ doc: HcsDocument;
   claims = sortBySection(claims);
   renumber(claims);
 
-  if (opts.synthesize !== false) {
-    const overview = await synthesize(opts.llm, claims, doc.headers.title);
-    if (overview.length) log(`synthesized ${overview.length} overview claims`);
-    claims = [...overview, ...claims];
-    renumber(claims);
+  let overviewNote: string | undefined;
+  if (opts.synthesize !== false && !quota) {
+    try {
+      const overview = await synthesize(opts.llm, claims, doc.headers.title);
+      if (overview.length) log(`synthesized ${overview.length} overview claims`);
+      claims = [...overview, ...claims];
+      renumber(claims);
+    } catch (e) {
+      // Overview claims are optional: report the failure, keep the extracted claims, and let --update retry.
+      const reason = e instanceof Error ? e.message : String(e);
+      if (e instanceof QuotaError) quota = e;
+      overviewNote = `not synthesized: ${reason.slice(0, 200)}`;
+      log(`overview ${overviewNote}`);
+    }
   }
 
   const maxProbes = opts.maxProbes ?? 40;
@@ -313,6 +379,8 @@ export async function compile(opts: CompileOptions): Promise<{ doc: HcsDocument;
   doc.headers.generator = `hcs-cli compile (${opts.llm.id})`;
   doc.headers["source-files"] = String(files.length);
   doc.headers["source-tokens"] = String(sourceTokens);
+  if (unfinished.length) doc.headers.incomplete = unfinished.sort().join(",");
+  else delete doc.headers.incomplete;
 
   const stats: CompileStats = {
     files: files.length,
@@ -324,7 +392,14 @@ export async function compile(opts: CompileOptions): Promise<{ doc: HcsDocument;
     probesRejected: results.reduce((n, r) => n + r.proposedProbes - r.probes.length, 0),
     claimsKept: kept.length,
     sourceTokens,
+    sourceFindings,
+    ...(overviewNote ? { overview: overviewNote } : {}),
   };
+  if (quota || unfinished.length) {
+    const reasons = [quota?.message, unusable ? `${unusable} chunk(s) returned no usable JSON (truncated or malformed reply)` : undefined];
+    stats.incomplete = { chunks: unfinished, reason: reasons.filter(Boolean).join("; ") };
+  }
+  recordParser(doc);
   return { doc, stats };
 }
 

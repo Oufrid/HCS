@@ -1,0 +1,16 @@
+{
+  "certificates": [
+    {
+      "digest": "12632209b462",
+      "current": true
+    },
+    {
+      "digest": "bc0d2cd34c78",
+      "current": true
+    },
+    {
+      "digest": "12632209b462",
+      "current": false
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "op": "render",
+  "description": "A tight budget keeps only what fits, highest importance first.",
+  "args": {
+    "budget": 40,
+    "seal_against": "src"
+  }
+}

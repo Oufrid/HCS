@@ -1,0 +1,5 @@
+{
+  "op": "check",
+  "description": "When @root names a directory that does not exist, every anchor is missing (no crash, no moved symbol search).",
+  "args": {}
+}

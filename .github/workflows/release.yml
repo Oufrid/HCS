@@ -1,0 +1,90 @@
+# Publishes a release. It runs only when a maintainer pushes a version tag (v0.3.0) or starts it by hand with
+# dry_run; nothing here runs on ordinary pushes. Needs the NPM_TOKEN secret, and PyPI trusted publishing set up
+# for this repository and workflow (https://docs.pypi.org/trusted-publishers/).
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Build and check everything, publish nothing"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: npm ci --no-audit --no-fund
+      - run: npm test
+      - run: npm run conformance
+      - run: python -m unittest discover -s python/tests
+      - run: node dist/src/cli.js check project.hcs --strict
+      - name: The tag matches every version number
+        if: github.event_name == 'push'
+        run: |
+          v="${GITHUB_REF_NAME#v}"
+          test "$(node -p 'require("./package.json").version')" = "$v"
+          grep -q "const VERSION = \"$v\"" src/cli.ts
+          grep -q "version = \"$v\"" python/pyproject.toml
+          grep -q "^## $v" CHANGELOG.md
+
+  npm:
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # npm provenance
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+      - run: npm ci --no-audit --no-fund && npm run build
+      - run: npm publish --provenance --access public ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run && '--dry-run' || '' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  pypi:
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # PyPI trusted publishing
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install build && python -m build python --outdir dist-py
+      - if: github.event_name == 'push' || !inputs.dry_run
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist-py
+
+  github-release:
+    needs: [npm, pypi]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Release notes from CHANGELOG.md
+        run: awk -v v="## ${GITHUB_REF_NAME#v}" 'index($0, v) == 1 {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
+      - run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file notes.md
+        env:
+          GH_TOKEN: ${{ github.token }}

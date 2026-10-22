@@ -1,0 +1,7 @@
+{
+  "op": "symbols",
+  "description": "YAML keys qualified by nesting.",
+  "args": {
+    "file": "ci.yml"
+  }
+}

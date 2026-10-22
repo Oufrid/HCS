@@ -1,5 +1,7 @@
 // Minimal, dependency-free LLM clients. Any OpenAI-compatible server works through the `openai` provider.
 
+import { appendFileSync } from "node:fs";
+
 export interface CompletionRequest {
   system: string;
   prompt: string;
@@ -10,6 +12,10 @@ export interface Usage {
   requests: number;
   inputTokens: number;
   outputTokens: number;
+  /** Requests repeated because a reasoning model's hidden reasoning used the whole output budget. */
+  retriedForReasoning?: number;
+  /** Replies cut by the output limit (finish_reason "length") that were still returned. */
+  truncated?: number;
 }
 
 export interface LLM {
@@ -18,14 +24,29 @@ export interface LLM {
   complete(req: CompletionRequest): Promise<string>;
   /** Requests and tokens reported by the provider so far (tokens are 0 when the provider does not report them). */
   usage?: Usage;
+  /**
+   * Tokens of `text` for this model's own tokenizer, when the provider can tell (see `tokenCounting`). Optional:
+   * budgets and digests always use the deterministic estimate; a real count is only reported.
+   */
+  countTokens?(text: string): Promise<number>;
+  /** "endpoint": a free counting endpoint; "usage": a 1-token completion whose reported prompt size is read. */
+  tokenCounting?: "endpoint" | "usage";
+  /** Set by providers whose raw count includes the message framing; `createLLM` then subtracts it. */
+  countIncludesFraming?: boolean;
 }
 
 export interface LLMOptions {
   /** Maximum requests per minute for this model; also read from HCS_RPM. Free tiers need this. */
   rpm?: number;
+  /**
+   * Sent as `reasoning_effort` to OpenAI-compatible APIs (also read from HCS_REASONING_EFFORT). Reasoning models
+   * can spend most of the output budget thinking; "low" keeps answers whole. Accepted values depend on the
+   * model (Gemini 3: low/medium/high; Groq gpt-oss: low/medium/high; Groq qwen: none/default), so no default.
+   */
+  reasoningEffort?: string;
 }
 
-type Factory = (model: string, spec: string, usage: Usage) => LLM;
+type Factory = (model: string, spec: string, usage: Usage, opts: LLMOptions) => LLM;
 
 const providers = new Map<string, Factory>();
 
@@ -58,19 +79,59 @@ export function createLLM(spec: string, opts: LLMOptions = {}): LLM {
   const factory = providers.get(name);
   if (!factory) throw new Error(`unknown provider "${name}". Known: ${providerNames().join(", ")}`);
   const usage: Usage = { requests: 0, inputTokens: 0, outputTokens: 0 };
-  const llm = factory(spec.slice(i + 1), spec, usage);
+  const reasoningEffort = opts.reasoningEffort ?? env("HCS_REASONING_EFFORT");
+  const llm = withDebugLog(factory(spec.slice(i + 1), spec, usage, { ...opts, reasoningEffort }));
   llm.usage = usage;
   const rpm = opts.rpm ?? (env("HCS_RPM") ? Number(env("HCS_RPM")) : undefined);
-  if (!rpm || !(rpm > 0)) return llm;
   // One limiter per model spec, shared by every client of that model in the process.
-  if (!limiters.has(spec)) limiters.set(spec, new RateLimiter(60_000 / rpm));
-  const limiter = limiters.get(spec)!;
+  if (rpm && rpm > 0 && !limiters.has(spec)) limiters.set(spec, new RateLimiter(60_000 / rpm));
+  const limiter = rpm && rpm > 0 ? limiters.get(spec)! : undefined;
+  const raw = llm.countTokens?.bind(llm);
+  const limited = raw && (async (text: string) => (await limiter?.wait(), raw(text)));
   return {
     id: llm.id,
     usage,
     async complete(req) {
-      await limiter.wait();
+      await limiter?.wait();
       return llm.complete(req);
+    },
+    ...(limited ? { tokenCounting: llm.tokenCounting, countTokens: llm.countIncludesFraming ? framedCounter(limited) : limited } : {}),
+  };
+}
+
+/**
+ * Counting a user message also counts the provider's message framing (role markers, chat template). Measure it
+ * once with a one-token message and subtract it, so the result is the text's own size.
+ */
+function framedCounter(raw: (text: string) => Promise<number>): (text: string) => Promise<number> {
+  let overhead: Promise<number> | undefined;
+  return async (text) => {
+    overhead ??= raw("x").then((n) => Math.max(0, n - 1));
+    const [n, o] = await Promise.all([raw(text), overhead]);
+    return Math.max(0, n - o);
+  };
+}
+
+/**
+ * With HCS_DEBUG_LOG=<file>, append every request and reply (or error) as one JSON line, to see exactly what a
+ * real model returned. Never contains keys: headers are not logged.
+ */
+function withDebugLog(llm: LLM): LLM {
+  const file = env("HCS_DEBUG_LOG");
+  if (!file) return llm;
+  return {
+    ...llm,
+    async complete(req) {
+      const t0 = Date.now();
+      const log = (entry: object) => appendFileSync(file, `${JSON.stringify({ model: llm.id, ms: Date.now() - t0, ...entry })}\n`);
+      try {
+        const reply = await llm.complete(req);
+        log({ request: req, reply });
+        return reply;
+      } catch (e) {
+        log({ request: req, error: e instanceof Error ? e.message : String(e) });
+        throw e;
+      }
     },
   };
 }
@@ -95,6 +156,23 @@ function proxyableKey(name: string): string | undefined {
   return env(name);
 }
 
+/**
+ * Explains an authentication failure. An egress proxy that injects a network secret reports its own view in an
+ * `x-proxy-error` header: then a key *was* sent, and the provider rejected it (wrong, revoked or mis-formatted).
+ * Without that header and without a key of ours, nothing authenticated the request.
+ */
+export function authHint(res: Response, headers: Record<string, string>, body: string): string {
+  const proxy = res.headers.get("x-proxy-error");
+  if (proxy) return ` (egress proxy: ${proxy}; the network secret for this host is set but was not accepted: check its value and format)`;
+  // Some APIs answer 404 to unauthenticated calls; a 404 that names a model is about the model, not the key.
+  const authFailure =
+    [401, 403].includes(res.status) || (res.status === 404 && !/model/i.test(body)) || /authorization header|api key|unregistered callers/i.test(body);
+  if (authFailure && !headers.authorization && !headers["x-api-key"]) {
+    return " (no API key was sent: set the provider's *_API_KEY variable, or a network secret for this host)";
+  }
+  return "";
+}
+
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 /** Longest wait we accept before retrying; anything longer means a daily quota is exhausted. */
@@ -114,6 +192,7 @@ export function retryDelayMs(headers: Headers, body: string): number | undefined
   return undefined;
 }
 
+/** The provider cannot serve more requests for now (quota exhausted, or still unavailable after retries). */
 export class QuotaError extends Error {}
 
 async function postJSON(url: string, headers: Record<string, string>, body: unknown, attempts = 6): Promise<any> {
@@ -131,23 +210,34 @@ async function postJSON(url: string, headers: Record<string, string>, body: unkn
     }
     if (res.ok) return res.json();
     const text = await res.text();
-    const hint =
-      (res.status === 401 || res.status === 403) && !headers.authorization && !headers["x-api-key"]
-        ? " (no API key was sent: set the provider's *_API_KEY variable, or a network secret for this host)"
-        : "";
-    lastErr = new Error(`HTTP ${res.status} from ${url}: ${text.slice(0, 500)}${hint}`);
+    lastErr = new Error(`HTTP ${res.status} from ${url}: ${text.slice(0, 500)}${authHint(res, headers, text)}`);
     if (res.status === 429 || res.status === 503) {
       const suggested = retryDelayMs(res.headers, text);
       if (suggested !== undefined && suggested > MAX_RETRY_WAIT_MS) {
-        throw new QuotaError(`rate limit or quota exhausted at ${url} (server asks to wait ${Math.round(suggested / 1000)}s). Try later, lower --rpm, or use another model.`);
+        const quota = /"quotaId"\s*:\s*"([^"]+)"/.exec(text)?.[1];
+        const limit = /"quotaValue"\s*:\s*"?(\d+)/.exec(text)?.[1];
+        // The billed model can differ from the requested one (Google serves some aliases with another model).
+        const billed = /"quotaDimensions"\s*:\s*\{[^}]*"model"\s*:\s*"([^"]+)"/.exec(text)?.[1];
+        // Without a Google quota id, keep the provider's own explanation (Groq names the limit in its message).
+        const said = /"message"\s*:\s*"([^"]{1,240})/.exec(text)?.[1];
+        const which = quota ? `; quota ${quota}${limit ? ` = ${limit}` : ""}${billed ? ` for model ${billed}` : ""}` : said ? `; ${said}` : "";
+        throw new QuotaError(`rate limit or quota exhausted at ${url} (server asks to wait ${Math.round(suggested / 1000)}s${which}). Try later, lower --rpm, or use another model.`);
       }
       wait = suggested;
       continue;
     }
     if (res.status < 500) break;
   }
+  // Still overloaded or failing after every retry: stop like a quota so that callers keep their partial work.
+  const message = lastErr instanceof Error ? lastErr.message : String(lastErr);
+  if (!/^HTTP 4\d\d /.test(message) || /^HTTP 429 /.test(message)) {
+    throw new QuotaError(`provider unavailable after ${attempts} attempts: ${message.slice(0, 300)}`);
+  }
   throw lastErr;
 }
+
+/** Output budget for the retry when a reasoning model used all its tokens before answering. */
+export const REASONING_BUDGET = 16384;
 
 function countUsage(usage: Usage, input: unknown, output: unknown): void {
   usage.requests++;
@@ -162,51 +252,110 @@ function openAICompatible(
   usage: Usage,
   apiKey?: string,
   extraHeaders: Record<string, string> = {},
+  opts: LLMOptions = {},
 ): LLM {
   const url = `${baseURL.replace(/\/+$/, "")}/chat/completions`;
   return {
     id,
     async complete(req) {
+      const call = async (maxTokens: number) => {
+        const data = await postJSON(url, { ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}), ...extraHeaders }, {
+          model,
+          temperature: 0,
+          max_tokens: maxTokens,
+          ...(opts.reasoningEffort ? { reasoning_effort: opts.reasoningEffort } : {}),
+          messages: [
+            { role: "system", content: req.system },
+            { role: "user", content: req.prompt },
+          ],
+        });
+        countUsage(usage, data?.usage?.prompt_tokens, data?.usage?.completion_tokens);
+        return data;
+      };
+      let maxTokens = req.maxTokens ?? 2048;
+      let data: any;
+      for (let shrink = 0; ; shrink++) {
+        try {
+          data = await call(maxTokens);
+          break;
+        } catch (e) {
+          // Groq counts prompt + max_tokens against its tokens-per-minute limit and answers 413 when the sum is
+          // over it ("Limit 8000, Requested 8856"). Its count varies between calls, so shrink the output cap by
+          // the reported excess plus a margin, a few times at most.
+          const m = /^HTTP 413 [\s\S]*?Limit (\d+), Requested (\d+)/.exec(e instanceof Error ? e.message : "");
+          const fitted = m ? maxTokens - (Number(m[2]) - Number(m[1])) - 256 : 0;
+          if (!m || fitted < 256 || shrink >= 3) throw e;
+          maxTokens = fitted;
+        }
+      }
+      // Reasoning models spend output tokens on hidden reasoning first. When that uses the whole budget the
+      // visible answer is empty (finish_reason "length"): retry once with room for the reasoning.
+      if (!data?.choices?.[0]?.message?.content && data?.choices?.[0]?.finish_reason === "length" && maxTokens < REASONING_BUDGET) {
+        usage.retriedForReasoning = (usage.retriedForReasoning ?? 0) + 1;
+        data = await call(REASONING_BUDGET);
+      }
+      const content = data?.choices?.[0]?.message?.content;
+      if (typeof content !== "string") throw new Error(`unexpected response from ${url}: ${JSON.stringify(data).slice(0, 300)}`);
+      if (data?.choices?.[0]?.finish_reason === "length") usage.truncated = (usage.truncated ?? 0) + 1;
+      return content;
+    },
+    tokenCounting: "usage",
+    countIncludesFraming: true,
+    async countTokens(text) {
       const data = await postJSON(url, { ...(apiKey ? { authorization: `Bearer ${apiKey}` } : {}), ...extraHeaders }, {
         model,
         temperature: 0,
-        max_tokens: req.maxTokens ?? 2048,
-        messages: [
-          { role: "system", content: req.system },
-          { role: "user", content: req.prompt },
-        ],
+        max_tokens: 1,
+        messages: [{ role: "user", content: text }],
       });
-      countUsage(usage, data?.usage?.prompt_tokens, data?.usage?.completion_tokens);
-      const content = data?.choices?.[0]?.message?.content;
-      if (typeof content !== "string") throw new Error(`unexpected response from ${url}: ${JSON.stringify(data).slice(0, 300)}`);
-      return content;
+      const n = data?.usage?.prompt_tokens;
+      countUsage(usage, n, data?.usage?.completion_tokens);
+      if (typeof n !== "number") throw new Error(`${id} does not report prompt tokens, so it cannot count tokens`);
+      return n;
     },
   };
 }
 
-registerProvider("openai", (model, spec, usage) =>
-  openAICompatible(spec, model, env("OPENAI_BASE_URL") ?? "https://api.openai.com/v1", usage, env("OPENAI_API_KEY")),
+registerProvider("openai", (model, spec, usage, opts) =>
+  openAICompatible(spec, model, env("OPENAI_BASE_URL") ?? "https://api.openai.com/v1", usage, env("OPENAI_API_KEY"), {}, opts),
 );
 
-registerProvider("ollama", (model, spec, usage) =>
-  openAICompatible(spec, model, `${(env("OLLAMA_HOST") ?? "http://localhost:11434").replace(/\/+$/, "")}/v1`, usage),
+registerProvider("ollama", (model, spec, usage, opts) =>
+  openAICompatible(spec, model, `${(env("OLLAMA_HOST") ?? "http://localhost:11434").replace(/\/+$/, "")}/v1`, usage, undefined, {}, opts),
 );
 
-registerProvider("gemini", (model, spec, usage) =>
-  openAICompatible(
+registerProvider("gemini", (model, spec, usage, opts) => {
+  const llm = openAICompatible(
     spec,
     model,
     env("GEMINI_BASE_URL") ?? "https://generativelanguage.googleapis.com/v1beta/openai",
     usage,
     proxyableKey("GEMINI_API_KEY"),
-  ),
+    {},
+    opts,
+  );
+  // The native API has a free countTokens method, but it only accepts the key as `x-goog-api-key`; with a key
+  // injected by a proxy (as a Bearer token) it refuses, and the 1-token completion of the OpenAI layer is used.
+  const key = env("GEMINI_API_KEY");
+  if (!key) return llm;
+  const url = `${(env("GEMINI_NATIVE_BASE_URL") ?? "https://generativelanguage.googleapis.com/v1beta").replace(/\/+$/, "")}/models/${model}:countTokens`;
+  return {
+    ...llm,
+    tokenCounting: "endpoint",
+    countIncludesFraming: false,
+    async countTokens(text) {
+      const data = await postJSON(url, { "x-goog-api-key": key }, { contents: [{ role: "user", parts: [{ text }] }] });
+      if (typeof data?.totalTokens !== "number") throw new Error(`unexpected response from ${url}: ${JSON.stringify(data).slice(0, 300)}`);
+      return data.totalTokens;
+    },
+  };
+});
+
+registerProvider("groq", (model, spec, usage, opts) =>
+  openAICompatible(spec, model, env("GROQ_BASE_URL") ?? "https://api.groq.com/openai/v1", usage, proxyableKey("GROQ_API_KEY"), {}, opts),
 );
 
-registerProvider("groq", (model, spec, usage) =>
-  openAICompatible(spec, model, env("GROQ_BASE_URL") ?? "https://api.groq.com/openai/v1", usage, proxyableKey("GROQ_API_KEY")),
-);
-
-registerProvider("openrouter", (model, spec, usage) =>
+registerProvider("openrouter", (model, spec, usage, opts) =>
   openAICompatible(
     spec,
     model,
@@ -214,6 +363,7 @@ registerProvider("openrouter", (model, spec, usage) =>
     usage,
     proxyableKey("OPENROUTER_API_KEY"),
     { "x-title": "hcs-cli" },
+    opts,
   ),
 );
 
@@ -235,6 +385,16 @@ registerProvider("anthropic", (model, spec, usage) => {
       const text = blocks.filter((b: any) => b?.type === "text").map((b: any) => b.text).join("");
       if (!text) throw new Error(`unexpected response from ${url}: ${JSON.stringify(data).slice(0, 300)}`);
       return text;
+    },
+    tokenCounting: "endpoint",
+    countIncludesFraming: true,
+    async countTokens(text) {
+      const data = await postJSON(`${url}/count_tokens`, { "x-api-key": key, "anthropic-version": "2023-06-01" }, {
+        model,
+        messages: [{ role: "user", content: text }],
+      });
+      if (typeof data?.input_tokens !== "number") throw new Error(`unexpected response from ${url}/count_tokens: ${JSON.stringify(data).slice(0, 300)}`);
+      return data.input_tokens;
     },
   };
 });
@@ -271,8 +431,7 @@ export async function listModels(provider: string): Promise<string[]> {
   const res = await fetch(url, { headers });
   const text = await res.text();
   if (!res.ok) {
-    const hint = (res.status === 401 || res.status === 403) && !headers.authorization && !headers["x-api-key"] ? " (no API key was sent)" : "";
-    throw new Error(`HTTP ${res.status} from ${url}: ${text.slice(0, 300)}${hint}`);
+    throw new Error(`HTTP ${res.status} from ${url}: ${text.slice(0, 300)}${authHint(res, headers, text)}`);
   }
   const data = JSON.parse(text);
   const list: any[] = Array.isArray(data?.data) ? data.data : Array.isArray(data?.models) ? data.models : [];
@@ -307,7 +466,54 @@ export function extractJSON<T = any>(text: string): T {
       }
     }
   }
+  // Models often copy source code into string values without escaping it. Try once more after repairing.
+  for (const c of candidates) {
+    const start = c.indexOf("{");
+    const end = c.lastIndexOf("}");
+    if (start === -1 || end <= start) continue;
+    try {
+      return JSON.parse(repairJSON(c.slice(start, end + 1)));
+    } catch {
+      // next candidate
+    }
+  }
   throw new Error(`model reply did not contain valid JSON: ${text.slice(0, 200)}`);
+}
+
+/**
+ * Best-effort repair of JSON written by a model: escapes double quotes inside strings (a quote is taken as
+ * closing only when the next non-blank character is , : } ] or the end), raw control characters, and invalid
+ * backslash escapes such as the `\s` of a copied regex.
+ */
+export function repairJSON(text: string): string {
+  let out = "";
+  let inStr = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (!inStr) {
+      if (ch === '"') inStr = true;
+      out += ch;
+      continue;
+    }
+    if (ch === "\\") {
+      const next = text[i + 1];
+      if (next !== undefined && '"\\/bfnrtu'.includes(next)) {
+        out += ch + next;
+        i++;
+      } else out += "\\\\";
+    } else if (ch === '"') {
+      let j = i + 1;
+      while (j < text.length && /\s/.test(text[j])) j++;
+      if (j === text.length || ",:}]".includes(text[j])) {
+        inStr = false;
+        out += ch;
+      } else out += '\\"';
+    } else if (ch === "\n") out += "\\n";
+    else if (ch === "\r") out += "\\r";
+    else if (ch === "\t") out += "\\t";
+    else out += ch;
+  }
+  return out;
 }
 
 /** Run async jobs with bounded concurrency, preserving input order in the result. */

@@ -13,95 +13,106 @@ integration paths** (B), **capabilities nobody else has** (C), and **an ecosyste
 
 ## Phase A: Reliability (blocks everything else)
 
-### A1. Validate on real models `[ ]`
-Every LLM path is tested only against mocks so far.
-- Check that the keys work (`hcs models gemini`, `hcs models groq`) without printing them.
-- `compile src SPEC.md README.md --rpm 8` with a Gemini model, then `score --baseline --judge groq:<model> --runs 1`.
-- Fix whatever real outputs break: JSON extraction, quote matching rates, judge verdict parsing, abstention
-  detection, rate limits and quota errors, long or truncated outputs, chunks with no claims.
-- Record what happened in `bench/REPORT.md`: models, dates, commands, numbers, failures. No polishing.
-- **Done when:** compile and score run end to end on this repo with two model families. At least 80% of
-  proposed claims pass quote verification, or the reasons they do not are documented and addressed. Every bug
-  found has a regression test with a mock.
+### A1. Validate on real models `[x]`
+Done (2026-10-21, details and raw artifacts in `bench/REPORT.md` and `bench/a1/`):
+- Keys checked; compile and score ran end to end on this repository with three model families (Gemini compiles
+  and judges, OpenAI-oss compiles, answers and judges, Qwen answers), on free tiers with `--rpm 8`.
+- Quote verification kept 85.5% (Gemini) and 89.4% (Groq gpt-oss) of proposed quotes.
+- Fourteen problems found on real outputs and fixed, each with a mock regression test: reasoning models
+  (empty or cut replies, `--reasoning-effort`), free-tier quotas and outages (compile and score now save and
+  resume their work), Groq's 413, unescaped JSON, Markdown-stripped quotes, silent failures, proxy routing.
+- Honest result: fidelity is low (44.6% and 16.3%), because probes ask about details that a 7-16% context
+  drops; the context rarely misleads (0-2.7%). Follow-ups: A3's probe filter and C2's refinement, measured.
+- Local CPU models (Ollama) work but are slow and less faithful: a complement for testing, not for results.
 
 ### A2. Symbol anchors `[x]`
 `path::Symbol` with whitespace-insensitive hashes, cross-file move detection, dependency-free locator.
 Optional follow-ups go to C12.
 
-### A3. Statistical rigor `[~]`
-Done: bootstrap CI, `--runs`, informative fidelity, self-judging warning.
-Remaining:
-- **Probe quality filter:** at compile time, optionally ask probes without context to 1–2 models and mark
-  `[known]` the probes every model already answers. Report fidelity on the other probes as well.
-- **Judge agreement:** `--judge` may be given twice. Report the agreement rate (Cohen's kappa or raw) and use
-  the stricter verdict when they disagree.
-- **Paired comparison:** `hcs compare a.hcs b.hcs` (or `audit` vs `.hcs`) on the same probes, with a paired
-  bootstrap CI of the difference.
-- **Done when:** these three features exist with tests and are described in SPEC (certificate fields) and README.
+### A3. Statistical rigor `[x]`
+Done: bootstrap CI, `--runs`, informative fidelity, self-judging warning; probe quality filter
+(`compile --filter-known`, `[known]` probe tags, `novel` fidelity); two judges with agreement and Cohen's kappa,
+stricter verdict counts; `hcs compare` with a paired bootstrap CI. Spec bumped to 0.3 (probe tags). Tested with
+mocks only; real-model behavior is part of A1.
 
-### A4. Security `[~]`
-Done: injection guard (suspect tag, never rendered), decoder rule, MCP root sandbox, quote verification.
-Remaining:
-- A red-team corpus `test/fixtures/injection/` (≥ 30 real-world injection samples plus ≥ 30 benign
-  look-alikes). The guard tests measure precision and recall on it, and the README states the numbers.
-- Scan *source chunks* before compilation: report files containing injection-like text in `compile` output.
-- `SECURITY.md`: threat model (malicious source, malicious `.hcs`, malicious MCP client), reporting process.
-- Fuzz the parser (random and mutated `.hcs` input must give an `HcsSyntaxError`, never a crash).
-- **Done when:** the corpus, scan, SECURITY.md and fuzz tests exist and pass.
+### A4. Security `[x]`
+Done: injection guard (suspect tag, never rendered), decoder rule, MCP root sandbox, quote verification;
+red-team corpus `test/fixtures/injection/` (39 attacks, 40 benign look-alikes, plus a held-out set of 15 + 15)
+with precision and recall in the tests and README; source scan in `compile` and `snapshot`; `SECURITY.md`
+threat model; parser fuzz tests. Results: the high-risk level catches 35/39 corpus attacks (in-sample, after
+tuning) but only 7/15 held-out attacks, with no false positive in either. The fuzzer found three round-trip bugs
+in the parser and the threat-model review found that anchors could read files outside the root through
+`hcs_expand`; all are fixed with regression tests. Possible follow-up: better held-out recall (an optional
+model-based classifier), measured on a new held-out set.
 
 ---
 
 ## Phase B: Standard and integration (the path to adoption)
 
-### B1. MCP server `[~]`
-Done: `hcs serve` with 5 tools, root sandbox, tests over stdio.
-Remaining:
-- Verify with a real client: add a `.mcp.json` example and check it works with Claude Code. Document steps for
-  Claude Desktop, Cursor and VS Code.
-- Expose the rendered context and the claims as MCP *resources* (`hcs://context`, `hcs://claim/<id>`).
-- `hcs_record` tool (opt-in flag `--allow-write`): lets an agent add a hand-written claim with an anchor, sealed
-  automatically. This is the write path that keeps the context alive during agent work.
-- **Done when:** a documented, reproduced session with a real MCP client exists, and resources plus
-  `hcs_record` are tested.
+### B1. MCP server `[x]`
+Done: `hcs serve` with 5 tools, root sandbox, tests over stdio; MCP resources `hcs://context` and
+`hcs://claim/<id>` (plus a resource template); `hcs_record` behind `--allow-write`, which validates the text and
+every anchor, seals the claim (tags `manual,recorded`, specified in SPEC 0.3) and writes atomically. Verified with
+a real client: a recorded Claude Code 2.1.306 session used every tool, a resource and `hcs_record`
+(`docs/mcp-session-2026-10-21.md`); `claude mcp list` reports the server connected. Setup documented for Claude
+Code, Claude Desktop, Cursor and VS Code in `docs/mcp.md`, with example configs in `examples/mcp/`; only Claude
+Code was actually tested.
 
-### B2. Conformance suite and second implementation `[ ]`
-A format with one implementation is a tool, not a standard.
-- `conformance/`: language-agnostic cases as files, each a directory with sources, an `.hcs` file and
-  `expected.json`. Cover parse results and errors, hashes for every anchor form, symbol ranges per language,
-  verification statuses (ok/moved/stale/missing/unsealed, cross-file moves), render output with budgets,
-  certificate digests.
-- The TypeScript implementation runs the suite in CI (`npm run conformance`).
-- `python/`: a Python package (`hcs`, zero dependencies, Python ≥ 3.9) implementing parse, serialize, hash,
-  symbol location, check, seal and render. It passes the same suite in CI.
-- **Done when:** both implementations pass 100% of the conformance cases in CI.
+### B2. Conformance suite and second implementation `[x]`
+Done: `conformance/` has 36 language-agnostic cases (parse and its errors, serialization, symbol ranges for
+TypeScript, Python, Markdown, YAML, JSON, Go, Rust and Java, anchor hashes, check statuses including moves within
+and across files and a missing root, seal, render with budgets, certificate digests), documented in
+`conformance/README.md` and SPEC section 10. `python/` is a dependency-free implementation (Python >= 3.9) of
+parse, serialize, hashing, symbol location, check, seal and render, with a small CLI. Both pass 100% of the cases in
+CI (Node 18/20/22, Python 3.9/3.13), and `conformance/cross_check.py` also compares them on every file of this
+repository, its real `.hcs` files and 3,000 mutated inputs. The suite found two bugs in the reference (`fn new` not
+located; a missing `@root` crashed `check`), both fixed. Publishing on PyPI is part of B4.
 
-### B3. Pull-request bot `[ ]`
-- `hcs impact <file.hcs> --base <ref>`: claims and probes whose anchors are affected by the diff between
-  `<ref>` and the working tree.
-- A GitHub Action mode that posts (and updates, not duplicates) one PR comment listing the affected claims, with
-  links to their anchors. No secrets are needed for this.
-- Optional: with a model available, propose updated claim text in the comment. Never commit automatically.
-- **Done when:** the action works on a test PR in this repository, and `impact` has tests.
+### B3. Pull-request bot `[x]`
+Done: `hcs impact <file.hcs> --base <ref>` lists the claims and probes whose anchors overlap lines changed since
+the ref, point to deleted or renamed files, or no longer verify, plus claims the diff added, edited or removed
+(re-sealed claims are listed too: they pass `check` but deserve review); `--json`, `--format markdown` with links
+to the cited lines, and `--comment`. The Action's `mode: impact` posts one comment with the workflow token and
+updates it on later pushes. Verified on test pull request #1 (closed, not merged): the bot listed the touched
+claim with a link to its lines, and after a second push updated the same comment to two claims instead of adding
+one. Tests cover diff parsing, an end-to-end git repository and the comment upsert against a mock API.
+Not done (optional): proposing updated claim text with a model.
 
-### B4. Distribution `[ ]`
+### B4. Distribution `[~]`
 - Publish `hcs-cli` on npm (check that the name is free, or choose another), with provenance. Publish the
   Python package on PyPI after B2.
 - Versioned GitHub releases, CHANGELOG.md, and a `v0` tag for the Action.
 - **Done when:** `npx hcs-cli check project.hcs` works from a clean machine, and the maintainer approved the
   publication. Publishing is outward-facing, so ask before doing it.
 
+Prepared, nothing published: the names `hcs-cli` (npm) and `hcs-format` (PyPI) were free on 2026-10-21. The npm
+tarball (24 files, 87 kB, no runtime dependency) runs `hcs check project.hcs --strict` from a clean checkout with
+no `node_modules` (`npx --package=<tarball> hcs`), and the Python wheel installs in a fresh virtual environment and
+passes the same check with `hcs-py`. `CHANGELOG.md` and every version number say 0.3.0 (approved by the maintainer, experimental); `.github/workflows/release.yml` runs only on a
+version tag or by hand (dry run by default): it verifies, checks that the tag matches every version number,
+publishes to npm with provenance and to PyPI with trusted publishing, and creates the GitHub release. Remaining,
+all for the maintainer: add the `NPM_TOKEN` secret and the PyPI trusted publisher, push the
+tag, and move a `v0` tag for the Action.
+
 ---
 
 ## Phase C: Capabilities nobody else has
 
-### C1. Fidelity-vs-budget curve `[ ]`
+### C1. Fidelity-vs-budget curve `[~]`
+Done (2026-10-21): `hcs curve` (budgets scored once per distinct context, shared baseline, resumable), the knee
+(smallest budget within the 95% CI of the best) with a flat-curve warning, certificate fields `curve` and `knee`
+in SPEC 0.3, tests. A real curve with local CPU models is in `bench/REPORT.md`, but it is flat (the 7B model
+abstains even when the answer is in its context), so it does not show a knee. Remaining: the same curve with
+`groq:qwen/qwen3.8-27b` (44.6% at full context in A1). It needs about 360,000 tokens against Groq's 200,000
+tokens per day; the run stopped on the quota after the 250-token budget, its results are saved, and it resumes
+on 2026-10-22.
 - `hcs curve <file.hcs> --model M --budgets 250,500,1000,2000,4000`: fidelity with CI at each budget, plus the
   "knee" (smallest budget within 1 CI of the best score).
 - Store the curve in the file (certificate per budget, or a `!curve` line; spec it).
 - **Done when:** the curve is implemented, specified and tested, and one real curve is published in
   `bench/REPORT.md`.
 
-### C2. Self-improving compilation `[ ]`
+### C2. Self-improving compilation `[~]`
 - `hcs refine <file.hcs> --model M`: use failed probes to find gaps, extract claims that fill them from the
   cited sources (quote verification still applies), and drop claims that no probe ever relies on (measured by
   ablation within the budget). Repeat while fidelity improves beyond the CI.
@@ -110,31 +121,55 @@ A format with one implementation is a tool, not a standard.
 - **Done when:** refine improves held-out fidelity on at least two real repositories, documented with raw
   numbers. If it does not, document that honestly.
 
-### C3. Dependency-aware invalidation `[ ]`
-- Build a lightweight reference graph: which symbols a symbol calls or imports, using the existing symbol
-  locator plus identifier matching.
-- `check` marks a claim `review` (a new, non-failing status) when a symbol its anchor depends on changed.
-  Spec the status.
-- **Done when:** this works on JS/TS and Python with tests, and the false-positive rate on this repository's
-  history is measured and reported.
+Done so far: `hcs refine` (src/refine.ts). It splits the probes deterministically (30% held out, recorded in an
+`@holdout` header and reused), asks the writer for up to 3 claims per failed training probe with the probe's
+question and cited source but not its answer, keeps only quote-verified new claims, accepts a round only when
+training fidelity rises and stops when a gain stays inside the confidence interval; `--prune` drops whole sections
+the training probes do not need. A quota stop resumes from saved probe results and writer replies. Tests cover
+held-out isolation, rejected rounds, pruning and resume. Remaining: the real measurement on two repositories, which
+needs free-tier quota.
 
-### C4. Signed certificates `[ ]`
-- `score --sign` signs the certificate with an Ed25519 key (`node:crypto`, no dependency). `check` verifies the
-  signature against keys listed in the file or in a trusted keys file.
-- A "verified by" badge generator (SVG) for READMEs, showing fidelity and model, only for signed and current
-  certificates.
-- **Done when:** signing and verification are implemented, specified and tested, including tampering cases.
+### C3. Dependency-aware invalidation `[x]`
+Done: `hcs seal --deps` stores, on JS/TS and Python symbol anchors, a hash of the symbols they use directly
+(same-file symbols and class siblings by identifier matching, plus names imported from project files), written
+`#hash/deps`; `check` reports `review`, a new non-failing status, when it changes while the symbol does not;
+`seal --rehash` accepts it. Specified in SPEC 0.3 (section 5.5), implemented in TypeScript and Python, covered by
+conformance cases and by the cross-check (785 dependency edges of this repository identical in both). Measured on
+this repository's history (`bench/c3/`): 18 review events over 26 commits, 1 needed, so a false-positive rate of
+17/18 (94%), reported in `bench/REPORT.md`. Follow-up measured: ignoring type-only dependencies and key-only
+names cuts reviews from 38 to 24 over 33 commits and keeps the 3 needed ones; proposed as an RFC
+(`rfcs/0000-deps-ignore-types-and-keys.md`), postponed by the maintainer until there is more evidence.
 
-### C5. Better tokens and parsing (optional back-ends) `[ ]`
+### C4. Signed certificates `[x]`
+Done: `hcs keygen`; `score --sign` and `curve --sign` sign certificates with Ed25519 (`node:crypto`) over a
+canonical payload, adding `key` and `sig` and declaring the public key in the `@keys` header; `check` verifies
+against `--trusted` keys (or `HCS_TRUSTED_KEYS`) and reports trusted, untrusted (key only declared in the file),
+invalid (edited after signing, a failure) or unknown-key; `hcs badge` draws an SVG only from a current certificate
+signed by a trusted key. Specified in SPEC 0.3 (section 7.1). Tests cover tampering (edited, added and forged
+fields, a re-signature by another key, garbage signatures, outdated certificates). The Python package verifies
+signatures with a pure-Python Ed25519 that produces byte-identical signatures to `node:crypto`; a conformance case
+signed in Python is verified by both implementations.
+
+### C5. Better tokens and parsing (optional back-ends) `[x]`
 - An optional real tokenizer when a provider exposes token counting, keeping the estimate as fallback.
 - An optional tree-sitter back-end for the symbol locator, behind a flag, never a hard dependency.
 - **Done when:** both are available, default behavior is unchanged, and the conformance suite still passes.
+
+Done: `--tokenizer M` on `score`, `curve` and `stats` counts with the provider (Anthropic `count_tokens`, Gemini
+native `countTokens` when the key is in the environment, otherwise the prompt size of a 1-token completion, minus
+the chat framing); certificates record `tokenizer`, budgets and digests keep the estimate. `--parser tree-sitter`
+(or `HCS_PARSER`) locates TypeScript, JavaScript and Python symbols with `web-tree-sitter`, loaded at run time only
+(dev dependencies for the tests, no runtime dependency); files sealed with it record `@parser tree-sitter` (SPEC
+0.3, section 5.2), later commands switch automatically, and hcs-py refuses them instead of misreading them. The
+default is unchanged: conformance 41/41 in both implementations, cross-check identical. Measured in
+`bench/REPORT.md`: estimate 111% of Groq's count on this repository's context; tree-sitter and the heuristic agree
+on 470 of 474 common symbols, every difference being a heuristic error.
 
 ---
 
 ## Phase D: Ecosystem and governance
 
-### D1. Public benchmark `[ ]`
+### D1. Public benchmark `[~]`
 - Run `bench/run.mjs` on ≥ 5 public repositories (several languages and sizes) with ≥ 2 model families, with
   the raw results committed.
 - `bench/REPORT.md` with tables, CIs, the method and its limitations.
@@ -142,18 +177,37 @@ A format with one implementation is a tool, not a standard.
   naive summary.
 - **Done when:** the report is published and every number in README links to it.
 
-### D2. Spec 1.0 and governance `[ ]`
+Harness ready, runs pending quota: `bench/d1/` pins five public repositories (C, Python, Rust, Go, TypeScript;
+13k to 76k source tokens) and runs resumable steps (compile, an equal-budget naive summary, scoring of hcs / none /
+readme / agents / summary on the same probes, and a report with paired bootstrap CIs). The protocol and its biases
+are in `bench/d1/README.md`. On free tiers this is about five days of one Groq model's daily tokens per answering
+model; a daily scheduled run advances it.
+
+### D2. Spec 1.0 and governance `[~]`
 - `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, issue and PR templates.
 - A lightweight RFC process (`rfcs/`) for spec changes.
 - Freeze SPEC 1.0 once B2 passes in two implementations and D1 is published: stable anchor syntax and hashing,
   and a versioning policy.
 - **Done when:** these documents exist and SPEC 1.0 is tagged.
 
-### D3. Documentation and examples `[ ]`
+Done: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), issue templates (bug, spec change,
+benchmark result, private security link), a pull-request template, and `rfcs/` (process, template, and the
+pre-1.0 versioning policy). Remaining: SPEC 1.0 is **not** tagged, on purpose: its condition is not met, since
+D1 (public benchmark) is not published. Tagging is also a release, which needs the maintainer's approval.
+
+### D3. Documentation and examples `[x]`
 - `examples/`: a small project in several languages with its `.hcs` file, a conversation snapshot, an audited
   AGENTS.md, and an MCP config.
 - A short tutorial ("from zero to a certified context in 10 minutes") and an FAQ covering honest limits.
 - **Done when:** a new user can follow the tutorial end to end without help. Test it in a clean session.
+
+Done: `examples/shop/` (TypeScript, Python, Markdown) with `shop.hcs` compiled by Groq and scored by Gemini with a
+Groq judge (75.0%, 95% CI 50.0%-100.0%, 12 probes), an `AGENTS.md` audited (1 broken reference, 0.0% on the same
+probes), a conversation snapshot, and an MCP config; each artifact's command and limits are in its README.
+`docs/tutorial.md` and `docs/faq.md`. A fresh agent session with no prior context followed the tutorial from a
+clean clone end to end without help (every step worked, about 3 minutes of commands); the points where it had to
+guess were fixed (probe ids when re-sealing, the `abstained` column, and `compile`'s suggested score command, which
+now asks for a judge from another family). Limit: the tester was an agent, not a human newcomer.
 
 ---
 

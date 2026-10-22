@@ -1,0 +1,16 @@
+[1/16] README.md:1-320 -> not compiled: quota exhausted
+[2/16] SPEC.md:1-243 -> 8 claims, 3 probes
+wrote bench/a1/hcs.hcs: 8 claims, 3 probes from 15 files (15 compiled)
+  rejected by quote verification: 0/8 claims, 0/3 probes
+  source scan: 6 line(s) with injection-like text in 3 file(s), 3 high risk
+    HIGH README.md:168  asks to ignore instructions
+    HIGH SPEC.md:191  asks to ignore instructions
+    HIGH SPEC.md:191  asks to hide information from the user
+    low  src/guard.ts:19  mentions system or developer prompts
+    low  src/guard.ts:33  mentions system or developer prompts
+    low  src/guard.ts:37  announces new instructions
+  claims quoting such text are tagged suspect and not rendered; review these files if you did not expect it
+  INCOMPLETE: rate limit or quota exhausted at https://generativelanguage.googleapis.com/v1beta/openai/chat/completions (server asks to wait 70511s; quota GenerateRequestsPerDayPerProjectPerModel-FreeTier = 20). Try later, lower --rpm, or use another model.
+  not compiled yet: 15 chunk(s): README.md:1-320, src/anchors.ts:1-248, src/audit.ts:1-48, src/cli.ts:1-370, src/cli.ts:371-578, src/compile.ts:1-389, src/format.ts:1-256, src/guard.ts:1-74, src/llm.ts:1-354, src/mcp.ts:1-272, src/render.ts:1-102, src/score.ts:1-369, src/snapshot.ts:1-63, src/sources.ts:1-193, src/symbols.ts:1-302
+  the partial file was saved; run the same command with --update later to finish it
+usage gemini:gemini-3.7-flash: 1 requests, 5006 input + 1016 output tokens (as reported by the provider)

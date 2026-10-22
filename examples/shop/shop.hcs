@@ -1,0 +1,159 @@
+HCS/0.2
+@title Shop
+@root .
+@created 2026-10-21T23:19:27.260Z
+@updated 2026-10-21T23:19:34.341Z
+@generator hcs-cli compile (groq:openai/gpt-oss-120b)
+@source-files 4
+@source-tokens 1305
+
+[claims]
+
+## Overview
+#c1[overview,i5] Order totals are computed by summing line subtotals and weights, applying a single discount code, then adding a shipping fee based on weight and subtotal.
+  > src/orders.ts::orderTotal #dd631e05bf9f
+  > src/orders.ts:1 #7c33608098bc
+  > src/pricing.ts:15-19 #5e38de870e63
+  > src/pricing.ts::applyCode #8771bf83e15f
+  > src/pricing.ts:3-7 #d21948eae853
+  > src/pricing.ts::shippingFee #52d3f81cc48d
+#c2[overview,i5] Shipping fees charge a base of $5.00 plus $1.20 per started kilogram, are free for orders ≥ $50.00, and reject parcels over 30 kg.
+  > src/pricing.ts:3-7 #d21948eae853
+  > src/pricing.ts::shippingFee #52d3f81cc48d
+  > docs/policy.md::Shipping #70540f02d196
+#c3[overview,i5] Only one discount code may be used per order; `WELCOME10` gives 10% off, `SPRING5` gives $5 off, and discounts never reduce the total below zero.
+  > docs/policy.md::"Discount codes" #e1577f95056e
+  > src/pricing.ts:15-19 #5e38de870e63
+  > src/pricing.ts::applyCode #8771bf83e15f
+#c4[overview,i5] Order status transitions follow a forward‑only map, allowing refunds only after payment and recording delivery timestamps on transition to "delivered".
+  > src/orders.ts::NEXT #01102ea406bc
+  > src/orders.ts::transition #15c6693b8866
+#c5[overview,i5] Customers can request full refunds within 14 days of delivery or any time before shipping; nightly workers process approved refunds with no restocking fee.
+  > docs/policy.md::Refunds #10997ef53cdd
+  > worker/refunds.py:5 #5e51e9c176ba
+  > worker/refunds.py:6 #1d736265949d
+  > worker/refunds.py::refundable #f666469b81c4
+  > worker/refunds.py::refund_amount #bcbb8752bf45
+  > worker/refunds.py:1 #dfa367b0c20e
+#c6[overview,i5] All monetary values are stored as integer cents to avoid floating‑point rounding errors.
+  > src/pricing.ts:1 #e9fc87c7c197
+  > src/pricing.ts:3-7 #d21948eae853
+#c7[overview,i5] The Order model includes line items (sku, unit price, quantity, weight), an optional discount code, status, and optional delivery timestamp.
+  > src/orders.ts::Line #57f6ce006f11
+  > src/orders.ts::Order #66d92fa57ed2
+#c8[overview,i5] The refund worker skips unapproved or out‑of‑window requests, logs actions, and returns the IDs of orders successfully refunded.
+  > worker/refunds.py::run #b3d349a19ab4
+  > worker/refunds.py::RefundError #c70edc5b0830
+
+## docs
+#c9[i5] Shipping costs a base fee of 5.00 plus 1.20 per started kilogram.
+  > docs/policy.md::Shipping #70540f02d196
+#c10[i5] Orders with a total of 50.00 or more qualify for free shipping.
+  > docs/policy.md::Shipping #70540f02d196
+#c11[i4] The carrier refuses parcels over 30 kg, so such orders cannot be placed.
+  > docs/policy.md::Shipping #70540f02d196
+#c12[i5] Customers may request a refund up to 14 days after delivery or any time before the order ships.
+  > docs/policy.md::Refunds #10997ef53cdd
+#c13[i4] Refunds are for the full amount, approved by a support agent, and paid by the refund worker each night.
+  > docs/policy.md::Refunds #10997ef53cdd
+#c14[i3] Only one discount code can be applied per order.
+  > docs/policy.md::"Discount codes" #e1577f95056e
+#c15[i3] `WELCOME10` provides a 10% discount on items, while `SPRING5` provides a 5.00 monetary discount.
+  > docs/policy.md::"Discount codes" #e1577f95056e
+#c16[i3] A discount never reduces item cost below zero, and shipping is calculated on the price before the discount.
+  > docs/policy.md::"Discount codes" #e1577f95056e
+
+## src
+#c17[i4] The module imports the functions applyCode and shippingFee from the "./pricing" module.
+  > src/orders.ts:1 #7c33608098bc
+#c18[i5] The Line interface defines a sku string, unitPrice number, quantity number, and weightKg number.
+  > src/orders.ts::Line #57f6ce006f11
+#c19[i5] The Order interface includes an id string, an array of Line objects, an optional code string, a status limited to specific literals, and an optional deliveredAt string.
+  > src/orders.ts::Order #66d92fa57ed2
+#c20[i5] orderTotal calculates subtotal as the sum of unitPrice × quantity, weight as the sum of weightKg × quantity, then returns applyCode(subtotal, order.code) plus shippingFee(weight, subtotal).
+  > src/orders.ts::orderTotal #dd631e05bf9f
+#c21[i4] The NEXT constant maps each Order status to an array of allowed next statuses, enforcing forward-only progression and refunds only after payment.
+  > src/orders.ts::NEXT #01102ea406bc
+#c22[i5] transition throws an Error if the desired status is not listed in NEXT for the current status; otherwise it returns a new Order with the updated status and sets deliveredAt to the current ISO timestamp when transitioning to "delivered".
+  > src/orders.ts::transition #15c6693b8866
+#c23[i5] Prices are stored as integer cents to avoid floating‑point rounding.
+  > src/pricing.ts:1 #e9fc87c7c197
+#c24[i5] BASE_FEE is 500 cents, PER_KG is 120 cents, MAX_WEIGHT_KG is 30 kg, and FREE_SHIPPING_FROM is 5000 cents.
+  > src/pricing.ts:3-7 #d21948eae853
+#c25[i5] shippingFee throws an Error when weightKg exceeds MAX_WEIGHT_KG.
+  > src/pricing.ts::shippingFee #52d3f81cc48d
+#c26[i4] If subtotal is at least FREE_SHIPPING_FROM, shippingFee returns 0 (free shipping).
+  > src/pricing.ts::shippingFee #52d3f81cc48d
+#c27[i4] Otherwise shippingFee returns BASE_FEE plus PER_KG multiplied by the ceiling of weightKg.
+  > src/pricing.ts::shippingFee #52d3f81cc48d
+#c28[i5] CODES maps discount identifiers to either a percent or a fixed amount, and each code applies only once per order and never reduces the total below zero.
+  > src/pricing.ts:15-19 #5e38de870e63
+#c29[i3] applyCode returns the original subtotal when no code is provided.
+  > src/pricing.ts::applyCode #8771bf83e15f
+#c30[i4] applyCode throws an Error for unknown discount codes after converting the input to uppercase.
+  > src/pricing.ts::applyCode #8771bf83e15f
+#c31[i4] When a code has a percent field, applyCode calculates the discount as the subtotal multiplied by that percent, rounded to the nearest cent.
+  > src/pricing.ts::applyCode #8771bf83e15f
+#c32[i4] applyCode ensures the final total is never negative by taking the maximum of 0 and subtotal minus the discount.
+  > src/pricing.ts::applyCode #8771bf83e15f
+
+## worker
+#c33[i5] The module defines a nightly Refund worker that processes approved refund requests.
+  > worker/refunds.py:1 #dfa367b0c20e
+#c34[i5] REFUND_WINDOW_DAYS is set to 14, limiting refunds to within 14 days of delivery.
+  > worker/refunds.py:5 #5e51e9c176ba
+#c35[i4] RESTOCKING_FEE_PERCENT is 0, meaning no restocking fee is applied to refunds.
+  > worker/refunds.py:6 #1d736265949d
+#c36[i5] Refundable returns True for orders with status "paid" regardless of delivery date.
+  > worker/refunds.py::refundable #f666469b81c4
+#c37[i5] For delivered orders, refundable checks that the current time minus deliveredAt is ≤ REFUND_WINDOW_DAYS.
+  > worker/refunds.py::refundable #f666469b81c4
+#c38[i4] refund_amount computes the refund as order_total minus the restocking fee percentage (integer division).
+  > worker/refunds.py::refund_amount #bcbb8752bf45
+#c39[i5] run iterates over requests, skips unapproved ones, logs and skips those outside the refund window, and calls gateway.refund for valid requests.
+  > worker/refunds.py::run #b3d349a19ab4
+#c40[i4] run returns a list of order IDs that were successfully refunded.
+  > worker/refunds.py::run #b3d349a19ab4
+#c41[i2] RefundError is defined as a custom exception type for refund-related errors.
+  > worker/refunds.py::RefundError #c70edc5b0830
+
+[probes]
+?p1 What is the base shipping fee before per‑kilogram charges?
+  = 5.00
+  > docs/policy.md::Shipping #70540f02d196
+?p2 Which function is used to apply discount codes when computing the order total?
+  = applyCode
+  > src/orders.ts::orderTotal #dd631e05bf9f
+?p3 What error message is thrown when a parcel exceeds the maximum weight?
+  = parcel too heavy: ${weightKg} kg (max ${MAX_WEIGHT_KG})
+  > src/pricing.ts::shippingFee #52d3f81cc48d
+?p4 What is the value of REFUND_WINDOW_DAYS?
+  = 14
+  > worker/refunds.py:5 #5e51e9c176ba
+?p5 At what order total does shipping become free?
+  = 50.00
+  > docs/policy.md::Shipping #70540f02d196
+?p6 From the "paid" status, which next statuses are permitted?
+  = "shipped" and "refunded"
+  > src/orders.ts::NEXT #01102ea406bc
+?p7 Which discount code provides a 10% reduction?
+  = WELCOME10
+  > src/pricing.ts::CODES #bf2998bd7a22
+?p8 What percentage restocking fee is applied?
+  = 0
+  > worker/refunds.py:6 #1d736265949d
+?p9 How many discount codes may be used on a single order?
+  = One
+  > docs/policy.md::"Discount codes" #e1577f95056e
+?p10 What literal types are allowed for the Order.status property?
+  = "pending" | "paid" | "shipped" | "delivered" | "refunded"
+  > src/orders.ts::Order #66d92fa57ed2
+?p11 What constant defines the subtotal threshold for free shipping?
+  = FREE_SHIPPING_FROM
+  > src/pricing.ts::FREE_SHIPPING_FROM #c6dd880a7478
+?p12 What does refundable return for an order with status "paid"?
+  = True
+  > worker/refunds.py::refundable #f666469b81c4
+
+[certificates]
+!score model=gemini:gemini-3.1-flash-lite judge=groq:openai/gpt-oss-120b fidelity=0.750 ci95=0.500-1.000 misled=0.000 probes=12 tokens=1804 digest=72237dabeb84 date=2026-10-21T23:24:43.036Z

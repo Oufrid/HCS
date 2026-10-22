@@ -1,0 +1,2 @@
+# keys this verifier trusts
+alice ed25519:HTZT3ipoo7BPCh-OmvlAzmu8g-1KvgTlmKUCv7wGty8

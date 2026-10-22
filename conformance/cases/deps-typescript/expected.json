@@ -1,0 +1,42 @@
+{
+  "results": [
+    {
+      "dependencies": [
+        {
+          "path": "rates.ts",
+          "symbol": "base"
+        },
+        {
+          "path": "util.ts",
+          "symbol": "LIMIT"
+        },
+        {
+          "path": "util.ts",
+          "symbol": "round"
+        }
+      ],
+      "hash": "84d88767bd51"
+    },
+    {
+      "dependencies": [
+        {
+          "path": "rates.ts",
+          "symbol": "Cart.sum"
+        }
+      ],
+      "hash": "02bcf072bdf1"
+    },
+    {
+      "dependencies": [],
+      "hash": null
+    },
+    {
+      "dependencies": [],
+      "hash": null
+    },
+    {
+      "dependencies": [],
+      "hash": null
+    }
+  ]
+}

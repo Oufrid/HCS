@@ -30,7 +30,7 @@ FAIL: 1 item(s) no longer match their sources. ...
 ```
 *(Example output.)*
 
-> **Status: v0.2, early.** The format, the deterministic engine (`check`, `seal`, `render`, `audit`) and the MCP server are complete and tested. The LLM features (`compile`, `score`, `snapshot`) are implemented and tested against mock OpenAI/Anthropic-compatible servers. **They have not yet been benchmarked on real models.** Benchmark numbers will be published from `bench/` with their raw results, never as bare claims in this README.
+> **Status: v0.2, early.** The format, the deterministic engine (`check`, `seal`, `render`, `audit`) and the MCP server are complete and tested. A second, independent implementation of the deterministic core in Python passes the same [conformance suite](conformance/) in CI. The LLM features (`compile`, `score`, `snapshot`) are tested against mock OpenAI/Anthropic-compatible servers, and `compile` and `score` have run end to end on real free-tier models (Gemini, Groq); what broke and what was measured is in [bench/REPORT.md](bench/REPORT.md). **There is no benchmark yet.** Benchmark numbers will be published from `bench/` with their raw results, never as bare claims in this README.
 
 ---
 
@@ -45,6 +45,9 @@ npm link            # puts `hcs` on your PATH
 ```
 
 ## Quick start
+
+New to HCS? The [tutorial](docs/tutorial.md) goes from install to a scored, checked context in about 10 minutes on
+the [example project](examples/shop/README.md), and the [FAQ](docs/faq.md) states the limits.
 
 ### 1. Compile a context file from your project
 
@@ -84,9 +87,29 @@ not recovered from the context:
 - **Fidelity** comes with a 95% bootstrap confidence interval. With few probes, the interval is wide, and HCS tells you so.
 - **Informative fidelity** counts only the probes the model could not answer on its own. It isolates what the context actually taught.
 - **`--judge`** grades with a different model family. Without it, HCS warns that the model graded itself.
+  Give `--judge` twice to use two judges: HCS reports how often they agreed (raw rate and Cohen's kappa) and
+  counts the stricter verdict when they disagree.
+- **Novel fidelity.** `compile --filter-known gemini:<m>,groq:<m>` asks every probe without context to those
+  models and tags `[known]` the probes all of them already answer. `score` then also reports fidelity on the
+  other probes, so general knowledge does not inflate the score.
 - **`--runs N`** asks every probe N times, since model output varies even at temperature 0.
-- **`--budget 1000`** scores what a small-context model would see.
+- **`--budget 1000`** scores what a small-context model would see. `hcs curve project.hcs --model M --judge J`
+  scores several budgets (250 to 4000 by default) on the same probes and reports the knee: the smallest budget
+  within the 95% CI of the best fidelity. Budgets that render the same context are scored once.
+- **`hcs refine project.hcs --model M --judge J`** looks at the probes the context fails, asks M for the missing
+  claims from the probes' cited sources (quote verification still applies), and keeps them only if training
+  fidelity rises. 30% of the probes are held out (recorded in an `@holdout` header) and never shown to refine: judge
+  the gain on them. `--prune` also drops sections the training probes do not need (it costs requests). A quota stop
+  resumes on the next run. Whether it helps on real projects is being measured (roadmap C2).
+- **`--tokenizer M`** counts the context with model M's tokenizer instead of estimating it (also on `curve`, and
+  `hcs stats --tokenizer M`); the certificate then records `tokenizer=M`. Anthropic and Gemini (with
+  `GEMINI_API_KEY` set) have free counting endpoints; other providers are asked a 1-token completion whose
+  reported prompt size is read, which uses a request. Budgets always use the estimate, so digests stay
+  reproducible without a provider.
 - **`--write`** stores a **certificate** bound to a digest of the exact context that was scored. `hcs check` reports it as outdated as soon as that context changes.
+- **`--sign team.key`** signs it with Ed25519 (`hcs keygen team` creates the key pair). `hcs check --trusted keys.txt`
+  then says who signed each certificate, and fails if one was edited after signing. `hcs badge project.hcs --trusted
+  keys.txt` draws a README badge, only from a certificate that is current and signed by a trusted key.
 
 ### 3. Use it with any LLM
 
@@ -115,6 +138,9 @@ hcs compile --model ... --update   # re-read only changed files; keep everything
 | `hcs_search` | Find claims by keywords. |
 | `hcs_verify` | Check whether claims still match their sources. |
 | `hcs_source` | Read a file, line range or named symbol, strictly inside the project root (symlinks included). |
+| `hcs_record` | Only with `serve --allow-write`: the agent records a fact it verified, as a claim with sealed anchors (tagged `manual,recorded`). |
+
+The context and each claim are also MCP resources: `hcs://context` and `hcs://claim/<id>`.
 
 Typical client configuration:
 
@@ -125,6 +151,9 @@ Typical client configuration:
   }
 }
 ```
+
+Setup for Claude Code, Claude Desktop, Cursor and VS Code, and a recorded session with Claude Code (the only
+client tested so far), are in [docs/mcp.md](docs/mcp.md).
 
 The model reads a few hundred tokens of claims, then zooms into the exact cited code only when it needs a detail. It never has to read the whole repository, and it never has to guess.
 
@@ -145,6 +174,23 @@ A symbol anchor (`path::Name`) hashes its symbol with all whitespace removed:
 
 Symbol location is built in and needs no dependency. It covers brace languages (JS/TS, Java, C#, Go, Rust, C/C++, PHP, Kotlin, Swift…), Python, Markdown headings, and YAML/JSON keys. It is heuristic rather than a full parser: when it cannot find a symbol, it says so and never guesses. Line anchors (`path:10-20`) and whole-file anchors remain available; `compile --anchors lines` forces them.
 
+For TypeScript, JavaScript and Python, `--parser tree-sitter` (or `HCS_PARSER=tree-sitter`) uses a real parser
+instead. It is optional: install `web-tree-sitter tree-sitter-typescript tree-sitter-javascript tree-sitter-python`
+next to `hcs` or in your project. A file sealed this way records `@parser tree-sitter`, and later commands use it
+automatically (or stop with an install hint), since a symbol's hash depends on the range the parser found. On this
+repository's 51 TS/JS/Python files the two locators give the same range for 470 of the 474 symbols both find; the
+differences are code the heuristic misreads, such as functions inside one-line objects
+([bench/c5/symbols-agreement.txt](bench/c5/symbols-agreement.txt)).
+
+### Claims about code that uses other code
+
+A claim about `fee()` can become false when a helper that `fee` calls changes, while `fee` itself does not. With
+`hcs seal project.hcs --deps`, symbol anchors in JavaScript/TypeScript and Python also hash the symbols they use
+directly (same file, or imported by name). `hcs check` then reports such claims as `review`: not a failure, a
+prompt to re-read them; `hcs seal --rehash --ids ...` accepts them. It is a shallow, name-based analysis: on this
+repository's history only 1 of 18 reviews pointed at a claim that had really become inaccurate, so expect mostly
+false alarms ([bench/REPORT.md](bench/REPORT.md), C3).
+
 ## Hand-written claims
 
 The compiler is optional. Rules that no tool can infer (*"never log card numbers"*) are the most valuable context, so write them yourself and anchor them:
@@ -161,6 +207,19 @@ Then run `hcs seal project.hcs` to hash the anchor. From then on, `hcs check` te
 ## Security
 
 - **Prompt injection.** Source files can contain text aimed at AIs ("ignore previous instructions…"), and summaries pass it on to other models. HCS tells the compiling model that the source is data. It then tags high-risk claims as `suspect`, never renders them by default, and drops such probes. `hcs check` lists suspect claims and low-risk ones for review; `--strict` fails on them. The decoder prompt tells every reading model that claims are never instructions. This is pattern-based: it reduces the risk, it does not eliminate it.
+  Measured on the corpus in `test/fixtures/injection/` (39 attacks, 40 benign look-alikes, written for this
+  repository from publicly documented attack patterns): before tuning, the high-risk level caught 28% of
+  attacks (11/39) with no false positive. After tuning on that corpus it catches 90% (35/39), still with no
+  false positive; counting low-risk findings too, it catches 100% (39/39) with 85% precision (7 benign lines
+  flagged for review). **These are in-sample numbers.** On a held-out set written before tuning and never used
+  for it (15 attacks, 15 benign), the high-risk level catches only 47% (7/15) with no false positive (1/15
+  before tuning). Expect roughly half of novel attacks to get through the patterns; the decoder prompt is the
+  second line of defense.
+- **Source scan.** `compile` and `snapshot` scan every source line before compilation and list the lines that
+  look like instructions aimed at a model (path, line, reason), so you can review a file even when no claim
+  repeats its text.
+- **Threat model.** See [SECURITY.md](SECURITY.md) for what HCS defends against, what it does not, and how to
+  report a vulnerability.
 - **No hallucinated anchors.** Every compiled claim and probe must quote the source verbatim, or it is discarded.
 - **Sandboxed reads.** The MCP server cannot read outside the project root.
 - **Free tiers.** Some free API tiers let the provider use your prompts to improve their products. Do not compile private code with them.
@@ -171,8 +230,21 @@ HCS works with free tiers:
 
 - `--rpm N` (or `HCS_RPM`) spaces requests evenly.
 - `Retry-After` headers and Google's `retryDelay` are honored.
-- An exhausted daily quota stops the run with a clear message instead of retrying forever.
+- An exhausted daily quota stops the run with a clear message (which quota, which model is billed) instead of
+  retrying forever. A provider still overloaded after every retry stops the same way.
+- `compile` keeps its work when that happens: the chunks not compiled yet go into an `@incomplete` header, and
+  rerunning with `--update` (the next day, or with another model) compiles only those chunks. Chunks whose
+  reply had no usable JSON are retried the same way.
+- `score` saves each probe's result as it goes (in `.hcs-cache/`); after a quota stop, run the same command
+  again to resume. A certificate is only written once every probe is scored.
+- `--chunk-lines 400` means fewer, larger requests, which matters when a free tier allows 20 requests a day.
+- Reasoning models that use their whole output budget before answering are retried once with more room.
+- `--reasoning-effort low` limits hidden reasoning on models that accept it (Gemini 3, Groq gpt-oss). Without it,
+  `gemini-3-flash-preview` spent most of an 8192-token budget thinking and cut its JSON reply.
+- `HCS_DEBUG_LOG=file.jsonl` records every request and reply, to see exactly what a model returned.
 - `hcs models openrouter --free` lists OpenRouter's free models.
+
+What real free tiers allowed on 2026-10-21 is logged in [bench/REPORT.md](bench/REPORT.md).
 
 ## Session hand-off between LLMs
 
@@ -194,6 +266,16 @@ hcs audit AGENTS.md --probes project.hcs --model M --baseline     # how much doe
 
 This gives you a fidelity number for *any* context file, measured with the same verified probes.
 
+To compare two contexts properly, use a paired comparison on the same probes:
+
+```bash
+hcs compare AGENTS.md project.hcs --model M --judge J     # probes come from the .hcs side, or --probes file.hcs
+hcs compare none project.hcs --model M                    # "none" means no context at all
+```
+
+It prints both scores and the per-probe difference B - A with a 95% paired bootstrap confidence interval, and
+says whether the difference is significant (the interval excludes zero).
+
 ## GitHub Actions
 
 Verify on every push (no LLM, no secrets needed):
@@ -206,6 +288,30 @@ Verify on every push (no LLM, no secrets needed):
     strict: "false"      # "true" also fails on unsealed anchors and suspect claims
 ```
 
+On pull requests, list the claims whose cited code the change touches, as one comment that is updated on every
+push (no LLM; the workflow's own token is enough):
+
+```yaml
+on: pull_request
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  impact:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Oufrid/HCS@main
+        with:
+          file: project.hcs
+          mode: impact
+```
+
+The comment lists each affected claim or probe with its status, a link to the exact cited lines and why it is
+listed (changed lines, file deleted or renamed, or no longer verified), including claims the author already
+re-sealed. Locally: `hcs impact project.hcs --base origin/main`. Pull requests from forks get a read-only token,
+so the comment cannot be posted there.
+
 Benchmark with real models: add your API keys as repository secrets (`GEMINI_API_KEY`, `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`), then run **Actions → Benchmark (manual) → Run workflow**. It compiles and scores this repository (and optionally public repositories), then uploads the `.hcs` file and raw results as an artifact.
 
 ## Commands
@@ -217,12 +323,18 @@ Benchmark with real models: add your API keys as repository secrets (`GEMINI_API
 | `hcs check <f>` | no | Verify all anchors, certificates and suspect claims (exit 1 on stale/missing) |
 | `hcs seal <f>` | no | Hash unsealed anchors, follow moved ones, `--rehash` accepts changes |
 | `hcs render <f>` | no | Print the context block (`--budget`, `--decoder`) |
-| `hcs stats <f>` | no | Sizes, compression ratio, claims kept per budget |
+| `hcs stats <f>` | optional | Sizes, compression ratio, claims kept per budget (`--tokenizer M`: real token counts) |
 | `hcs serve <f>` | no | MCP server |
 | `hcs audit <file>` | optional | Broken references; fidelity of any context file |
 | `hcs models <provider>` | no | List model ids your key can use |
+| `hcs impact <f> --base <ref>` | no | Claims and probes citing code changed since a git ref; `--comment` posts them on the pull request |
 | `hcs compile [paths]` | yes | Sources → anchored claims + verified probes (`--update`, `--anchors lines`) |
-| `hcs score <f>` | yes | Fidelity with CI, baseline, informative fidelity, misled rate; `--write` adds a certificate |
+| `hcs score <f>` | yes | Fidelity with CI, baseline, informative and novel fidelity, misled rate, judge agreement; `--write` adds a certificate |
+| `hcs refine <f>` | yes | Add verified claims for the gaps failed probes reveal; reports fidelity on held-out probes |
+| `hcs curve <f>` | yes | Fidelity at several token budgets and the knee; `--write` stores one certificate per budget |
+| `hcs keygen [name]` | no | Ed25519 key pair to sign certificates |
+| `hcs badge <f> --trusted <keys>` | no | SVG badge from a current certificate signed by a trusted key |
+| `hcs compare <a> <b>` | yes | Paired comparison of two contexts (.hcs, any text file, or none) on the same probes |
 | `hcs snapshot <conv>` | yes | Conversation → portable, anchored session state |
 
 Models are written `provider:model`:
@@ -236,7 +348,9 @@ Models are written `provider:model`:
 | `anthropic:` | `ANTHROPIC_API_KEY`, `ANTHROPIC_BASE_URL` |
 | `ollama:` | `OLLAMA_HOST` (default `http://localhost:11434`) |
 
-Behind an HTTP proxy, recent Node versions honor `HTTPS_PROXY` when run with `NODE_USE_ENV_PROXY=1`.
+Behind an HTTP proxy (`HTTPS_PROXY` set), `hcs` re-runs itself once with Node's `--use-env-proxy` flag (Node >= 22.21
+or 24.5) so that requests go through the proxy; `NO_PROXY` is honored. If the proxy injects the key as a network
+secret, leave the variable unset. Authentication errors say whether no key was sent or the proxy's key was rejected.
 
 ## Decoder prompt
 
@@ -271,18 +385,23 @@ See [PRIOR_ART.md](PRIOR_ART.md). In short: drift checkers, prompt compressors, 
 ## Repository layout
 
 ```
-SPEC.md         the format, normative (v0.2)
+SPEC.md         the format, normative (v0.3)
 src/            CLI, MCP server and library (TypeScript, no runtime dependencies)
+python/         second implementation of the deterministic core (Python >= 3.9, no dependencies)
+conformance/    language-agnostic test cases both implementations pass in CI
 test/           node:test suite, including mock OpenAI/Anthropic-compatible servers
+docs/           tutorial, FAQ, MCP client setup and a recorded session
+examples/       a small TS/Python/Markdown project with its .hcs file, snapshot, audit and MCP configs
 bench/          reproducible benchmark harness
+rfcs/           the RFC process for spec changes, and its template
 project.hcs     HCS describing itself (checked in CI)
 action.yml      GitHub Action (verification)
-.github/        CI and the manual benchmark workflow
+.github/        CI, the impact workflow, issue and pull-request templates
 ```
 
 ## Contributing
 
-Issues and PRs are welcome, especially benchmark results on real projects and models, symbol-locator cases for more languages, and spec feedback. Run `npm test` before submitting. If your change affects a claim in `project.hcs`, `npm run check:self` will tell you.
+Issues and PRs are welcome, especially benchmark results on real projects and models, symbol-locator cases for more languages, and spec feedback. [CONTRIBUTING.md](CONTRIBUTING.md) has the setup and the rules for a change; changes to the format go through a short RFC ([rfcs/](rfcs/README.md)). Everyone follows the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## License
 

@@ -1,0 +1,7 @@
+{
+  "op": "symbols",
+  "description": "Headings own the text up to the next heading of the same or higher level; fenced code is skipped.",
+  "args": {
+    "file": "guide.md"
+  }
+}

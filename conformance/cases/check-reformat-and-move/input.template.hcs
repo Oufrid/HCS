@@ -1,0 +1,7 @@
+HCS/0.2
+@root src
+[claims]
+#fmt Reformatted.
+  > a.ts::add #HASH_ADD
+#mv Moved to another file.
+  > a.ts::mul #HASH_MUL

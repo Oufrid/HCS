@@ -5,7 +5,7 @@ Guidance for AI agents (and humans) working on this repository.
 ## What this is
 
 HCS (Holographic Context Standard): a plain-text format (`*.hcs`) whose claims cite hashed sources, plus a
-zero-dependency TypeScript CLI and MCP server. Read `README.md` for the pitch, `SPEC.md` (v0.2) for the
+zero-dependency TypeScript CLI and MCP server. Read `README.md` for the pitch, `SPEC.md` (v0.3) for the
 normative format, `PRIOR_ART.md` for positioning and known limitations. `project.hcs` describes this repo in
 HCS itself and is checked in CI: run `node dist/src/cli.js render project.hcs` for a quick overview.
 
@@ -41,9 +41,14 @@ node dist/src/cli.js help
 
 ## Current status and next steps
 
-v0.2 is complete and tested against mocks only. **The full plan is in `ROADMAP.md`**: phases A–D, each item's
-status, its "Done when" criterion, and the working rules (order, commits, honesty, what needs the
-maintainer's approval). Start with the first unfinished item in the order it gives (A1: real-model
-validation), and update `ROADMAP.md` in the same commit that changes an item's status.
+Phase A, B1–B3, C3–C5 and D3 are done; D2 waits on SPEC 1.0 (after D1) and C1 on free-tier quota (see `bench/REPORT.md`). **The full plan is in
+`ROADMAP.md`**: phases A–D, each item's status, its "Done when" criterion, and the working rules (order, commits,
+honesty, what needs the maintainer's approval). Continue with the first unfinished item in the order it gives, and
+update `ROADMAP.md` in the same commit that changes an item's status.
+
+Free-tier facts learned in A1: Gemini allows about 20 requests per day per model (some aliases share a quota),
+Groq 8,000 tokens per minute and 200,000 tokens per day per model. Use `--chunk-lines 600`, `--reasoning-effort
+low` for reasoning models, and `HCS_DEBUG_LOG` to keep the raw replies; `compile` and `score` resume after a stop.
+Compile benchmark material from a frozen worktree (`git worktree add bench/.work/<name> <commit>`).
 
 The maintainer communicates in French; answer in French, keep repository content in English.

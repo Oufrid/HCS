@@ -1,0 +1,16 @@
+AGENTS.md: ~85 tokens, 4 file references, 1 broken, 0 unresolved names
+  BROKEN line 5: src/payments.ts
+[1/12] p1 unknown
+[2/12] p2 unknown
+[3/12] p3 unknown
+[4/12] p4 unknown
+[5/12] p5 unknown
+[6/12] p6 unknown
+[7/12] p7 unknown
+[8/12] p8 unknown
+[9/12] p9 unknown
+[10/12] p10 unknown
+[11/12] p11 unknown
+[12/12] p12 unknown
+AGENTS.md        fidelity   0.0% [95% CI 0.0%-0.0%]   misled   0.0%   abstained 100.0%   (12 probes)
+usage gemini:gemini-3.5-flash-lite: 12 requests, 3691 input + 12 output tokens (as reported by the provider)

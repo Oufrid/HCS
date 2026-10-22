@@ -1,0 +1,7 @@
+{
+  "op": "check",
+  "description": "Reformatting keeps a symbol anchor ok; a symbol moved unchanged to another file is reported moved with its new path.",
+  "args": {
+    "seal_against": "before"
+  }
+}

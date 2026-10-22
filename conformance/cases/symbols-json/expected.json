@@ -1,0 +1,29 @@
+{
+  "symbols": [
+    {
+      "name": "name",
+      "start": 2,
+      "end": 2
+    },
+    {
+      "name": "scripts",
+      "start": 3,
+      "end": 6
+    },
+    {
+      "name": "scripts.build",
+      "start": 4,
+      "end": 4
+    },
+    {
+      "name": "scripts.test",
+      "start": 5,
+      "end": 5
+    },
+    {
+      "name": "list",
+      "start": 7,
+      "end": 7
+    }
+  ]
+}

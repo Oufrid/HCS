@@ -1,0 +1,4 @@
+{
+  "op": "serialize",
+  "description": "Written as HCS/0.2 when no probe has tags, whatever the input version."
+}

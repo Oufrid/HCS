@@ -1,0 +1,25 @@
+{
+  "results": [
+    {
+      "dependencies": [
+        {
+          "path": "app/pricing.py",
+          "symbol": "base"
+        },
+        {
+          "path": "app/tax.py",
+          "symbol": "vat"
+        },
+        {
+          "path": "app/util.py",
+          "symbol": "round_up"
+        }
+      ],
+      "hash": "eb57200b44c5"
+    },
+    {
+      "dependencies": [],
+      "hash": null
+    }
+  ]
+}

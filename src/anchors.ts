@@ -1,15 +1,17 @@
 // Deterministic anchor verification: hashing, relocation and staleness. No LLM involved.
 
 import { createHash } from "node:crypto";
-import { readFileSync, existsSync, statSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { readFileSync, existsSync, realpathSync, statSync } from "node:fs";
+import { dirname, isAbsolute, relative, resolve, sep } from "node:path";
 import type { Anchor, Claim, HcsDocument, Probe } from "./format.js";
 import { collectSources } from "./sources.js";
-import { findSymbol, languageOf, listSymbols, type SymbolRange } from "./symbols.js";
+import { dependencies, depsHash, supportsDeps } from "./deps.js";
+import { findSymbol, languageOf, listSymbols, symbolBackend, type SymbolRange } from "./symbols.js";
 
 export const HASH_LENGTH = 12;
 
-export type AnchorStatus = "ok" | "moved" | "stale" | "missing" | "unsealed";
+/** `review` (since 0.3): the anchored text is unchanged but a symbol it uses changed. Not a failure. */
+export type AnchorStatus = "ok" | "moved" | "review" | "stale" | "missing" | "unsealed";
 
 export interface AnchorReport {
   anchor: Anchor;
@@ -55,14 +57,31 @@ export function rootDir(doc: HcsDocument, hcsPath: string): string {
   return resolve(dirname(resolve(hcsPath)), doc.headers.root || ".");
 }
 
+/** Resolve `path` against the root and refuse anything outside it, including through symlinks. */
+export function insideRoot(root: string, path: string): string {
+  const deny = () => new Error("path must be inside the project root");
+  const escapes = (rel: string) => !rel || isAbsolute(rel) || rel === ".." || rel.startsWith(`..${sep}`);
+  const full = resolve(root, path);
+  const rel = relative(root, full);
+  if (escapes(rel)) throw deny();
+  if (existsSync(full) && escapes(relative(realpathSync(root), realpathSync(full)))) throw deny();
+  return rel;
+}
+
 export class SourceCache {
   private files = new Map<string, string[] | null>();
   constructor(public root: string) {}
 
+  /** Lines of a file under the root; null when it does not exist or lies outside the root (a hostile anchor). */
   lines(path: string): string[] | null {
     if (!this.files.has(path)) {
-      const full = resolve(this.root, path);
-      if (!existsSync(full) || !statSync(full).isFile()) this.files.set(path, null);
+      let full: string | undefined;
+      try {
+        full = resolve(this.root, insideRoot(this.root, path));
+      } catch {
+        full = undefined;
+      }
+      if (!full || !existsSync(full) || !statSync(full).isFile()) this.files.set(path, null);
       else this.files.set(path, normalizeLines(readFileSync(full, "utf8")));
     }
     return this.files.get(path)!;
@@ -124,7 +143,13 @@ function checkSymbolAnchor(a: Anchor, cache: SourceCache): AnchorReport {
   const range = lines ? findSymbol(a.path, lines, a.symbol!) : null;
   if (range && !a.hash) return { anchor: a, status: "unsealed", detail: "anchor has no hash; run `hcs seal`" };
   if (range && lines) {
-    if (hashSymbolLines(lines.slice(range.start - 1, range.end)) === a.hash) return { anchor: a, status: "ok" };
+    if (hashSymbolLines(lines.slice(range.start - 1, range.end)) === a.hash) {
+      if (a.deps && depsHash(a, cache) !== a.deps) {
+        const names = dependencies(a, cache).map((d) => (d.path === a.path ? d.symbol : `${d.path}::${d.symbol}`));
+        return { anchor: a, status: "review", detail: `a symbol it uses changed (uses ${names.join(", ") || "nothing now"})` };
+      }
+      return { anchor: a, status: "ok" };
+    }
     return { anchor: a, status: "stale", detail: `symbol changed (lines ${range.start}-${range.end})` };
   }
   const moved = findMovedSymbol(a, cache);
@@ -170,7 +195,7 @@ function findWindow(lines: string[], len: number, hash: string, origin: number):
   return -1;
 }
 
-const SEVERITY: AnchorStatus[] = ["ok", "moved", "unsealed", "stale", "missing"];
+const SEVERITY: AnchorStatus[] = ["ok", "moved", "review", "unsealed", "stale", "missing"];
 
 export function worst(statuses: AnchorStatus[]): AnchorStatus {
   return statuses.reduce<AnchorStatus>((w, s) => (SEVERITY.indexOf(s) > SEVERITY.indexOf(w) ? s : w), "ok");
@@ -192,14 +217,29 @@ export interface SealResult {
   sealed: number;
   relocated: number;
   rehashed: number;
+  /** Dependency hashes added or updated. */
+  deps: number;
 }
 
 /**
  * Write hashes into unsealed anchors, follow moved anchors to their new range and,
  * with `rehash`, accept the current content of stale anchors (a human asserts the claim still holds).
  */
-export function seal(doc: HcsDocument, cache: SourceCache, opts: { rehash?: boolean; ids?: Set<string> } = {}): SealResult {
-  const result: SealResult = { sealed: 0, relocated: 0, rehashed: 0 };
+/**
+ * `deps`: also record dependency hashes on symbol anchors that can have them (JS/TS, Python). Anchors that already
+ * carry one keep it up to date when they are sealed, relocated or re-hashed; `review` anchors are accepted by `rehash`.
+ */
+export function seal(doc: HcsDocument, cache: SourceCache, opts: { rehash?: boolean; ids?: Set<string>; deps?: boolean } = {}): SealResult {
+  const result: SealResult = { sealed: 0, relocated: 0, rehashed: 0, deps: 0 };
+  /** Recompute the dependency hash where one is kept, or wanted (opts.deps); counts the ones that changed. */
+  const refreshDeps = (a: Anchor) => {
+    if (!a.deps && !(opts.deps && a.symbol !== undefined && supportsDeps(a.path))) return;
+    const d = depsHash(a, cache);
+    if (d === a.deps) return;
+    if (d) a.deps = d;
+    else delete a.deps;
+    result.deps++;
+  };
   for (const item of [...doc.claims, ...doc.probes]) {
     if (opts.ids && !opts.ids.has(item.id)) continue;
     for (const a of item.anchors) {
@@ -209,6 +249,7 @@ export function seal(doc: HcsDocument, cache: SourceCache, opts: { rehash?: bool
         if (h) {
           a.hash = h;
           result.sealed++;
+          refreshDeps(a);
         }
       } else if (r.status === "moved" && r.relocated) {
         if (r.relocated.path !== undefined) a.path = r.relocated.path;
@@ -218,14 +259,29 @@ export function seal(doc: HcsDocument, cache: SourceCache, opts: { rehash?: bool
           a.end = r.relocated.end;
         }
         result.relocated++;
+        refreshDeps(a);
       } else if (r.status === "stale" && opts.rehash) {
         const h = currentHash(a, cache);
         if (h) {
           a.hash = h;
           result.rehashed++;
+          refreshDeps(a);
         }
-      }
+      } else if (r.status === "review" && opts.rehash) {
+        result.rehashed++;
+        refreshDeps(a);
+      } else if (r.status === "ok") refreshDeps(a);
     }
   }
+  recordParser(doc);
   return result;
+}
+
+/**
+ * Symbol hashes depend on the locator that found the range. When an optional back-end (tree-sitter) is active,
+ * record it in `@parser` so that every later check uses the same one.
+ */
+export function recordParser(doc: HcsDocument): void {
+  if (symbolBackend() === "heuristic") return;
+  if ([...doc.claims, ...doc.probes].some((i) => i.anchors.some((a) => a.symbol !== undefined && a.hash))) doc.headers.parser = symbolBackend();
 }

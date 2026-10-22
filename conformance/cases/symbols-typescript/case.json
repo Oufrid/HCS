@@ -1,0 +1,7 @@
+{
+  "op": "symbols",
+  "description": "Functions, classes and methods, interfaces, top-level const; strings, regexes, comments and template literals do not count.",
+  "args": {
+    "file": "rates.ts"
+  }
+}

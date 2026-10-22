@@ -1,0 +1,24 @@
+incremental: 2 files unchanged, 13 to compile
+[1/15] src/anchors.ts:1-248 -> 7 claims, 3 probes
+[2/15] src/audit.ts:1-48 -> 5 claims, 3 probes
+[3/15] src/cli.ts:1-372 -> 8 claims, 3 probes
+[4/15] src/cli.ts:373-580 -> 5 claims, 3 probes
+[5/15] src/compile.ts:1-397 -> 6 claims, 3 probes
+[6/15] src/compile.ts:398-403 -> 3 claims, 2 probes
+[7/15] src/format.ts:1-256 -> 7 claims, 3 probes
+[8/15] src/guard.ts:1-74 -> no usable JSON in the reply (truncated or malformed)
+[9/15] src/llm.ts:1-385 -> 5 claims, 3 probes
+[10/15] src/mcp.ts:1-272 -> 8 claims, 3 probes
+[11/15] src/render.ts:1-102 -> 7 claims, 3 probes
+[12/15] src/score.ts:1-369 -> 7 claims, 3 probes
+[13/15] src/snapshot.ts:1-63 -> 7 claims, 3 probes
+[14/15] src/sources.ts:1-193 -> 7 claims, 3 probes
+hcs: HTTP 503 from https://generativelanguage.googleapis.com/v1beta/openai/chat/completions: [{
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+]
+usage gemini:gemini-3.1-flash-lite: 14 requests, 58222 input + 12928 output tokens (as reported by the provider)

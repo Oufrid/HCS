@@ -1,0 +1,6 @@
+[1/24] README.md:1-249 -> 8 claims, 3 probes
+[2/24] README.md:250-331 -> 8 claims, 3 probes
+hcs: HTTP 413 from https://api.groq.com/openai/v1/chat/completions: {"error":{"message":"Request too large for model `openai/gpt-oss-120b` in organization `org_01kq6dek8kf3ptkrbhwjhgsk0f` service tier `on_demand` on tokens per minute (TPM): Limit 8000, Requested 8856, please reduce your message size and try again. Need more tokens? Upgrade to Dev Tier today at https://console.groq.com/settings/billing","type":"tokens","code":"rate_limit_exceeded"}}
+
+usage groq:openai/gpt-oss-120b: 2 requests, 6480 input + 6253 output tokens (as reported by the provider)
+exit=1
