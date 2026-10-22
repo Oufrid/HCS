@@ -522,5 +522,21 @@ the family 1 numbers above from their raw results).
   second, smaller answering model from another family. Per repository: express 48.3 vs 38.3, requests 38.3 vs 20.0,
   logrus 43.3 vs 23.3.
 
-Still open: one model (gemini-3.8-flash) compiled the files, wrote the probes and the summaries, and judges family 2;
-the second family on the five design repositories is running.
+The same family on the five design repositories (output `bench/d1/analysis-v2-family2.txt`; the script reproduces
+family 1's +19.1 [+10.4, +28.1] from its raw results):
+
+| ministral-14b answers, Gemini judges | Fidelity [95% CI], 144 probes |
+|---|---|
+| **HCS, compact profile** | **45.5% [37.2-53.8]** |
+| Naive summary, same budget | 26.7% [19.8-33.7] |
+
+- **Compact minus naive summary: +18.8 points [+9.4, +28.5].** Per repository: kilo 54.2 vs 29.2, itsdangerous 70.0
+  vs 46.7, anyhow 46.7 vs 18.3, cobra 30.0 vs 13.3, ky 28.3 vs 26.7 (ky is the one repository where the two are
+  close, with both families).
+
+Summary of D1: with two answering families from different providers, on eight repositories, the compact HCS context
+beats a naive summary of the same 2,000-token budget by 16 to 19 points, every 95% interval above zero.
+
+Limits that remain: one model (gemini-3.8-flash) compiled the files, wrote the probes and the summaries, and judges
+family 2, which may favor material in its own words; the probes are generated, 24 to 30 per repository; one budget
+(2,000 tokens); only the `hcs-compact` and `summary` conditions were run for family 2.

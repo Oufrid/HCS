@@ -173,7 +173,7 @@ on 470 of 474 common symbols, every difference being a heuristic error.
 
 ## Phase D: Ecosystem and governance
 
-### D1. Public benchmark `[~]`
+### D1. Public benchmark `[x]`
 - Run `bench/run.mjs` on ≥ 5 public repositories (several languages and sizes) with ≥ 2 model families, with
   the raw results committed.
 - `bench/REPORT.md` with tables, CIs, the method and its limitations.
@@ -192,6 +192,11 @@ the same budget by +19.1 points [+10.4, +28.1] and the README by +33.3 (`bench/R
 "done": a second answering family and a confirmation on repositories not used to design the profile; README
 numbers must link to the report.
 
+Done 2026-10-22: the pre-registered confirmation on express, requests and logrus gave +18.9 [+7.2, +30.6]; the
+second answering family (mistral:ministral-14b-latest, Gemini judging) gave +18.8 [+9.4, +28.5] on the design
+repositories and +16.1 [+3.9, +27.8] on the confirmation ones; README numbers link to `bench/REPORT.md`. Limits
+(one compiling and probe-writing model, generated probes, one budget) are listed there.
+
 ### D2. Spec 1.0 and governance `[~]`
 - `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, issue and PR templates.
 - A lightweight RFC process (`rfcs/`) for spec changes.
@@ -201,8 +206,8 @@ numbers must link to the report.
 
 Done: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), issue templates (bug, spec change,
 benchmark result, private security link), a pull-request template, and `rfcs/` (process, template, and the
-pre-1.0 versioning policy). Remaining: SPEC 1.0 is **not** tagged, on purpose: its condition is not met, since
-D1 (public benchmark) is not published. Tagging is also a release, which needs the maintainer's approval.
+pre-1.0 versioning policy). Remaining: SPEC 1.0 is **not** tagged. Its conditions (B2 in two implementations, D1
+published) are met since 2026-10-22; tagging is a release, which needs the maintainer's approval.
 
 ### D3. Documentation and examples `[x]`
 - `examples/`: a small project in several languages with its `.hcs` file, a conversation snapshot, an audited
