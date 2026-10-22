@@ -49,6 +49,8 @@ update `ROADMAP.md` in the same commit that changes an item's status.
 Free-tier facts learned in A1: Gemini allows about 20 requests per day per model (some aliases share a quota),
 Groq 8,000 tokens per minute and 200,000 tokens per day per model. Use `--chunk-lines 600`, `--reasoning-effort
 low` for reasoning models, and `HCS_DEBUG_LOG` to keep the raw replies; `compile` and `score` resume after a stop.
-Compile benchmark material from a frozen worktree (`git worktree add bench/.work/<name> <commit>`).
+Gemini also has a per-minute token limit
+whose 429 gives no delay, and every refused request counts against the 20 daily ones: HCS now waits a minute
+instead of retrying quickly; use `--rpm 3` for Gemini compiles. Compile benchmark material from a frozen worktree (`git worktree add bench/.work/<name> <commit>`).
 
 The maintainer communicates in French; answer in French, keep repository content in English.

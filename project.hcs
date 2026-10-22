@@ -1,7 +1,7 @@
 HCS/0.2
 @title HCS - Holographic Context Standard (reference CLI)
 @root .
-@updated 2026-10-22T07:35:01.575Z
+@updated 2026-10-22T07:46:06.346Z
 @meta license=MIT language=TypeScript
 
 [claims]
@@ -135,8 +135,8 @@ HCS/0.2
   > test/fuzz.test.ts::assertWellBehaved #13847c57eb6e
 
 ## Providers
-#providers[manual] Providers are openai (any compatible API), ollama, gemini, groq, openrouter and anthropic, called at temperature 0 with usage accounting; Bearer keys may be absent when a proxy injects them; 429/503 retries honor Retry-After and Google's retryDelay, and waits over 120 s, or a provider still failing after every retry, raise a quota error.
-  > src/llm.ts::postJSON #f804a89279ad
+#providers[manual] Providers are openai (any compatible API), ollama, gemini, groq, openrouter and anthropic, called at temperature 0 with usage accounting; Bearer keys may be absent when a proxy injects them; 429/503 retries honor Retry-After and Google's retryDelay, a 429 without a delay waits one minute at most twice, and waits over 120 s, or a provider still failing after every retry, raise a quota error.
+  > src/llm.ts::postJSON #771045bda8a1
   > src/llm.ts::retryDelayMs #53c59bd9ac2f
   > src/llm.ts::MAX_RETRY_WAIT_MS #ffea888e2d7e
 #proxy[manual] Behind HTTPS_PROXY the CLI re-runs itself once with --use-env-proxy so that Node's fetch uses the proxy; auth errors say whether a proxy-injected key was rejected (x-proxy-error header) or no key was sent.

@@ -2,11 +2,11 @@ HCS/0.2
 @title pallets__itsdangerous
 @root ../../.work/d1/pallets__itsdangerous
 @created 2026-10-22T07:38:07.281Z
-@updated 2026-10-22T07:38:07.291Z
+@updated 2026-10-22T07:45:00.041Z
 @generator hcs-cli compile (gemini:gemini-3.6-flash)
 @source-files 22
 @source-tokens 15838
-@incomplete docs/Makefile:1-19,docs/make.bat:1-35,docs/serializer.rst:1-112,docs/signer.rst:1-49,docs/timed.rst:1-28,docs/url_safe.rst:1-21,src/itsdangerous/__init__.py:1-17,src/itsdangerous/_json.py:1-18,src/itsdangerous/encoding.py:1-54,src/itsdangerous/exc.py:1-106,src/itsdangerous/serializer.py:1-404,src/itsdangerous/signer.py:1-266,src/itsdangerous/timed.py:1-228,src/itsdangerous/url_safe.py:1-83
+@incomplete docs/serializer.rst:1-112,docs/signer.rst:1-49,docs/timed.rst:1-28,docs/url_safe.rst:1-21,src/itsdangerous/__init__.py:1-17,src/itsdangerous/_json.py:1-18,src/itsdangerous/encoding.py:1-54,src/itsdangerous/exc.py:1-106,src/itsdangerous/serializer.py:1-404,src/itsdangerous/signer.py:1-266,src/itsdangerous/timed.py:1-228,src/itsdangerous/url_safe.py:1-83
 
 [claims]
 
@@ -59,6 +59,22 @@ HCS/0.2
   > docs/license.rst:1 #9d684d32ff82
 #c23[i4] The license text is included directly from the '../LICENSE.txt' file.
   > docs/license.rst:4 #3dbfb9101b84
+#c24[i4] The Sphinx documentation build uses `sphinx-build` as the default build tool, set to source directory `.` and build directory `_build`.
+  > docs/Makefile:6-8 #7a6c3999b76c
+#c25[i3] Executing `make` without arguments defaults to running the `help` target, which delegates to `sphinx-build -M help`.
+  > docs/Makefile:11-12 #b30f15b65725
+#c26[i4] A catch-all target routes all unknown targets to Sphinx using `sphinx-build -M`, treating `$(O)` as a shortcut for additional options.
+  > docs/Makefile:18-19 #e66fb0e51be7
+#c27[i3] The script sets SPHINXBUILD to 'sphinx-build' by default if the environment variable is not already defined.
+  > docs/make.bat:7-9 #811d12550ff8
+#c28[i3] The source directory (SOURCEDIR) is set to '.' and the build directory (BUILDDIR) is set to '_build'.
+  > docs/make.bat:10-11 #311b35e6d4ac
+#c29[i3] If no command line arguments are provided, the script jumps to the help target.
+  > docs/make.bat:13 #b567965c9820
+#c30[i4] If the sphinx-build command is missing (detected by errorlevel 9009), the batch file displays an error message and exits with status 1.
+  > docs/make.bat:16-26 #2319dbe439be
+#c31[i4] When an argument is passed, Sphinx is invoked with '-M', the specified command, SOURCEDIR, BUILDDIR, and SPHINXOPTS.
+  > docs/make.bat:28 #3ad05fb7e182
 
 [probes]
 ?p1 Which Python class is imported in the simple example to serialize user data safely?
@@ -103,3 +119,18 @@ HCS/0.2
 ?p14 Which error is raised when a serializer attempts to load data dumped with a different salt?
   = BadSignature
   > docs/concepts.rst:91 #c761b287137b
+?p15 What is the default build directory defined in the Makefile?
+  = _build
+  > docs/Makefile:8 #de3ab7db9ef7
+?p16 What default value is assigned to SOURCEDIR in make.bat?
+  = .
+  > docs/make.bat:10 #8f382743039c
+?p17 Which targets are explicitly declared as .PHONY?
+  = help Makefile
+  > docs/Makefile:14 #1a0271f54eb1
+?p18 What exit code is returned when sphinx-build is not found?
+  = 1
+  > docs/make.bat:25 #0b1482903959
+?p19 What directory is set as BUILDDIR by default?
+  = _build
+  > docs/make.bat:11 #912b64621482

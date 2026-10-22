@@ -342,6 +342,38 @@ test("free-tier handling: Retry-After, Google retryDelay, quota errors, rpm limi
   assert.equal(createLLM("groq:x").id, "groq:x");
 });
 
+test("a 429 without a suggested delay waits for the rate window, at most twice, instead of retrying quickly", async () => {
+  let calls = 0;
+  let failFirst = 2;
+  const server = createServer((req, res) => {
+    calls++;
+    if (req.url?.includes("always") || failFirst-- > 0) {
+      res.writeHead(429);
+      return res.end('[{"error":{"code":429,"message":"You exceeded your current quota"}}]');
+    }
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end(JSON.stringify({ choices: [{ message: { content: "ok" } }] }));
+  });
+  await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
+  const url = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+  process.env.HCS_RATE_WINDOW_MS = "150";
+  try {
+    process.env.OPENAI_BASE_URL = `${url}/v1`;
+    const t0 = Date.now();
+    assert.equal(await createLLM("openai:m").complete({ system: "s", prompt: "p" }), "ok");
+    assert.equal(calls, 3);
+    assert.ok(Date.now() - t0 >= 300, "two waits of one rate window");
+    calls = 0;
+    process.env.OPENAI_BASE_URL = `${url}/always/v1`;
+    await assert.rejects(createLLM("openai:m").complete({ system: "s", prompt: "p" }), (e: Error) => e instanceof QuotaError && /after 3 attempts/.test(e.message));
+    assert.equal(calls, 3, "three requests, not six: each refused request may count against a daily quota");
+  } finally {
+    server.close();
+    delete process.env.HCS_RATE_WINDOW_MS;
+    delete process.env.OPENAI_BASE_URL;
+  }
+});
+
 test("retryDelayMs reads headers and Google bodies", () => {
   assert.equal(retryDelayMs(new Headers({ "retry-after": "12" }), ""), 12000);
   assert.equal(retryDelayMs(new Headers(), '{"retryDelay": "38s"}'), 38000);

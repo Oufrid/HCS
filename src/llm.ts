@@ -195,10 +195,21 @@ export function retryDelayMs(headers: Headers, body: string): number | undefined
 /** The provider cannot serve more requests for now (quota exhausted, or still unavailable after retries). */
 export class QuotaError extends Error {}
 
+/**
+ * A 429 without any suggested delay is usually a per-minute limit (Gemini's free tier says only "You exceeded your
+ * current quota"). Quick retries would each be refused, and Gemini counts every refused request against the daily
+ * quota, so wait for the minute window to pass instead, at most twice. HCS_RATE_WINDOW_MS overrides it (tests).
+ */
+const rateWindowMs = () => Number(env("HCS_RATE_WINDOW_MS") ?? 61_000);
+const MAX_WINDOW_RETRIES = 2;
+
 async function postJSON(url: string, headers: Record<string, string>, body: unknown, attempts = 6): Promise<any> {
   let lastErr: unknown;
   let wait: number | undefined;
+  let windowRetries = 0;
+  let made = 0;
   for (let attempt = 0; attempt < attempts; attempt++) {
+    made = attempt + 1;
     if (attempt) await sleep(wait ?? Math.min(MAX_RETRY_WAIT_MS, 2000 * 2 ** (attempt - 1)));
     wait = undefined;
     let res: Response;
@@ -223,6 +234,11 @@ async function postJSON(url: string, headers: Record<string, string>, body: unkn
         const which = quota ? `; quota ${quota}${limit ? ` = ${limit}` : ""}${billed ? ` for model ${billed}` : ""}` : said ? `; ${said}` : "";
         throw new QuotaError(`rate limit or quota exhausted at ${url} (server asks to wait ${Math.round(suggested / 1000)}s${which}). Try later, lower --rpm, or use another model.`);
       }
+      if (suggested === undefined && res.status === 429) {
+        if (++windowRetries > MAX_WINDOW_RETRIES) break;
+        wait = rateWindowMs();
+        continue;
+      }
       wait = suggested;
       continue;
     }
@@ -231,7 +247,7 @@ async function postJSON(url: string, headers: Record<string, string>, body: unkn
   // Still overloaded or failing after every retry: stop like a quota so that callers keep their partial work.
   const message = lastErr instanceof Error ? lastErr.message : String(lastErr);
   if (!/^HTTP 4\d\d /.test(message) || /^HTTP 429 /.test(message)) {
-    throw new QuotaError(`provider unavailable after ${attempts} attempts: ${message.slice(0, 300)}`);
+    throw new QuotaError(`provider unavailable after ${made} attempts: ${message.slice(0, 300)}`);
   }
   throw lastErr;
 }
