@@ -1,0 +1,99 @@
+HCS/0.2
+@title expressjs__express (independent probes)
+@root ../../.work/d1/expressjs__express
+@created 2026-10-22T16:27:09.165Z
+@generator bench/d1 probes (gemini:gemini-3.8-flash)
+
+[claims]
+
+[probes]
+?q1 What is the minimum required version of Node.js for installing Express?
+  = Node.js 18 or higher
+  > Readme.md::Installation #f3c8594470cf
+?q2 Which file path is required and exported by this module?
+  = ./lib/express
+  > index.js:11 #998ac44cbce5
+?q3 What is the default value set for 'subdomain offset' in defaultConfiguration?
+  = 2
+  > lib/application.js::defaultConfiguration #63c05273b081
+?q4 What event does `app.listen` attach the wrapped callback to on the server instance?
+  = 'error'
+  > lib/application.js::listen #e67045e10925
+?q5 What module is used to mix prototypes into the express app instance?
+  = merge-descriptors
+  > lib/express.js::mixin #3b337f273e32
+?q6 What error is thrown by req.get when the name argument is omitted?
+  = TypeError with the message 'name argument is required to req.get'
+  > lib/request.js::header #57e5ce83e7a8
+?q7 What error type is thrown by res.status if the provided code is not an integer?
+  = TypeError
+  > lib/response.js::status #b5cd102a2ec8
+?q8 What error is thrown if a developer attempts to set the Content-Type header to an array using res.set?
+  = A TypeError with the message 'Content-Type cannot be set to an Array'
+  > lib/response.js::header #639570e34621
+?q9 What default MIME type does normalizeType use if type does not contain a slash and mime.lookup returns falsy?
+  = 'application/octet-stream'
+  > lib/utils.js::acceptParams #cac2f97e171f
+?q10 What error is thrown when neither a default engine nor an extension is provided to View?
+  = No default engine was specified and no extension was provided.
+  > lib/view.js::View #b79dee669eea
+?q11 Which package enables support for over 14 template engines in Express?
+  = @ladjs/consolidate
+  > Readme.md::Philosophy #c80dae6839b4
+?q12 Under what license is this code released?
+  = MIT Licensed
+  > index.js:6 #3e3bc3fda154
+?q13 Which header is added to the response in app.handle when 'x-powered-by' is enabled?
+  = 'X-Powered-By' with the value 'Express'
+  > lib/application.js::handle #2498d64dcf0a
+?q14 What utility function is used to wrap the callback argument in `app.listen`?
+  = once
+  > lib/application.js::listen #e67045e10925
+?q15 What method on the app instance delegates the handling of requests, responses, and next callbacks?
+  = app.handle
+  > lib/express.js::createApplication #6fbd8f85a9c6
+?q16 What does req.query return when the 'query parser fn' setting is not set on the app?
+  = An object with null prototype (Object.create(null))
+  > lib/request.js:235 #4514845e3ef7
+?q17 In res.send, what does the Content-Type header default to when passing an ArrayBuffer view if no Content-Type was previously set?
+  = 'bin'
+  > lib/response.js:153 #e846f2bd92fb
+?q18 What expiration date does res.clearCookie assign to force cookie expiration?
+  = new Date(1)
+  > lib/response.js::clearCookie #0883f4c9d31b
+?q19 Which function does compileQueryParser assign when val is 'extended'?
+  = parseExtendedQueryString
+  > lib/utils.js::compileQueryParser #007608141499
+?q20 Which property or export on a required engine module is expected as the default engine function?
+  = __express
+  > lib/view.js::View.debug #477170f2f039
+?q21 Which CLI command should be executed to run the test suite?
+  = npm test
+  > Readme.md::"Running Tests" #67b2dd7e1aa2
+?q22 What error is thrown by app.use if no middleware functions are passed?
+  = A TypeError stating 'app.use() requires a middleware function'
+  > lib/application.js::use #b5f766d743a4
+?q23 Under what condition does `logerror` log the error using `console.error`?
+  = When the 'env' setting is not 'test'
+  > lib/application.js::logerror #003dd34a7dff
+?q24 Which initialization method is invoked on app right before createApplication returns?
+  = app.init()
+  > lib/express.js::createApplication #6fbd8f85a9c6
+?q25 Which HTTP methods are checked for weak freshness validation in req.fresh?
+  = GET, HEAD, and QUERY
+  > lib/request.js:475 #1cfa80bab190
+?q26 Which security mitigation prefix is prepended to the body in res.jsonp when a callback is defined?
+  = /**/
+  > lib/response.js::jsonp #e7d32defb870
+?q27 What prefix is prepended to an object cookie value when serialized in res.cookie?
+  = 'j:'
+  > lib/response.js:757-759 #74b3e4d3981d
+?q28 What does compileTrust return when passed a number for val?
+  = A function that checks if the hop index is less than that number (function(a, i){ return i < val }).
+  > lib/utils.js:204 #c3a0c18047b7
+?q29 How does View.prototype.render ensure that synchronous callbacks from the template engine are made asynchronous?
+  = By wrapping the invocation in process.nextTick
+  > lib/view.js::render #6777650ec243
+?q30 Who is credited as the original author of Express?
+  = TJ Holowaychuk
+  > Readme.md:181 #9428323c51f6

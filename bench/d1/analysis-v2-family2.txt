@@ -1,0 +1,9 @@
+antirez__kilo: 24 probes, hcs-compact 54.2%, summary 29.2%
+pallets__itsdangerous: 30 probes, hcs-compact 70.0%, summary 46.7%
+dtolnay__anyhow: 30 probes, hcs-compact 46.7%, summary 18.3%
+spf13__cobra: 30 probes, hcs-compact 30.0%, summary 13.3%
+sindresorhus__ky: 30 probes, hcs-compact 28.3%, summary 26.7%
+pooled: 144 probes
+hcs-compact          45.5% [37.2, 53.8]
+summary              26.7% [19.8, 33.7]
+hcs-compact - summary: 18.8 [9.4, 28.5] points

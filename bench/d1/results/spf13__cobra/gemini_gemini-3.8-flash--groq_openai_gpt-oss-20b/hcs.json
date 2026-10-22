@@ -1,0 +1,371 @@
+{
+ "repo": "spf13__cobra",
+ "commit": "adbc8813901bba65827259daa8e22ff94ec1f30e",
+ "condition": "hcs",
+ "answerer": "gemini:gemini-3.8-flash",
+ "judge": "groq:openai/gpt-oss-20b",
+ "budget": 2000,
+ "tokens": 1956,
+ "results": {
+  "p1": {
+   "id": "p1",
+   "question": "Which four shells does Cobra automatically generate autocompletion for?",
+   "expected": "bash, zsh, fish, and powershell.",
+   "answer": "Based on claim c6, Cobra automatically generates shell completion scripts for Bash, Zsh, Fish, and PowerShell.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p2": {
+   "id": "p2",
+   "question": "What prefix does AppendActiveHelp prepend to the activeHelpStr?",
+   "expected": "\"_activeHelp_ \"",
+   "answer": "`AppendActiveHelp` prepends the `activeHelpMarker` prefix, which is `'_activeHelp_ '`, to `activeHelpStr` (c16).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p3": {
+   "id": "p3",
+   "question": "What delimiter separates an argument value from its description in Command.ValidArgs?",
+   "expected": "A tab character (\"\\t\").",
+   "answer": "A tab character separates an argument value from its description in `cmd.ValidArgs` (c22).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p4": {
+   "id": "p4",
+   "question": "What function is invoked in the bash script if both COMPREPLY is empty and __<name>_custom_func is not declared?",
+   "expected": "__custom_func (if declared).",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p5": {
+   "id": "p5",
+   "question": "Under what condition is a flag considered non-completable?",
+   "expected": "When it is Hidden or has a non-empty Deprecated field.",
+   "answer": "A flag is considered non-completable if it is marked as Hidden or has a non-empty Deprecated string (c40).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p6": {
+   "id": "p6",
+   "question": "What environment variable controls debug logging in the generated Bash completion script?",
+   "expected": "BASH_COMP_DEBUG_FILE",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p7": {
+   "id": "p7",
+   "question": "What happens if MousetrapDisplayDuration is set to 0?",
+   "expected": "It waits for the return key to be pressed.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p8": {
+   "id": "p8",
+   "question": "What is the destination writer used by default usage rendering versus default help rendering?",
+   "expected": "Usage renders to OutOrStderr() while help renders to OutOrStdout().",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p9": {
+   "id": "p9",
+   "question": "What is the fallback error prefix returned by ErrPrefix when not defined on the command or its parents?",
+   "expected": "\"Error:\"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p10": {
+   "id": "p10",
+   "question": "What annotation key and value are set on default help and version flags added by Cobra?",
+   "expected": "The annotation key is FlagSetByCobraAnnotation and the value is []string{\"true\"}.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p11": {
+   "id": "p11",
+   "question": "What global flag set is added to the root command's persistent flags inside updateParentsPflags?",
+   "expected": "flag.CommandLine",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p12": {
+   "id": "p12",
+   "question": "What is the signature of preExecHookFn in command_notwin.go?",
+   "expected": "func(*Command)",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p13": {
+   "id": "p13",
+   "question": "What exit code is passed to os.Exit when Cobra detects execution by Windows Explorer with MousetrapHelpText configured?",
+   "expected": "1",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p14": {
+   "id": "p14",
+   "question": "What format does completion output use to transmit the completion directive to the shell script?",
+   "expected": "A line formatted as :<directive> where the directive integer immediately follows a single colon.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p15": {
+   "id": "p15",
+   "question": "Which environment variable specifies the debug log file for completion output?",
+   "expected": "BASH_COMP_DEBUG_FILE",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p16": {
+   "id": "p16",
+   "question": "Which characters in command names does genFishComp replace with underscores?",
+   "expected": "'-' and ':'",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p17": {
+   "id": "p17",
+   "question": "What is the exact annotation key name used for flags marked as mutually exclusive?",
+   "expected": "\"cobra_annotation_mutually_exclusive\"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p18": {
+   "id": "p18",
+   "question": "What environment variable must be set for the generated PowerShell completion function to log debug output?",
+   "expected": "$env:BASH_COMP_DEBUG_FILE",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p19": {
+   "id": "p19",
+   "question": "Which annotation key does MarkFlagRequired apply to the flag set?",
+   "expected": "BashCompOneRequiredFlag",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p20": {
+   "id": "p20",
+   "question": "Which environment variable does the generated zsh script inspect to output debug logs?",
+   "expected": "BASH_COMP_DEBUG_FILE",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p21": {
+   "id": "p21",
+   "question": "What command installs the `cobra-cli` generator tool?",
+   "expected": "go install github.com/spf13/cobra-cli@latest",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p22": {
+   "id": "p22",
+   "question": "Under what condition does GetActiveHelpConfig return \"0\" without reading the command's specific environment variable?",
+   "expected": "When the global environment variable (activeHelpGlobalEnvVar) equals \"0\".",
+   "answer": "`GetActiveHelpConfig` returns `\"0\"` when the global environment variable is set to `activeHelpGlobalDisable` (`\"0\"`) (c18). In that case, it does not fall back to the program-specific environment variable for the root command name (c19).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p23": {
+   "id": "p23",
+   "question": "What replacement is recommended for the deprecated ExactValidArgs function?",
+   "expected": "MatchAll(ExactArgs(n), OnlyValidArgs)",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p24": {
+   "id": "p24",
+   "question": "When does writeFlags emit flag_parsing_disabled=1 into the bash script?",
+   "expected": "When cmd.DisableFlagParsing is true.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p25": {
+   "id": "p25",
+   "question": "How are colons and spaces handled when transforming CommandPath() into commandName in gen?",
+   "expected": "Spaces are replaced with '_' and colons are replaced with '__'.",
+   "answer": "In `gen`, completion function names are generated by replacing spaces with underscores and colons with double underscores (c38).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p26": {
+   "id": "p26",
+   "question": "Which Bash compopt option flag disables file completion when shellCompDirectiveNoFileComp is set?",
+   "expected": "+o default",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p27": {
+   "id": "p27",
+   "question": "What behavior does Eq exhibit when invoked on Array, Chan, Map, or Slice kinds?",
+   "expected": "It panics with \"Eq called on unsupported type\".",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p28": {
+   "id": "p28",
+   "question": "Which command in the hierarchy stores the completionCommandGroupID when SetCompletionCommandGroupID is called?",
+   "expected": "The root command stores completionCommandGroupID.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p29": {
+   "id": "p29",
+   "question": "What default distance threshold is used for command suggestions when SuggestionsMinimumDistance is less than or equal to 0?",
+   "expected": "2",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p30": {
+   "id": "p30",
+   "question": "How does Command determine its Name from Use?",
+   "expected": "It takes the substring before the first space in Use, or the entire Use string if there is no space.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  }
+ }
+}

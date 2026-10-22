@@ -1,0 +1,371 @@
+{
+ "repo": "expressjs__express",
+ "commit": "0dee2c52c7c873498f8ed7d8ee4ddd0a04d3ada8",
+ "condition": "summary",
+ "answerer": "mistral:ministral-14b-latest",
+ "judge": "gemini:gemini-3.8-flash",
+ "budget": 2000,
+ "tokens": 1938,
+ "results": {
+  "q1": {
+   "id": "q1",
+   "question": "What is the minimum required version of Node.js for installing Express?",
+   "expected": "Node.js 18 or higher",
+   "answer": "The minimum required version of Node.js for installing Express is **Node.js 18 or higher** (c1).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q2": {
+   "id": "q2",
+   "question": "Which file path is required and exported by this module?",
+   "expected": "./lib/express",
+   "answer": "The module requires **Node.js 18 or higher** (cited in *expressjs__express: Requirements & Rules*) and exports its main functionality via **`./lib/express`** (cited in *expressjs__express: Entry Point*). The entry file (`index.js`) explicitly states it exports `./lib/express` under strict mode. **UNKNOWN** for the exact file path of the exported module (e.g., `lib/express.js`).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q3": {
+   "id": "q3",
+   "question": "What is the default value set for 'subdomain offset' in defaultConfiguration?",
+   "expected": "2",
+   "answer": "The default value for `'subdomain offset'` is **2** (cited from **lib/application.js:1-597**).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q4": {
+   "id": "q4",
+   "question": "What event does `app.listen` attach the wrapped callback to on the server instance?",
+   "expected": "'error'",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q5": {
+   "id": "q5",
+   "question": "What module is used to mix prototypes into the express app instance?",
+   "expected": "merge-descriptors",
+   "answer": "The `express` app instance mixes prototypes using the **`EventEmitter`** (from Node.js) and the **`application` prototype** (defined in `lib/application.js`), as described in `lib/express.js` (c12). The factory `createApplication` combines these via `util.inherits` (implied by standard Node.js patterns, though not explicitly stated in the claims). **UNKNOWN** for the exact module name.",
+   "verdict": "incorrect",
+   "by": "judge",
+   "verdicts": [
+    "incorrect"
+   ],
+   "points": 0
+  },
+  "q6": {
+   "id": "q6",
+   "question": "What error is thrown by req.get when the name argument is omitted?",
+   "expected": "TypeError with the message 'name argument is required to req.get'",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q7": {
+   "id": "q7",
+   "question": "What error type is thrown by res.status if the provided code is not an integer?",
+   "expected": "TypeError",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q8": {
+   "id": "q8",
+   "question": "What error is thrown if a developer attempts to set the Content-Type header to an array using res.set?",
+   "expected": "A TypeError with the message 'Content-Type cannot be set to an Array'",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q9": {
+   "id": "q9",
+   "question": "What default MIME type does normalizeType use if type does not contain a slash and mime.lookup returns falsy?",
+   "expected": "'application/octet-stream'",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q10": {
+   "id": "q10",
+   "question": "What error is thrown when neither a default engine nor an extension is provided to View?",
+   "expected": "No default engine was specified and no extension was provided.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q11": {
+   "id": "q11",
+   "question": "Which package enables support for over 14 template engines in Express?",
+   "expected": "@ladjs/consolidate",
+   "answer": "The `@ladjs/consolidate` package enables support for over 14 template engines in Express (c1).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q12": {
+   "id": "q12",
+   "question": "Under what license is this code released?",
+   "expected": "MIT Licensed",
+   "answer": "The code is released under the **MIT** license (c1).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q13": {
+   "id": "q13",
+   "question": "Which header is added to the response in app.handle when 'x-powered-by' is enabled?",
+   "expected": "'X-Powered-By' with the value 'Express'",
+   "answer": "The header added to the response in `app.handle` when `'x-powered-by'` is enabled is **`X-Powered-By`** (c12). This is explicitly mentioned in the description of `app.handle(req, res, callback)` in **lib/application.js:1-597**.",
+   "verdict": "partial",
+   "by": "judge",
+   "verdicts": [
+    "partial"
+   ],
+   "points": 0.5
+  },
+  "q14": {
+   "id": "q14",
+   "question": "What utility function is used to wrap the callback argument in `app.listen`?",
+   "expected": "once",
+   "answer": "The callback argument in `app.listen` is wrapped using `finalhandler` (cited in **c3** under `app.handle(req, res, callback)`). The function delegates request processing to `this.router.handle()` after setting up the request/response prototypes.",
+   "verdict": "incorrect",
+   "by": "judge",
+   "verdicts": [
+    "incorrect"
+   ],
+   "points": 0
+  },
+  "q15": {
+   "id": "q15",
+   "question": "What method on the app instance delegates the handling of requests, responses, and next callbacks?",
+   "expected": "app.handle",
+   "answer": "The method on the `app` instance that delegates request handling, response processing, and `next` callbacks is **`app.handle(req, res, callback)`** (c12). It wraps request completion via `finalhandler`, patches `req`/`res` prototypes, and delegates processing to `this.router.handle()`.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q16": {
+   "id": "q16",
+   "question": "What does req.query return when the 'query parser fn' setting is not set on the app?",
+   "expected": "An object with null prototype (Object.create(null))",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q17": {
+   "id": "q17",
+   "question": "In res.send, what does the Content-Type header default to when passing an ArrayBuffer view if no Content-Type was previously set?",
+   "expected": "'bin'",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q18": {
+   "id": "q18",
+   "question": "What expiration date does res.clearCookie assign to force cookie expiration?",
+   "expected": "new Date(1)",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q19": {
+   "id": "q19",
+   "question": "Which function does compileQueryParser assign when val is 'extended'?",
+   "expected": "parseExtendedQueryString",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q20": {
+   "id": "q20",
+   "question": "Which property or export on a required engine module is expected as the default engine function?",
+   "expected": "__express",
+   "answer": "The default engine function expected from a required engine module is the function passed to `app.engine(ext, fn)` (cited in **lib/application.js:1-597**), where `fn` is the rendering engine callback for a given file extension. The `app.render()` method then uses this function to execute template rendering (c12). **UNKNOWN** whether the module itself exports a specific named property (e.g., `default`).",
+   "verdict": "incorrect",
+   "by": "judge",
+   "verdicts": [
+    "incorrect"
+   ],
+   "points": 0
+  },
+  "q21": {
+   "id": "q21",
+   "question": "Which CLI command should be executed to run the test suite?",
+   "expected": "npm test",
+   "answer": "The CLI command to run the test suite is **`npm test`** (c1).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q22": {
+   "id": "q22",
+   "question": "What error is thrown by app.use if no middleware functions are passed?",
+   "expected": "A TypeError stating 'app.use() requires a middleware function'",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q23": {
+   "id": "q23",
+   "question": "Under what condition does `logerror` log the error using `console.error`?",
+   "expected": "When the 'env' setting is not 'test'",
+   "answer": "`logerror` logs the error using `console.error` **only when the environment (`env`) is not set to `'test'`** (c5). This is explicitly stated in the context under `lib/application.js:598-631`.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q24": {
+   "id": "q24",
+   "question": "Which initialization method is invoked on app right before createApplication returns?",
+   "expected": "app.init()",
+   "answer": "The initialization method invoked on `app` right before `createApplication` returns is **`defaultConfiguration()`** (cited in **lib/application.js:1-597**), which sets up storage objects and configures defaults. This occurs as part of `app.init()` during the factory's creation process (cited in **lib/express.js:1-81**).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q25": {
+   "id": "q25",
+   "question": "Which HTTP methods are checked for weak freshness validation in req.fresh?",
+   "expected": "GET, HEAD, and QUERY",
+   "answer": "The `req.fresh` method checks for weak freshness validation (using `ETag` and `Last-Modified`) for **`GET`**, **`HEAD`**, and **`QUERY`** methods (c12).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q26": {
+   "id": "q26",
+   "question": "Which security mitigation prefix is prepended to the body in res.jsonp when a callback is defined?",
+   "expected": "/**/",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q27": {
+   "id": "q27",
+   "question": "What prefix is prepended to an object cookie value when serialized in res.cookie?",
+   "expected": "'j:'",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q28": {
+   "id": "q28",
+   "question": "What does compileTrust return when passed a number for val?",
+   "expected": "A function that checks if the hop index is less than that number (function(a, i){ return i < val }).",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q29": {
+   "id": "q29",
+   "question": "How does View.prototype.render ensure that synchronous callbacks from the template engine are made asynchronous?",
+   "expected": "By wrapping the invocation in process.nextTick",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q30": {
+   "id": "q30",
+   "question": "Who is credited as the original author of Express?",
+   "expected": "TJ Holowaychuk",
+   "answer": "The original author of Express is credited as **TJ Holowaychuk** (cited in **expressjs__express: Main Names & Concepts**).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  }
+ }
+}

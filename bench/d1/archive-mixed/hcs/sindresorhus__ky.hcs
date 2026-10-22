@@ -1,0 +1,437 @@
+HCS/0.2
+@title sindresorhus__ky
+@root ../../.work/d1/sindresorhus__ky
+@created 2026-10-22T08:05:50.246Z
+@updated 2026-10-22T08:07:53.294Z
+@generator hcs-cli compile (gemini:gemini-3.5-flash-lite)
+@source-files 32
+@source-tokens 76207
+
+[claims]
+
+## Overview
+#c1[overview,i5] Ky is a tiny, dependency-free HTTP client built on the Fetch API that supports modern browsers, Node.js, Bun, and Deno with comprehensive error handling and request lifecycle management.
+  > readme.md:12-19 #21d1bb51a563
+  > readme.md::KyError #b0aafb673926
+  > readme.md::"Node.js support" #ab07ac13a258
+#c2[overview,i5] The request lifecycle is managed through synchronous init hooks and asynchronous hooks like beforeRequest, beforeRetry, afterResponse, and beforeError, allowing request modifications and custom retry behaviors.
+  > readme.md:473-474 #0afdd0e5e115
+  > readme.md::hooks.init #6923bdd6675e
+  > readme.md::"How do I implement token refresh on 401 responses?" #40ee3a9c0115
+  > readme.md::"How do I stop retrying early?" #efee2ee86088
+#c3[overview,i5] Ky handles retries with configurable limits, exponential backoff, response header timing, and body buffering, while supporting custom forced retries and early silent cancellations.
+  > readme.md:263-274 #8e549c6b04b3
+  > readme.md::"Streaming request bodies" #b8a8f8bdc942
+  > readme.md::"How do I implement token refresh on 401 responses?" #40ee3a9c0115
+  > readme.md::"How do I retry based on the response body?" #9e0ddb131317
+  > readme.md::"How do I stop retrying early?" #efee2ee86088
+  > source/core/retry-timing.ts::getRetryTimingHeader #2fe593155de0
+#c4[overview,i5] Options are thoroughly validated, normalized, and merged—shallowly for context and deeply via ky.extend()—while preserving standard URL resolution and request method conventions.
+  > readme.md::context #5934ac5079b7
+  > readme.md:1076 #8063d124b1f4
+  > readme.md::"What's the difference between `baseUrl` and `prefix`?" #944b32dbb6ef
+  > source/types/options.ts::Options #be71a7a14b17
+  > source/utils/normalize.ts::normalizeRetryOptions #d4a11007d970
+#c5[overview,i5] A robust error hierarchy anchored by KyError provides specific errors for HTTP status failures, timeouts, network issues, response size limits, and forced retries, while intentionally excluding user-defined schema validation errors.
+  > readme.md::KyError #b0aafb673926
+  > source/errors/HTTPError.ts::HTTPError #b030e5d4d0e3
+  > source/errors/NetworkError.ts::NetworkError #a8dd018d0a16
+  > source/errors/ResponseSizeError.ts::ResponseSizeError #feb7e917cdea
+  > source/errors/SchemaValidationError.ts:4 #c903980f0fa5
+  > source/errors/TimeoutError.ts::TimeoutError #6a03692d6c6a
+#c6[overview,i5] Cross-realm compatibility helpers ensure reliable type guarding, error classification, and feature detection for streaming requests and network error signatures across different runtime environments.
+  > source/core/constants.ts::supportsRequestStreams #d420f681268a
+  > source/utils/is-network-error.ts::errorMessages #b8be9b6d19c6
+  > source/utils/is.ts::isError #ff175976b87b
+  > source/utils/is.ts::isRequest #cc1cbebd59d3
+  > source/utils/is.ts::isResponse #3283977cc352
+  > source/utils/type-guards.ts::isErrorType #2f2aed5326e2
+#c7[overview,i5] Timeout management enforces per-attempt limits using race conditions, abort signals, and cleanup logic that safely cancels streams and clears timers on completion or failure.
+  > readme.md::timeout #140c6b988503
+  > source/core/Ky.ts:1254-1258 #714583a5f3f3
+  > source/utils/delay.ts::delay #446c2a0ec5f0
+  > source/utils/timeout.ts::timeout #253b066c01c5
+
+## (root)
+#c8[i5] Ky is a tiny, dependency-free HTTP client based on the Fetch API that targets modern browsers, Node.js, Bun, and Deno.
+  > readme.md:12-19 #21d1bb51a563
+#c9[i4] Ky treats non-2xx status codes as errors after redirects and throws an HTTPError when response status is outside 200...299 range.
+  > readme.md::"ky(input, options?)" #1c56f829d259
+#c10[i4] The default retry limit is 2, with specific defaults for methods, status codes, backoff limit, and an exponential delay formula.
+  > readme.md:263-274 #8e549c6b04b3
+#c11[i3] The default per-attempt timeout is 10000 milliseconds (10 seconds), and can be configured as a number or false.
+  > readme.md::timeout #140c6b988503
+#c12[i3] Max response size defaults to Infinity and counts bytes from the response stream after decompression, throwing a ResponseSizeError if exceeded.
+  > readme.md::maxResponseSize #01f38f174727
+#c13[i4] Hooks allow modifications during the request lifecycle and include init, beforeRequest, beforeRetry, beforeError, and afterResponse.
+  > readme.md:473-474 #0afdd0e5e115
+#c14[i3] Unlike other hooks, init hooks are synchronous, and an error thrown by one rejects the returned promise without invoking beforeError hooks.
+  > readme.md::hooks.init #6923bdd6675e
+#c15[i3] Context merging is shallow; top-level properties are merged while nested objects are replaced, and only enumerable properties are copied.
+  > readme.md::context #5934ac5079b7
+#c16[i4] ky.extend() deep-merges options by default, appending hooks, merging headers, and accumulating search parameters.
+  > readme.md:1076 #8063d124b1f4
+#c17[i5] KyError is the base class for all Ky-specific errors including HTTPError, NetworkError, TimeoutError, ResponseSizeError, and ForceRetryError.
+  > readme.md::KyError #b0aafb673926
+#c18[i4] SchemaValidationError is intentionally not considered a Ky error and does not extend KyError because it represents a user schema rejection rather than an HTTP lifecycle failure.
+  > readme.md::KyError #b0aafb673926
+#c19[i4] Node.js 24.5+ supports automatic proxy configuration via environment variables when NODE_USE_ENV_PROXY=1 is set or the --use-env-proxy CLI flag is used.
+  > readme.md::"Native proxy support" #d420abf0c034
+#c20[i3] When retries are enabled, Ky buffers the entire streaming body in memory to support replaying it, which can be skipped by setting retry: {limit: 0}.
+  > readme.md::"Streaming request bodies" #b8a8f8bdc942
+#c21[i5] baseUrl follows standard URL resolution rules like new URL(input, baseUrl), whereas prefix does plain string joining before URL resolution and strips leading slashes from the input.
+  > readme.md::"What's the difference between `baseUrl` and `prefix`?" #944b32dbb6ef
+#c22[i4] Token refresh on 401 responses can be implemented by configuring `retry` for 401 status codes and using the `beforeRetry` hook to update the Authorization header.
+  > readme.md::"How do I implement token refresh on 401 responses?" #40ee3a9c0115
+#c23[i4] To force a retry based on the response body even with a 2xx status code, use `ky.retry()` inside an `afterResponse` hook.
+  > readme.md::"How do I retry based on the response body?" #9e0ddb131317
+#c24[i4] Stopping a retry early and silently can be done by returning `ky.stop` from a `beforeRetry` hook, causing the request to resolve with `undefined`.
+  > readme.md::"How do I stop retrying early?" #efee2ee86088
+#c25[i3] To filter HTTP errors by status, a function can be passed to `throwHttpErrors`, such as `status => status >= 500` to only throw on 5xx errors.
+  > readme.md::"How do I only throw on certain HTTP errors?" #ceb9846ac62a
+#c26[i3] Ky requires Node.js version 22 and later.
+  > readme.md::"Node.js support" #ab07ac13a258
+
+## source
+#c27[i5] Errors occurring during request setup, such as invalid options or a throwing init hook, cause the returned promise to reject rather than throwing synchronously.
+  > source/index.ts::createRequest #07856b139ac8
+#c28[i4] When request setup fails, supported response types are attached to the rejected promise returning the same promise to prevent unhandled rejections when body methods are called.
+  > source/index.ts::createRequest.of #664943d55fd7
+
+## source/core
+#c29[i4] Ky's constructor validates that the `input` argument is a string, URL, or Request, throwing a TypeError otherwise.
+  > source/core/Ky.ts:460-462 #7c4170977b5a
+#c30[i3] The constructor throws an error if the deprecated `prefixUrl` option is passed in options.
+  > source/core/Ky.ts:469-471 #073f5ffd5268
+#c31[i4] If `options.json` is provided, Ky serializes the body using `stringifyJson` or `JSON.stringify` and defaults the `content-type` header to `application/json` unless explicitly provided.
+  > source/core/Ky.ts:527-532 #22608af7f8fe
+#c32[i3] Ky checks whether response streams are supported before applying `onDownloadProgress`, throwing an error if `supportsResponseStreams` is false.
+  > source/core/Ky.ts:653-655 #0f3b801df816
+#c33[i3] `#calculateDelay` ensures `retry.delay` returns a non-negative number or `Infinity`, throwing a `TypeError` otherwise.
+  > source/core/Ky.ts:669-672 #3828e83a6ef6
+#c34[i3] `#shouldThrowHttpErrors` cancels the response body and rethrows if evaluating the `throwHttpErrors` option throws an error.
+  > source/core/Ky.ts:1024-1027 #97f827d43a3b
+#c35[i4] The #fetch method validates that the fetch option resolves with a Response object, throwing a TypeError otherwise.
+  > source/core/Ky.ts:1250-1252 #b9e32ed91641
+#c36[i4] If the total timeout is exhausted after fetch completes, #fetch aborts the controller, cancels the response body, and throws a TimeoutError.
+  > source/core/Ky.ts:1254-1258 #714583a5f3f3
+#c37[i4] Raw network errors caught during fetch are rethrown wrapped in a NetworkError with the original error as the cause.
+  > source/core/Ky.ts:1268-1270 #4069bd1e020e
+#c38[i4] The #applyBeforeRetryOptions method validates that returned options are an object containing only allowed beforeRetry option keys, then updates options.
+  > source/core/Ky.ts:1292-1296 #55c5793840d9
+#c39[i3] #getNormalizedOptions excludes Ky-specific options from #options and returns a frozen RequestInit-compatible object.
+  > source/core/Ky.ts:1324 #ad9ee9282d31
+#c40[i5] The supportsRequestStreams constant detects streaming request support using global Request and ReadableStream checks alongside duplex handling or Bun/Deno identification.
+  > source/core/constants.ts::supportsRequestStreams #d420f681268a
+#c41[i3] The maxSafeTimeout constant defines the maximum value for a 32-bit integer as 2,147,483,647.
+  > source/core/constants.ts::maxSafeTimeout #939ac08d2afe
+#c42[i4] The stop constant exports a globally registered symbol via Symbol.for('ky.stop') to halt retries across duplicate module dependencies.
+  > source/core/constants.ts::stop #1379d433d6af
+#c43[i3] The isRetryMarker function checks if a value is an instance of RetryMarker or carries the isRetryMarker property set to true.
+  > source/core/constants.ts::isRetryMarker #6591c61479e6
+#c44[i3] The beforeRetryOptionKeys array defines options read again on every attempt so hooks can modify them without rebuilding the request.
+  > source/core/constants.ts::beforeRetryOptionKeys #07c7c7b007b6
+#c45[i3] The `timestampThresholdSeconds` constant is set to 1,000,000,000 to identify epoch timestamps starting from 2001-09-09.
+  > source/core/retry-timing.ts::timestampThresholdSeconds #f575080c976f
+#c46[i5] `getRetryTimingHeader` extracts retry or reset headers from a Headers object, prioritizing Retry-After over rate limit headers.
+  > source/core/retry-timing.ts::getRetryTimingHeader #2fe593155de0
+#c47[i3] `createTimestamp` validates date parts and handles leap seconds by normalizing 60 seconds to 59 and adding one second.
+  > source/core/retry-timing.ts::createTimestamp #3f3a0c278d92
+#c48[i4] `parseDate` attempts to match HTTP-date strings against IMF-fixdate, RFC 850 date, and asctime date patterns.
+  > source/core/retry-timing.ts::parseDate #1f28ded1c9c6
+#c49[i5] `calculateRetryTimingDelay` interprets numeric values as seconds and converts them to milliseconds, subtracting current time if timestamps are allowed and thresholds are met.
+  > source/core/retry-timing.ts::calculateRetryTimingDelay #5ad0cabe55b3
+
+## source/errors
+#c50[i5] The ForceRetryError class extends KyError and is used to signal a forced retry from afterResponse hooks.
+  > source/errors/ForceRetryError.ts::ForceRetryError #bbd3d0028a23
+#c51[i4] ForceRetryError constructor throws a TypeError if options is explicitly null.
+  > source/errors/ForceRetryError.ts::ForceRetryError.constructor #f5ab0764aa8e
+#c52[i4] ForceRetryError validates that the delay option is a non-negative number if provided.
+  > source/errors/ForceRetryError.ts::ForceRetryError.constructor #f5ab0764aa8e
+#c53[i4] ForceRetryError validates that the code option is a string if provided.
+  > source/errors/ForceRetryError.ts::ForceRetryError.constructor #f5ab0764aa8e
+#c54[i4] ForceRetryError validates that the request option is a Request object if provided.
+  > source/errors/ForceRetryError.ts::ForceRetryError.constructor #f5ab0764aa8e
+#c55[i5] HTTPError is thrown when a response has a non-2xx status code and throwHttpErrors is enabled, extending KyError and setting its name property to 'HTTPError'.
+  > source/errors/HTTPError.ts::HTTPError #b030e5d4d0e3
+#c56[i5] KyError serves as the base class for all Ky-specific errors including HTTPError, NetworkError, TimeoutError, ResponseSizeError, and ForceRetryError.
+  > source/errors/KyError.ts:1-3 #e9fb62a0536d
+#c57[i4] SchemaValidationError is intentionally excluded from being a Ky error because it originates from user-provided schema rather than Ky's HTTP lifecycle.
+  > source/errors/KyError.ts:6-7 #ce76e0249e27
+#c58[i3] The KyError class overrides the error name property to 'KyError'.
+  > source/errors/KyError.ts::KyError #75d474a5c96b
+#c59[i5] KyError provides a getter property named isKyError that unconditionally returns true for cross-realm compatibility and TypeScript type narrowing.
+  > source/errors/KyError.ts::KyError.isKyError #86e78e01a47e
+#c60[i5] NetworkError extends KyError and represents errors occurring during requests like DNS failures or connection refusals.
+  > source/errors/NetworkError.ts::NetworkError #a8dd018d0a16
+#c61[i4] The NetworkError class sets its name property to 'NetworkError' and stores the associated request.
+  > source/errors/NetworkError.ts::NetworkError #a8dd018d0a16
+#c62[i5] The NetworkError constructor accepts a Request and an optional cause error, passing a formatted message to the super constructor.
+  > source/errors/NetworkError.ts::NetworkError.constructor #f6a236e9efaf
+#c63[i5] The NonError class extends Error and wraps non-Error thrown values to ensure consistent error handling.
+  > source/errors/NonError.ts::NonError #1a1ad421dfb3
+#c64[i5] NonError.wrap returns the value as-is if it is an Error, and otherwise wraps it in a NonError instance.
+  > source/errors/NonError.ts::NonError.wrap #d70e1d5bb813
+#c65[i4] The NonError instance overrides its name property to 'NonError' and stores the original thrown value in a readonly 'value' property.
+  > source/errors/NonError.ts::NonError #1a1ad421dfb3
+#c66[i4] The constructor sets the error message to the thrown value if it is a string, or to value.message if it is an object with a string message property, falling back to a default message safely.
+  > source/errors/NonError.ts::NonError.constructor #74e4b8841658
+#c67[i5] ResponseSizeError extends KyError and is thrown when the response body exceeds the configured maxResponseSize limit.
+  > source/errors/ResponseSizeError.ts::ResponseSizeError #feb7e917cdea
+#c68[i3] ResponseSizeError defines an override name property set to 'ResponseSizeError'.
+  > source/errors/ResponseSizeError.ts::ResponseSizeError #feb7e917cdea
+#c69[i5] ResponseSizeError constructor accepts a Request object and a maxResponseSize number, setting them as instance properties.
+  > source/errors/ResponseSizeError.ts::ResponseSizeError.constructor #20201d86fd71
+#c70[i5] SchemaValidationError is thrown when Standard Schema validation fails in .json(schema) and exposes an issues property containing validation issues.
+  > source/errors/SchemaValidationError.ts:4 #c903980f0fa5
+#c71[i5] SchemaValidationError intentionally does not extend KyError because it does not represent an HTTP lifecycle failure and is not matched by isKyError().
+  > source/errors/SchemaValidationError.ts:6 #a78383935ccd
+#c72[i5] The TimeoutError class extends KyError and is thrown when a request times out.
+  > source/errors/TimeoutError.ts::TimeoutError #6a03692d6c6a
+#c73[i4] TimeoutError overrides the error name property to 'TimeoutError'.
+  > source/errors/TimeoutError.ts::TimeoutError #6a03692d6c6a
+#c74[i5] The TimeoutError constructor accepts a Request object, sets the request property, and passes a formatted timeout message to the super constructor.
+  > source/errors/TimeoutError.ts::TimeoutError.constructor #3d06a554892b
+
+## source/types
+#c75[i4] Body shortcuts throw an HTTPError if the response status is not in the range of 200 through 299, and an appropriate Accept header is set depending on the body method used.
+  > source/types/ResponsePromise.ts:2 #2e4b2575614a
+#c76[i4] Invalid options, an invalid input, and an error thrown by an init hook reject the returned promise instead of throwing and are not passed to beforeError hooks because no request was made.
+  > source/types/ResponsePromise.ts:4 #fd5e769bd4b3
+#c77[i5] The module defines a Primitive type that includes null, undefined, string, number, boolean, symbol, and bigint.
+  > source/types/common.ts::Primitive #16c64b06ecf4
+#c78[i5] The LiteralUnion type allows a combination of a literal type and a base primitive type while preventing type widening through a branded never property.
+  > source/types/common.ts::LiteralUnion #40b4101207f5
+#c79[i5] The init hook is synchronous, and unlike other hooks, an error thrown by it rejects the returned promise and is not passed to beforeError hooks.
+  > source/types/hooks.ts:10 #74bfbd7ef100
+#c80[i3] BeforeRetryUpdate allows updating specific options via beforeRetryOptionKeys during a retry.
+  > source/types/hooks.ts::BeforeRetryUpdate #d08b1138fdf2
+#c81[i4] Any error thrown by beforeRequest hooks is treated as fatal and will not trigger Ky's retry logic.
+  > source/types/hooks.ts:151 #6f1aff27359a
+#c82[i3] NormalizedHooks represents the Hooks type where every hook type is present as a required array.
+  > source/types/hooks.ts::NormalizedHooks #1523416d7c66
+#c83[i4] Invalid options, an invalid input, or an error thrown by an init hook cause the returned promise to reject rather than throwing, bypassing beforeError hooks.
+  > source/types/ky.ts:9 #316a21a70af3
+#c84[i3] Headers are normalized to a plain object with lowercase names when options are merged, so init hooks start with a plain object with lowercase keys.
+  > source/types/ky.ts:94 #78a928bda090
+#c85[i4] Returning ky.stop from a beforeRetry hook aborts the request and returns an undefined response, making body methods throw a TypeError.
+  > source/types/ky.ts:128 #9e07b1d28551
+#c86[i4] The `searchParams` option allows passing URLSearchParams-supported values where setting an object property to `undefined` deletes it, while `null` values are converted to the string `'null'`.
+  > source/types/options.ts:123 #7f4a11e0eac5
+#c87[i3] The `Options` interface extends `KyOptions` and `RequestOptions`, and must remain an interface to allow extension outside of Ky for use in `ky.create`.
+  > source/types/options.ts::Options #be71a7a14b17
+#c88[i3] Standard HTTP methods are internally uppercased to avoid server errors due to case sensitivity.
+  > source/types/options.ts::Options #be71a7a14b17
+#c89[i5] The KyRequest type extends the standard Request type with a generic type parameter T defaulting to unknown.
+  > source/types/request.ts::KyRequest #c1c59947097d
+#c90[i4] KyRequest defines a clone method that returns a new KyRequest instance of the same type T.
+  > source/types/request.ts::KyRequest.clone #7905a9092590
+#c91[i4] KyRequest defines a json method that takes a generic type J defaulting to T and returns a Promise resolving to J.
+  > source/types/request.ts::KyRequest #c1c59947097d
+#c92[i5] The KyResponse type extends the standard Response type with a generic type parameter T defaulting to unknown.
+  > source/types/response.ts::KyResponse #ec9a528b6ea3
+#c93[i4] KyResponse defines a clone method that returns a new instance of KyResponse with the same generic type T.
+  > source/types/response.ts::KyResponse.clone #1cca0cded5fc
+#c94[i4] KyResponse defines a json method returning a Promise resolving to a generic type J which defaults to T.
+  > source/types/response.ts::KyResponse #ec9a528b6ea3
+#c95[i3] MutableRetryOptions omits methods, statusCodes, and afterStatusCodes from RetryOptions and redefines them with undefined allowed elements.
+  > source/types/retry.ts::MutableRetryOptions #ae84b73412fa
+#c96[i5] If a delay function returns anything other than a non-negative number or Infinity, it throws a TypeError and keeps the error as its cause.
+  > source/types/retry.ts:80 #73d1923d3831
+#c97[i3] Jitter is not applied when the server provides a retry timing header.
+  > source/types/retry.ts:95 #7a6c8e43f6a8
+#c98[i4] The StandardSchemaV1Issue type defines a readonly message string and an optional readonly path which can be an array of PropertyKey or objects with a key property.
+  > source/types/standard-schema.ts::StandardSchemaV1Issue #4b717b108c5f
+#c99[i4] StandardSchemaV1SuccessResult holds a typed output value and explicitly omits issues.
+  > source/types/standard-schema.ts::StandardSchemaV1SuccessResult #8e7330c30f97
+#c100[i4] StandardSchemaV1FailureResult contains a readonly array of issues and omits the value property.
+  > source/types/standard-schema.ts::StandardSchemaV1FailureResult #0686a4347af4
+#c101[i4] StandardSchemaV1InferOutput extracts the output type from the schema's types or infers it from the success result of the validate function's return type.
+  > source/types/standard-schema.ts:39-48 #6086986c36cc
+
+## source/utils
+#c102[i4] The `nullBodyStatuses` set defines HTTP status codes (101, 103, 204, 205, 304) for which responses must not have their bodies wrapped, as the Response constructor rejects a body for them.
+  > source/utils/body.ts::nullBodyStatuses #8dc7fb324520
+#c103[i3] The `cancelBody` function fire-and-forget cancels the body of a request or response unless it matches the `keep` parameter, ignoring cancellation failures from locked or consumed streams.
+  > source/utils/body.ts::cancelBody #3366adc89563
+#c104[i4] The `getBodySize` function estimates the byte length of various body initializers including FormData, Blob, ArrayBuffer, ArrayBuffer views, strings, and URLSearchParams.
+  > source/utils/body.ts::getBodySize #8eb448580160
+#c105[i3] The `streamResponse` function checks if content encoding is present and not 'identity' to determine whether to set `totalBytes` from content length or treat it as unknown (0).
+  > source/utils/body.ts::streamResponse #1eafb1008a18
+#c106[i4] The `streamRequest` function bypasses progress wrapping if the request is missing a body, is already used, has a locked body, has keepalive enabled, uses 'no-cors' mode, or is not an instance of globalThis.Request.
+  > source/utils/body.ts::streamRequest #ddc369711a21
+#c107[i5] The delay function accepts a number of milliseconds and a DelayOptions object containing an optional abort signal.
+  > source/utils/delay.ts::delay #446c2a0ec5f0
+#c108[i5] If an abort signal is provided, delay checks if it is already aborted using throwIfAborted and registers a one-time abort event listener.
+  > source/utils/delay.ts::delay #446c2a0ec5f0
+#c109[i5] The abortHandler clears the active timeout and rejects the promise with the signal reason.
+  > source/utils/delay.ts::delay.abortHandler #57808795785a
+#c110[i4] When the timeout completes normally, it removes the abort event listener and resolves the promise.
+  > source/utils/delay.ts::delay #446c2a0ec5f0
+#c111[i5] The module exports `isRawNetworkError` which checks if an unknown error is a TypeError representing a network error.
+  > source/utils/is-network-error.ts::isRawNetworkError #804cf994a8eb
+#c112[i4] The `errorMessages` set contains known network error strings for Chrome, Firefox, Safari 16, cross-fetch, Undici, Bun, and Cloudflare Workers.
+  > source/utils/is-network-error.ts::errorMessages #b8be9b6d19c6
+#c113[i4] Safari 17+ network errors with 'Load failed' messages are identified when the stack is undefined or contains the Sentry property.
+  > source/utils/is-network-error.ts::isRawNetworkError #804cf994a8eb
+#c114[i4] Deno network errors are identified if the error message starts with 'error sending request for url'.
+  > source/utils/is-network-error.ts::isRawNetworkError #804cf994a8eb
+#c115[i4] Chrome network errors are matched when the message is exactly 'Failed to fetch' or follows the format 'Failed to fetch (...)'.
+  > source/utils/is-network-error.ts::isRawNetworkError #804cf994a8eb
+#c116[i4] The function isObject checks if a value is non-null and of type 'object', acting as a type guard for objects.
+  > source/utils/is.ts::isObject #aa9a1a77b52e
+#c117[i4] The function isNonArrayObject ensures a value is an object and not an array using isObject and Array.isArray.
+  > source/utils/is.ts::isNonArrayObject #b2471eff4e61
+#c118[i4] The function isNonNegativeNumber verifies that a value is a number greater than or equal to zero, rejecting NaN through the comparison.
+  > source/utils/is.ts::isNonNegativeNumber #e1f79c3e0531
+#c119[i5] The function isError checks for an Error instance or matches the [object Error] brand to support errors from other realms like iframes or workers.
+  > source/utils/is.ts::isError #ff175976b87b
+#c120[i5] The function isRequest accepts Request instances from globalThis or values matching the [object Request] brand for cross-realm compatibility.
+  > source/utils/is.ts::isRequest #cc1cbebd59d3
+#c121[i5] The function isResponse accepts Response instances from globalThis or values matching the [object Response] brand.
+  > source/utils/is.ts::isResponse #3283977cc352
+#c122[i5] The `replaceOption` function wraps a value with a unique symbol (`ky.replaceOption`) and a `toJSON` method so that `ky.extend()` replaces a parent property instead of merging with it.
+  > source/utils/merge.ts::replaceOption #81f087dbb2a2
+#c123[i3] The `retry` option handles shorthand numbers by expanding them to `{limit: number}`, merging numeric limits and object options when extending configurations.
+  > source/utils/merge.ts:431-437 #3f6d0f313dbd
+#c124[i4] Root options like `headers` and `searchParams` throw TypeErrors if explicitly set to `null`, requiring `undefined` to clear them.
+  > source/utils/merge.ts:372-374 #1fb2d49e55f4
+#c125[i4] The `normalizeRequestMethod` function converts a request method to uppercase if it exists in the standard requestMethods list, otherwise returning it unchanged.
+  > source/utils/normalize.ts::normalizeRequestMethod #09c0a2edacc2
+#c126[i4] The `normalizeRetryMethod` function lowercases the method if it is included in the caseInsensitiveMethods set, which adds 'options' and 'trace' to standard request methods.
+  > source/utils/normalize.ts::normalizeRetryMethod #ffe0543eb7e6
+#c127[i5] `defaultRetryOptions` specifies a limit of 2, default retry methods, status codes, afterStatusCodes, infinite maxRetryAfter and backoffLimit, a default exponential delay function, and retryOnTimeout set to false.
+  > source/utils/normalize.ts::defaultRetryOptions #6ce93eca7589
+#c128[i4] `normalizeRetryOptions` validates that `retry.limit` is a finite, non-negative integer and throws a TypeError otherwise.
+  > source/utils/normalize.ts::normalizeRetryOptions #d4a11007d970
+#c129[i4] `normalizeRetryOptions` validates that `maxRetryAfter` and `backoffLimit` are non-negative numbers using `isNonNegativeNumber`.
+  > source/utils/normalize.ts::normalizeRetryOptions #d4a11007d970
+#c130[i5] The helper function `isErrorType` handles cross-realm cases where `instanceof` fails by checking both `error instanceof cls` and whether `error.isKyError` is true alongside matching `error.name` with `cls.name`.
+  > source/utils/type-guards.ts::isErrorType #2f2aed5326e2
+#c131[i4] SchemaValidationError is intentionally excluded from being considered a Ky error, as KyErrors cover HTTP lifecycle failures while schema errors originate from user-provided schemas.
+  > source/utils/type-guards.ts:15 #37e747ec2924
+#c132[i5] The `isKyError` function checks if an error is a `KyError` by verifying that `error.isKyError` is strictly true.
+  > source/utils/type-guards.ts::isKyError #5d639a3a16e3
+#c133[i4] The `isHTTPError` type guard uses `isErrorType` to check if an error instance or cross-realm object corresponds to `HTTPError`.
+  > source/utils/type-guards.ts::isHTTPError #6998a77e455d
+#c134[i4] The `isNetworkError` type guard uses `isErrorType` to validate `NetworkError` instances or cross-realm equivalents.
+  > source/utils/type-guards.ts::isNetworkError #81be3701d8b4
+#c135[i4] The `isTimeoutError` type guard uses `isErrorType` to validate `TimeoutError` instances or cross-realm equivalents.
+  > source/utils/type-guards.ts::isTimeoutError #3f5229cf8d5b
+#c136[i4] The `isForceRetryError` type guard uses `isErrorType` to validate `ForceRetryError` instances or cross-realm equivalents.
+  > source/utils/type-guards.ts::isForceRetryError #d16df7225bdb
+#c137[i4] The `isResponseSizeError` type guard uses `isErrorType` to validate `ResponseSizeError` instances or cross-realm equivalents.
+  > source/utils/type-guards.ts::isResponseSizeError #cf8574da3e77
+#c138[i5] The Mutable type removes the readonly modifier from all properties of a given type T.
+  > source/utils/types.ts::Mutable #db0aeb7fa110
+#c139[i5] The function findUnknownOptions identifies options that are neither in requestOptionsRegistry nor kyOptionKeys, using Object.hasOwn to avoid prototype pollution.
+  > source/utils/options.ts::findUnknownOptions #bb7bff2b6949
+#c140[i4] The function findUnknownOptions defines properties on unknownOptions using Object.defineProperty to prevent prototype replacement if a __proto__ key is passed.
+  > source/utils/options.ts::findUnknownOptions #bb7bff2b6949
+#c141[i4] The function hasSearchParameters throws a TypeError if the search parameter is null, instructing the user to use undefined instead.
+  > source/utils/options.ts::hasSearchParameters #9e5a4bd114b5
+#c142[i3] The function hasSearchParameters checks if an array search parameter has a length greater than zero.
+  > source/utils/options.ts::hasSearchParameters #9e5a4bd114b5
+#c143[i4] The function hasSearchParameters checks URLSearchParams size or whether deletedParametersSymbol has a non-empty size.
+  > source/utils/options.ts::hasSearchParameters #9e5a4bd114b5
+#c144[i5] The timeout module exports a default async function that wraps a fetch request with a timeout using a Promise race workaround.
+  > source/utils/timeout.ts::timeout #253b066c01c5
+#c145[i3] Fetch is called unbound to prevent 'Illegal invocation' errors in browsers when a native window.fetch is used.
+  > source/utils/timeout.ts::timeout #253b066c01c5
+#c146[i4] If a response arrives after a timeout has already occurred, the response body is cancelled and the response is discarded.
+  > source/utils/timeout.ts::timeout #253b066c01c5
+#c147[i4] The finally block ensures that clearTimeout is always called to prevent the timer from aborting a later retry attempt.
+  > source/utils/timeout.ts::timeout #253b066c01c5
+
+[probes]
+?p1 What is the default retry limit in Ky?
+  = 2
+  > readme.md:263-264 #52d5ce52297b
+?p2 How is context merged when extending options?
+  = Shallow merged
+  > readme.md::context #5934ac5079b7
+?p3 Which Node.js version introduced support for automatic proxy configuration via environment variables?
+  = Node.js 24.5+
+  > readme.md::"Native proxy support" #d420abf0c034
+?p4 What Node.js version is required for Ky?
+  = Node.js 22 and later
+  > readme.md::"Node.js support" #ab07ac13a258
+?p5 What error is thrown if `input` is not a string, URL, or Request in Ky's constructor?
+  = TypeError
+  > source/core/Ky.ts:460-462 #7c4170977b5a
+?p6 What error is thrown by `#calculateDelay` if `retry.delay` returns an invalid value?
+  = TypeError
+  > source/core/Ky.ts:671 #5cca18357bd8
+?p7 What error is thrown if the fetch option does not resolve with a Response?
+  = TypeError
+  > source/core/Ky.ts:1250-1252 #b9e32ed91641
+?p8 What numeric value is assigned to maxSafeTimeout?
+  = 2,147,483,647
+  > source/core/constants.ts::maxSafeTimeout #939ac08d2afe
+?p9 What is the value of timestampThresholdSeconds used to distinguish epoch seconds from regular delays?
+  = 1000000000
+  > source/core/retry-timing.ts::timestampThresholdSeconds #f575080c976f
+?p10 What error message is used when options.code is undefined in ForceRetryError?
+  = Forced retry
+  > source/errors/ForceRetryError.ts::ForceRetryError.constructor #f5ab0764aa8e
+?p11 What is the value of the name property on an HTTPError instance?
+  = HTTPError
+  > source/errors/HTTPError.ts::HTTPError #b030e5d4d0e3
+?p12 What is the error name property value set to in KyError?
+  = KyError
+  > source/errors/KyError.ts::KyError #75d474a5c96b
+?p13 What is the value of the name property on the NetworkError class?
+  = NetworkError
+  > source/errors/NetworkError.ts::NetworkError #a8dd018d0a16
+?p14 What is the name property set to on a NonError instance?
+  = NonError
+  > source/errors/NonError.ts::NonError #1a1ad421dfb3
+?p15 What is the error name property set to in ResponseSizeError?
+  = ResponseSizeError
+  > source/errors/ResponseSizeError.ts::ResponseSizeError #feb7e917cdea
+?p16 What error message does SchemaValidationError pass to the parent Error class?
+  = Response schema validation failed
+  > source/errors/SchemaValidationError.ts::SchemaValidationError.constructor #c6bdfc3e9bba
+?p17 What is the value of the name property in TimeoutError?
+  = TimeoutError
+  > source/errors/TimeoutError.ts::TimeoutError #6a03692d6c6a
+?p18 What does createRequest return when an error occurs during request setup?
+  = A rejected promise
+  > source/index.ts::createRequest #07856b139ac8
+?p19 What error is thrown when response body JSON validation fails against a Standard Schema?
+  = SchemaValidationError
+  > source/types/ResponsePromise.ts::ResponsePromise #2ce0b174e51b
+?p20 What types are included in the Primitive type definition?
+  = null, undefined, string, number, boolean, symbol, and bigint
+  > source/types/common.ts::Primitive #16c64b06ecf4
+?p21 What is the retryCount value in BeforeRequestState?
+  = 0
+  > source/types/hooks.ts::BeforeRequestState #6c9a7ea70ab2
+?p22 What error type is observed in beforeRetry hooks during a forced retry?
+  = ForceRetryError
+  > source/types/ky.ts:158-159 #83d4778046cc
+?p23 What is the default value of the `timeout` option?
+  = 10000
+  > source/types/options.ts:218 #a48f786dfae2
+?p24 What is the default type parameter for KyRequest?
+  = unknown
+  > source/types/request.ts::KyRequest #c1c59947097d
+?p25 What is the default type for the generic parameter T in KyResponse?
+  = unknown
+  > source/types/response.ts::KyResponse #ec9a528b6ea3
+?p26 What is the default value for maxRetryAfter?
+  = Infinity
+  > source/types/retry.ts:56 #e35eb7c0456d
+?p27 What version number is required on the '~standard' property object of a StandardSchemaV1?
+  = 1
+  > source/types/standard-schema.ts::StandardSchemaV1 #f17ca6260782
+?p28 Which HTTP status codes are included in `nullBodyStatuses`?
+  = 101, 103, 204, 205, 304
+  > source/utils/body.ts::nullBodyStatuses #8dc7fb324520
+?p29 What type is expected for the signal property in DelayOptions?
+  = InternalOptions['signal']
+  > source/utils/delay.ts::DelayOptions #055267d75c6a
+?p30 Which function is exported as the default export from `source/utils/is-network-error.ts`?
+  = isRawNetworkError
+  > source/utils/is-network-error.ts::isRawNetworkError #804cf994a8eb

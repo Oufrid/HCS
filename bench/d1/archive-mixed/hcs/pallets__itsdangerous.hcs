@@ -1,0 +1,136 @@
+HCS/0.2
+@title pallets__itsdangerous
+@root ../../.work/d1/pallets__itsdangerous
+@created 2026-10-22T07:38:07.281Z
+@updated 2026-10-22T07:45:00.041Z
+@generator hcs-cli compile (gemini:gemini-3.6-flash)
+@source-files 22
+@source-tokens 15838
+@incomplete docs/serializer.rst:1-112,docs/signer.rst:1-49,docs/timed.rst:1-28,docs/url_safe.rst:1-21,src/itsdangerous/__init__.py:1-17,src/itsdangerous/_json.py:1-18,src/itsdangerous/encoding.py:1-54,src/itsdangerous/exc.py:1-106,src/itsdangerous/serializer.py:1-404,src/itsdangerous/signer.py:1-266,src/itsdangerous/timed.py:1-228,src/itsdangerous/url_safe.py:1-83
+
+[claims]
+
+## (root)
+#c1[i5] ItsDangerous provides cryptographic signing helpers to safely pass data to untrusted environments and verify tokens have not been tampered with.
+  > README.md::ItsDangerous #9862506eae8f
+#c2[i4] ItsDangerous allows custom data serialization, automatic compression when needed, and automatic timestamp addition and verification during loading.
+  > README.md::ItsDangerous #9862506eae8f
+#c3[i2] The Pallets organization develops and maintains ItsDangerous and accepts donations at palletsprojects.com/donate.
+  > README.md::Donate #d5eca4501200
+
+## docs
+#c4[i5] The documentation file docs/changes.rst includes the root CHANGES.rst file.
+  > docs/changes.rst:4 #b0937da7f837
+#c5[i5] ItsDangerous provides a Signer to sign bytes based on signing parameters, while a Serializer wraps a signer to serialize and sign other data types.
+  > docs/concepts.rst:8-11 #8446375b6053
+#c6[i4] Salts are combined with the secret key to derive unique keys that distinguish different contexts, and unlike secret keys, salts do not need to be random or private.
+  > docs/concepts.rst:59-62 #16ea4b1b460d
+#c7[i3] Serializers cannot load data dumped with a different salt, raising a BadSignature error when salt values mismatch.
+  > docs/concepts.rst:83-84 #b93dd6a16c99
+#c8[i4] When key rotation is configured by passing a list of secret keys ordered from oldest to newest, signing uses the newest key, while validation tries keys from newest to oldest.
+  > docs/concepts.rst:116-119 #343f8b7f541a
+#c9[i4] The default digest_method used by a signer as an intermediate hash step in HMAC generation is hashlib.sha1.
+  > docs/concepts.rst:140-142 #f0ab46989cc2
+#c10[i3] Configuring a signer with digest methods like hashlib.sha512 produces longer hashes, which increases token length in space-sensitive contexts like cookies and URLs.
+  > docs/concepts.rst:152-154 #60ea180f0107
+#c11[i4] The release and version configuration values are retrieved dynamically for 'itsdangerous' using get_version from pallets_sphinx_themes.
+  > docs/conf.py:9 #6c76fe2f2cf3
+#c12[i3] Sphinx documentation project metadata sets the project name to 'ItsDangerous' and copyright/author to 'Pallets'.
+  > docs/conf.py:6-8 #9df9727c392f
+#c13[i3] Autodoc settings configure class content to include both class docstrings and __init__, order members by source, put type hints in descriptions, and preserve default values.
+  > docs/conf.py:21-24 #c8f7578f51a4
+#c14[i3] The Sphinx HTML theme is set to 'flask' with index sidebar logos disabled.
+  > docs/conf.py:35-36 #62923d51e83e
+#c15[i2] Intersphinx maps Python documentation references to 'https://docs.python.org/3/'.
+  > docs/conf.py:29-31 #d68e5d7fd11f
+#c16[i3] The module `itsdangerous.encoding` provides encoding utilities including `base64_encode` and `base64_decode`.
+  > docs/encoding.rst:1-8 #92aa2b623b31
+#c17[i5] The module itsdangerous.exc documents exceptions including BadData, BadSignature, BadTimeSignature, SignatureExpired, BadHeader, and BadPayload.
+  > docs/exceptions.rst:1-22 #a5862d4c7c89
+#c18[i5] ItsDangerous allows cryptographically signing data using a secret key so that data sent to untrusted environments can be verified upon return.
+  > docs/index.rst:14-16 #610b0ac928a6
+#c19[i3] ItsDangerous can be installed and updated using pip with the command 'pip install -U itsdangerous'.
+  > docs/index.rst:30 #77ecf647ba56
+#c20[i3] Using signed user IDs in activation or unsubscribe URLs eliminates the need to generate and store one-time tokens in a database.
+  > docs/index.rst:38-41 #53667b00144e
+#c21[i3] Storing signed objects in cookies avoids storing sessions on the server and reduces database queries.
+  > docs/index.rst:42-44 #adad5cdead64
+#c22[i5] The documentation specifies the BSD-3-Clause License.
+  > docs/license.rst:1 #9d684d32ff82
+#c23[i4] The license text is included directly from the '../LICENSE.txt' file.
+  > docs/license.rst:4 #3dbfb9101b84
+#c24[i4] The Sphinx documentation build uses `sphinx-build` as the default build tool, set to source directory `.` and build directory `_build`.
+  > docs/Makefile:6-8 #7a6c3999b76c
+#c25[i3] Executing `make` without arguments defaults to running the `help` target, which delegates to `sphinx-build -M help`.
+  > docs/Makefile:11-12 #b30f15b65725
+#c26[i4] A catch-all target routes all unknown targets to Sphinx using `sphinx-build -M`, treating `$(O)` as a shortcut for additional options.
+  > docs/Makefile:18-19 #e66fb0e51be7
+#c27[i3] The script sets SPHINXBUILD to 'sphinx-build' by default if the environment variable is not already defined.
+  > docs/make.bat:7-9 #811d12550ff8
+#c28[i3] The source directory (SOURCEDIR) is set to '.' and the build directory (BUILDDIR) is set to '_build'.
+  > docs/make.bat:10-11 #311b35e6d4ac
+#c29[i3] If no command line arguments are provided, the script jumps to the help target.
+  > docs/make.bat:13 #b567965c9820
+#c30[i4] If the sphinx-build command is missing (detected by errorlevel 9009), the batch file displays an error message and exits with status 1.
+  > docs/make.bat:16-26 #2319dbe439be
+#c31[i4] When an argument is passed, Sphinx is invoked with '-M', the specified command, SOURCEDIR, BUILDDIR, and SPHINXOPTS.
+  > docs/make.bat:28 #3ad05fb7e182
+
+[probes]
+?p1 Which Python class is imported in the simple example to serialize user data safely?
+  = URLSafeSerializer
+  > README.md::"A Simple Example" #b1a9b67142d2
+?p2 Which file is included by docs/changes.rst?
+  = ../CHANGES.rst
+  > docs/changes.rst:4 #b0937da7f837
+?p3 What is the default digest_method used by an ItsDangerous signer?
+  = hashlib.sha1
+  > docs/concepts.rst:141-142 #cbee4a331587
+?p4 What HTML theme is configured for the documentation?
+  = flask
+  > docs/conf.py:35 #51a7eaa9a87a
+?p5 Which module contains the base64_encode and base64_decode autofunction documentation?
+  = itsdangerous.encoding
+  > docs/encoding.rst:1 #40b196ac3da0
+?p6 Which Python module contains the exception classes documented in docs/exceptions.rst?
+  = itsdangerous.exc
+  > docs/exceptions.rst:1 #825f5c9d309a
+?p7 What command is used to install or update itsdangerous via pip?
+  = pip install -U itsdangerous
+  > docs/index.rst:30 #77ecf647ba56
+?p8 Which license file is included by the documentation?
+  = ../LICENSE.txt
+  > docs/license.rst:4 #3dbfb9101b84
+?p9 What website accepts donations for the Pallets organization?
+  = https://palletsprojects.com/donate
+  > README.md::Donate #d5eca4501200
+?p10 In what order should a list of secret keys be passed when configuring key rotation?
+  = Oldest to newest
+  > docs/concepts.rst:116-117 #335d2884c9bf
+?p11 Which Sphinx extensions are loaded in conf.py?
+  = sphinx.ext.autodoc, sphinx.ext.extlinks, sphinx.ext.intersphinx, sphinxcontrib.log_cabinet, and pallets_sphinx_themes.
+  > docs/conf.py:14-20 #0b7d72641fca
+?p12 What prevents a receiver from modifying signed data without detection?
+  = The receiver cannot modify the data unless they possess the secret key.
+  > docs/index.rst:18-19 #7b7cb41d6355
+?p13 Which license type is specified in the documentation header?
+  = BSD-3-Clause License
+  > docs/license.rst:1 #9d684d32ff82
+?p14 Which error is raised when a serializer attempts to load data dumped with a different salt?
+  = BadSignature
+  > docs/concepts.rst:91 #c761b287137b
+?p15 What is the default build directory defined in the Makefile?
+  = _build
+  > docs/Makefile:8 #de3ab7db9ef7
+?p16 What default value is assigned to SOURCEDIR in make.bat?
+  = .
+  > docs/make.bat:10 #8f382743039c
+?p17 Which targets are explicitly declared as .PHONY?
+  = help Makefile
+  > docs/Makefile:14 #1a0271f54eb1
+?p18 What exit code is returned when sphinx-build is not found?
+  = 1
+  > docs/make.bat:25 #0b1482903959
+?p19 What directory is set as BUILDDIR by default?
+  = _build
+  > docs/make.bat:11 #912b64621482

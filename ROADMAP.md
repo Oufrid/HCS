@@ -98,14 +98,16 @@ tag, and move a `v0` tag for the Action.
 
 ## Phase C: Capabilities nobody else has
 
-### C1. Fidelity-vs-budget curve `[~]`
-Done (2026-10-21): `hcs curve` (budgets scored once per distinct context, shared baseline, resumable), the knee
-(smallest budget within the 95% CI of the best) with a flat-curve warning, certificate fields `curve` and `knee`
-in SPEC 0.3, tests. A real curve with local CPU models is in `bench/REPORT.md`, but it is flat (the 7B model
-abstains even when the answer is in its context), so it does not show a knee. Remaining: the same curve with
-`groq:qwen/qwen3.8-27b` (44.6% at full context in A1). It needs about 360,000 tokens against Groq's 200,000
-tokens per day; the run stopped on the quota after the 250-token budget, its results are saved, and it resumes
-on 2026-10-22.
+Decision (maintainer, 2026-10-22): do not publish yet. Publish once a stable version has passed every test and the
+pending measurements (C1, C2, D1) have come back favorably; until then the CLI is used from a clone.
+
+### C1. Fidelity-vs-budget curve `[x]`
+Done: `hcs curve` (budgets scored once per distinct context, shared baseline, resumable), the knee (smallest
+budget within the 95% CI of the best) with a flat-curve warning, certificate fields `curve` and `knee` in SPEC 0.3,
+tests. Published curves (`bench/REPORT.md`, C1): local CPU models (flat: the 7B model abstains even with the answer
+in context) and gemini-3.8-flash (informative: 0% at 250 tokens, 9.5% at 2,000, 32.4% at 4,000; the knee is the
+largest budget tested, so no plateau was reached). A second curve with groq:qwen/qwen3.8-27b resumes on Groq's free
+tier and will be added.
 - `hcs curve <file.hcs> --model M --budgets 250,500,1000,2000,4000`: fidelity with CI at each budget, plus the
   "knee" (smallest budget within 1 CI of the best score).
 - Store the curve in the file (certificate per budget, or a `!curve` line; spec it).
@@ -126,8 +128,10 @@ Done so far: `hcs refine` (src/refine.ts). It splits the probes deterministicall
 question and cited source but not its answer, keeps only quote-verified new claims, accepts a round only when
 training fidelity rises and stops when a gain stays inside the confidence interval; `--prune` drops whole sections
 the training probes do not need. A quota stop resumes from saved probe results and writer replies. Tests cover
-held-out isolation, rejected rounds, pruning and resume. Remaining: the real measurement on two repositories, which
-needs free-tier quota.
+held-out isolation, rejected rounds, pruning and resume. Measured (`bench/REPORT.md`, C2), negative result: on this repository at a 1,000-token budget, held-out fidelity
+stayed at 4.5%; without a budget, training went from 38.5% to 100% while held-out fell from 50.0% to 40.9%; on
+pallets/itsdangerous, held-out stayed at 44.4%. The "Done when" criterion (held-out gain on two repositories) is
+**not met**; refine is kept as a documented experiment. Reopen only with a different method.
 
 ### C3. Dependency-aware invalidation `[x]`
 Done: `hcs seal --deps` stores, on JS/TS and Python symbol anchors, a hash of the symbols they use directly
@@ -169,7 +173,7 @@ on 470 of 474 common symbols, every difference being a heuristic error.
 
 ## Phase D: Ecosystem and governance
 
-### D1. Public benchmark `[~]`
+### D1. Public benchmark `[x]`
 - Run `bench/run.mjs` on ≥ 5 public repositories (several languages and sizes) with ≥ 2 model families, with
   the raw results committed.
 - `bench/REPORT.md` with tables, CIs, the method and its limitations.
@@ -183,7 +187,17 @@ readme / agents / summary on the same probes, and a report with paired bootstrap
 are in `bench/d1/README.md`. On free tiers this is about five days of one Groq model's daily tokens per answering
 model; a daily scheduled run advances it.
 
-### D2. Spec 1.0 and governance `[~]`
+Update 2026-10-22: with independent probes and the compact render profile (SPEC 6.2), HCS beats a naive summary of
+the same budget by +19.1 points [+10.4, +28.1] and the README by +33.3 (`bench/REPORT.md`, D1). Remaining for
+"done": a second answering family and a confirmation on repositories not used to design the profile; README
+numbers must link to the report.
+
+Done 2026-10-22: the pre-registered confirmation on express, requests and logrus gave +18.9 [+7.2, +30.6]; the
+second answering family (mistral:ministral-14b-latest, Gemini judging) gave +18.8 [+9.4, +28.5] on the design
+repositories and +16.1 [+3.9, +27.8] on the confirmation ones; README numbers link to `bench/REPORT.md`. Limits
+(one compiling and probe-writing model, generated probes, one budget) are listed there.
+
+### D2. Spec 1.0 and governance `[x]`
 - `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, issue and PR templates.
 - A lightweight RFC process (`rfcs/`) for spec changes.
 - Freeze SPEC 1.0 once B2 passes in two implementations and D1 is published: stable anchor syntax and hashing,
@@ -192,8 +206,9 @@ model; a daily scheduled run advances it.
 
 Done: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), issue templates (bug, spec change,
 benchmark result, private security link), a pull-request template, and `rfcs/` (process, template, and the
-pre-1.0 versioning policy). Remaining: SPEC 1.0 is **not** tagged, on purpose: its condition is not met, since
-D1 (public benchmark) is not published. Tagging is also a release, which needs the maintainer's approval.
+versioning policy). SPEC 1.0 (2026-10-22, tag `spec-v1.0`, approved by the maintainer) freezes 0.3 without changing
+the format: `HCS/1.0` is accepted by both implementations (conformance case `parse-v10`), and `SPEC.md` §9 states
+what 1.x keeps stable. The CLI stays at 0.3.0; publishing it (B4) is a separate decision.
 
 ### D3. Documentation and examples `[x]`
 - `examples/`: a small project in several languages with its `.hcs` file, a conversation snapshot, an audited

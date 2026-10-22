@@ -1,0 +1,36 @@
+[1/16] README.md:1-179 -> 7 claims, 2 probes
+[2/16] src/chain.rs:1-102 -> 7 claims, 3 probes
+[3/16] src/backtrace.rs:1-48 -> 6 claims, 3 probes
+[4/16] src/context.rs:1-193 -> 6 claims, 3 probes
+[5/16] src/ensure.rs:601-935 -> not compiled: quota exhausted
+[6/16] src/error.rs:1-563 -> 6 claims, 2 probes
+[7/16] src/ensure.rs:1-600 -> 8 claims, 3 probes
+[8/16] src/error.rs:564-1060 -> 3 claims, 1 probes
+wrote /home/user/HCS/bench/d1/hcs/dtolnay__anyhow.hcs: 43 claims, 17 probes from 13 files (13 compiled)
+  rejected by quote verification: 10/53 claims, 4/21 probes
+  INCOMPLETE: provider unavailable after 6 attempts: HTTP 429 from https://generativelanguage.googleapis.com/v1beta/openai/chat/completions: [{
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rat
+  not compiled yet: 9 chunk(s): src/ensure.rs:601-935, src/fmt.rs:1-158, src/kind.rs:1-121, src/lib.rs:1-469, src/lib.rs:470-728, src/macros.rs:1-245, src/nightly.rs:1-58, src/ptr.rs:1-187, src/wrapper.rs:1-84
+  the partial file was saved; run the same command with --update later to finish it
+usage gemini:gemini-3-flash-preview: 7 requests, 41385 input + 7963 output tokens (as reported by the provider)
+dtolnay__anyhow: compile stopped (exit 1); rerun this step later to resume
+exit 3
+--- resume 2026-10-22T07:41:38Z --rpm 3
+incremental: 5 files unchanged, 8 to compile (1 resumed after a quota stop)
+[1/9] src/ensure.rs:601-935 -> 8 claims, 3 probes
+[2/9] src/fmt.rs:1-158 -> 4 claims, 3 probes
+[3/9] src/kind.rs:1-121 -> 6 claims, 2 probes
+[4/9] src/lib.rs:1-469 -> not compiled: quota exhausted
+[5/9] src/lib.rs:470-728 -> not compiled: quota exhausted
+[6/9] src/macros.rs:1-245 -> not compiled: quota exhausted
+[7/9] src/nightly.rs:1-58 -> not compiled: quota exhausted
+wrote /home/user/HCS/bench/d1/hcs/dtolnay__anyhow.hcs: 61 claims, 25 probes from 13 files (8 compiled)
+  rejected by quote verification: 5/23 claims, 1/9 probes
+  INCOMPLETE: rate limit or quota exhausted at https://generativelanguage.googleapis.com/v1beta/openai/chat/completions (server asks to wait 83831s; quota GenerateRequestsPerDayPerProjectPerModel-FreeTier = 20 for model gemini-3-flash). Try later, lower --rpm, or use another model.
+  not compiled yet: 6 chunk(s): src/lib.rs:1-469, src/lib.rs:470-728, src/macros.rs:1-245, src/nightly.rs:1-58, src/ptr.rs:1-187, src/wrapper.rs:1-84
+  the partial file was saved; run the same command with --update later to finish it
+usage gemini:gemini-3-flash-preview: 3 requests, 13072 input + 3351 output tokens (as reported by the provider)
+dtolnay__anyhow: compile stopped (exit 1); rerun this step later to resume
+exit 3

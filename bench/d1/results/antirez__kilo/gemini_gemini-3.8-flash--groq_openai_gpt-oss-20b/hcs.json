@@ -1,0 +1,335 @@
+{
+ "repo": "antirez__kilo",
+ "commit": "323d93b29bd89a2cb446de90c4ed4fea1764176e",
+ "condition": "hcs",
+ "answerer": "gemini:gemini-3.8-flash",
+ "judge": "groq:openai/gpt-oss-20b",
+ "budget": 2000,
+ "tokens": 1425,
+ "results": {
+  "p1": {
+   "id": "p1",
+   "question": "Which tool was used to verify that Kilo has less than 1K lines of code?",
+   "expected": "cloc",
+   "answer": "The tool used to measure that Kilo has fewer than 1,000 lines of code was cloc (c9).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p2": {
+   "id": "p2",
+   "question": "What errno value is set if enableRawMode is called on a file descriptor where isatty returns false?",
+   "expected": "ENOTTY",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p3": {
+   "id": "p3",
+   "question": "What heap pointers are freed when editorFreeRow is called on an erow?",
+   "expected": "row->render, row->chars, and row->hl.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p4": {
+   "id": "p4",
+   "question": "What macro defines the number of times Ctrl-Q must be pressed to quit when the file is dirty?",
+   "expected": "KILO_QUIT_TIMES (set to 3)",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p5": {
+   "id": "p5",
+   "question": "What terminal escape sequence standard does Kilo utilize?",
+   "expected": "VT100",
+   "answer": "Kilo relies on standard VT100 escape sequences [c12]. Its input functions interpret multi-byte VT100 escape sequences into editor actions and navigation keys [c3, c16].",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p6": {
+   "id": "p6",
+   "question": "What escape sequence is transmitted by getCursorPosition to query the terminal's cursor location?",
+   "expected": "\\x1b[6n",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p7": {
+   "id": "p7",
+   "question": "What delimiter separates each row in the buffer allocated by editorRowsToString?",
+   "expected": "A newline character ('\\n').",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p8": {
+   "id": "p8",
+   "question": "What does editorProcessKeypress do upon receiving a CTRL_C keypress?",
+   "expected": "It ignores the keypress and does nothing.",
+   "answer": "Upon receiving a CTRL-C keypress, `editorProcessKeypress` explicitly ignores it to prevent accidental loss of unsaved changes (c26).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p9": {
+   "id": "p9",
+   "question": "From which two projects did the author take code to write Kilo?",
+   "expected": "load81 and linenoise",
+   "answer": "The author incorporated code from load81 and linenoise (c13).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p10": {
+   "id": "p10",
+   "question": "Which terminal color code is returned by editorSyntaxToColor for HL_KEYWORD1?",
+   "expected": "33 (yellow)",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p11": {
+   "id": "p11",
+   "question": "What occurs in editorDelChar when invoked at column 0 of a line past row 0?",
+   "expected": "It appends the current row's text to the previous row and deletes the current row via editorDelRow.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p12": {
+   "id": "p12",
+   "question": "Which keys trigger editorDelChar in editorProcessKeypress?",
+   "expected": "BACKSPACE, CTRL_H, and DEL_KEY.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p13": {
+   "id": "p13",
+   "question": "Under which license is Kilo released?",
+   "expected": "BSD 2 clause license",
+   "answer": "Kilo is released under the BSD 2-clause license (c14).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p14": {
+   "id": "p14",
+   "question": "Which terminal color code is assigned to HL_MATCH in editorSyntaxToColor?",
+   "expected": "34 (blu)",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p15": {
+   "id": "p15",
+   "question": "What permissions mask does editorSave pass to open() when creating or opening E.filename?",
+   "expected": "0644",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p16": {
+   "id": "p16",
+   "question": "How many rows does updateWindowSize subtract from E.screenrows to make room for the status bar?",
+   "expected": "2",
+   "answer": "According to claim c27, `updateWindowSize` subtracts 2 rows from `E.screenrows` to reserve room for the status bar.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p17": {
+   "id": "p17",
+   "question": "What key combination is used to find a string in Kilo?",
+   "expected": "CTRL-F",
+   "answer": "The key combination used to find a string in Kilo is CTRL-F (c11).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p18": {
+   "id": "p18",
+   "question": "What characters define single-line and multi-line comments in the default C/C++ syntax configuration?",
+   "expected": "\"//\" for single-line, \"/*\" and \"*/\" for multi-line",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p19": {
+   "id": "p19",
+   "question": "When does editorRefreshScreen display the centered welcome message?",
+   "expected": "When E.numrows is 0 and the current row index y equals E.screenrows/3.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p20": {
+   "id": "p20",
+   "question": "Which signal is caught by handleSigWinCh?",
+   "expected": "SIGWINCH",
+   "answer": "The `handleSigWinCh` handler catches the `SIGWINCH` signal (c29, c30).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p21": {
+   "id": "p21",
+   "question": "What action does editorReadKey take if the read system call returns -1?",
+   "expected": "It calls exit(1).",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p22": {
+   "id": "p22",
+   "question": "What character representation is displayed when an editor character has highlight type HL_NONPRINT and its value is 26 or less?",
+   "expected": "'@' plus the character's value.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p23": {
+   "id": "p23",
+   "question": "What is the initial status message set in main?",
+   "expected": "\"HELP: Ctrl-S = save | Ctrl-Q = quit | Ctrl-F = find\"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p24": {
+   "id": "p24",
+   "question": "How are tabs rendered by editorUpdateRow into row->render?",
+   "expected": "As spaces aligning up to the next multiple-of-8 boundary.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p25": {
+   "id": "p25",
+   "question": "What is the maximum query length supported by editorFind?",
+   "expected": "256",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p26": {
+   "id": "p26",
+   "question": "What does editorFileWasModified return?",
+   "expected": "E.dirty",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p27": {
+   "id": "p27",
+   "question": "If pressing ESC in editorFind exits the search, what coordinates and offsets are restored?",
+   "expected": "E.cx, E.cy, E.coloff, and E.rowoff are restored to their saved values.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  }
+ }
+}

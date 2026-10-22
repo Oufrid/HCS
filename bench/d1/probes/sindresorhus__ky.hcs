@@ -1,0 +1,99 @@
+HCS/0.2
+@title sindresorhus__ky (independent probes)
+@root ../../.work/d1/sindresorhus__ky
+@created 2026-10-22T12:09:21.733Z
+@generator bench/d1 probes (gemini:gemini-3.8-flash)
+
+[claims]
+
+[probes]
+?q1 What is the per-attempt timeout default in milliseconds?
+  = 10000
+  > readme.md::timeout #140c6b988503
+?q2 What error type is thrown if a custom `fetch` implementation does not resolve with a `Response`?
+  = TypeError
+  > readme.md::fetch #d454f1ec3ff2
+?q3 What error does Ky throw instead of HTTPError if maxResponseSize is exceeded while populating error.data?
+  = ResponseSizeError
+  > readme.md::HTTPError #57ce31abc642
+?q4 What value does a request resolve with if a beforeRetry hook returns ky.stop?
+  = undefined
+  > readme.md::"How do I stop retrying early?" #efee2ee86088
+?q5 What error is thrown when the `prefixUrl` option is passed in `options`?
+  = The `prefixUrl` option has been renamed `prefix` in v2 and enhanced to allow slashes in input. See also the new `baseUrl` option for improved flexibility with standard URL resolution: https://github.com/sindresorhus/ky#baseurl
+  > source/core/Ky.ts::prefixUrlRenamedErrorMessage #0326370daf69
+?q6 When options.timeout is explicitly set to false, what fallback millisecond value is used by #getErrorDataTimeout?
+  = 10_000
+  > source/core/Ky.ts:855-857 #59c594ce9187
+?q7 What error is thrown if an unrecognized key is returned in the options object of a beforeRetry hook?
+  = A TypeError indicating that the option cannot be changed from a beforeRetry hook.
+  > source/core/Ky.ts:1294 #758e7e91f794
+?q8 Which keys are read afresh by Ky on every attempt so that a `beforeRetry` hook can mutate them directly?
+  = 'onUploadProgress', 'onDownloadProgress', 'timeout', 'fetch', and 'throwHttpErrors'
+  > source/core/constants.ts::beforeRetryOptionKeys #07c7c7b007b6
+?q9 What is the minimum numeric value required for a reset header to be interpreted as an epoch timestamp rather than delay seconds?
+  = 1_000_000_000
+  > source/core/retry-timing.ts::timestampThresholdSeconds #f575080c976f
+?q10 What type guard allows observing ForceRetryError in beforeRetry and beforeError hooks?
+  = isForceRetryError()
+  > source/errors/ForceRetryError.ts:9 #87a410a2dc61
+?q11 What error does Ky throw if totalTimeout expires while error.data is being populated?
+  = TimeoutError
+  > source/errors/HTTPError.ts:9 #28c0380f4a51
+?q12 Which specific error is intentionally excluded from being considered a Ky error?
+  = SchemaValidationError
+  > source/errors/KyError.ts:6 #37e747ec2924
+?q13 Through which standard property can the original error be accessed in a NetworkError?
+  = cause
+  > source/errors/NetworkError.ts:5 #c28b3b1ce27b
+?q14 What is the initial default message assigned in the NonError constructor?
+  = 'Non-error value was thrown'
+  > source/errors/NonError.ts::NonError.constructor #74e4b8841658
+?q15 What message template does ResponseSizeError pass to its superclass constructor?
+  = `Response body exceeded ${maxResponseSize} bytes: ${request.method} ${request.url}`
+  > source/errors/ResponseSizeError.ts::ResponseSizeError.constructor #20201d86fd71
+?q16 What message is passed to the superclass constructor when instantiating SchemaValidationError?
+  = 'Response schema validation failed'
+  > source/errors/SchemaValidationError.ts::SchemaValidationError.constructor #c6bdfc3e9bba
+?q17 What class does TimeoutError extend?
+  = KyError
+  > source/errors/TimeoutError.ts::TimeoutError #6a03692d6c6a
+?q18 Why are request setup errors rejected via a promise instead of throwing synchronously in createRequest?
+  = So that callers only have one error channel to handle, matching how fetch() reports them.
+  > source/index.ts:16 #5e01cc2a5e41
+?q19 What error is thrown when validation fails while validating the JSON response against a Standard Schema?
+  = SchemaValidationError
+  > source/types/ResponsePromise.ts::ResponsePromise #2ce0b174e51b
+?q20 Which ESLint rule is disabled on line 1 for the Primitive type definition?
+  = @typescript-eslint/no-restricted-types
+  > source/types/common.ts:1 #97a4bdbbe427
+?q21 What happens if a beforeRequest hook returns a Response object?
+  = It completely avoids making an HTTP request, and remaining beforeRequest hooks are skipped.
+  > source/types/hooks.ts:149 #baf2018f018a
+?q22 What happens if a body method like .json() or .text() is called when ky.stop is returned by a beforeRetry hook?
+  = Calling the body method throws a TypeError explaining that there is no response to parse.
+  > source/types/ky.ts:128 #9e07b1d28551
+?q23 What error is thrown if the `totalTimeout` option is set to a value greater than 2147483647?
+  = A RangeError
+  > source/types/options.ts:212 #a9d37f57ffd9
+?q24 What is the default type parameter for KyRequest if none is specified?
+  = unknown
+  > source/types/request.ts::KyRequest #c1c59947097d
+?q25 What is the default type parameter for KyResponse?
+  = unknown
+  > source/types/response.ts::KyResponse #ec9a528b6ea3
+?q26 What is the starting value of `retryCount` in `ShouldRetryState` on the first retry?
+  = 1
+  > source/types/retry.ts::ShouldRetryState #b953e647456a
+?q27 What literal value must the 'version' property have on a StandardSchemaV1 object's '~standard' property?
+  = 1
+  > source/types/standard-schema.ts::StandardSchemaV1 #f17ca6260782
+?q28 Which HTTP status codes are defined in nullBodyStatuses?
+  = 101, 103, 204, 205, and 304
+  > source/utils/body.ts::nullBodyStatuses #8dc7fb324520
+?q29 What method is called on the signal before attaching the 'abort' event listener?
+  = signal.throwIfAborted()
+  > source/utils/delay.ts::delay #446c2a0ec5f0
+?q30 What property name must an error have in order to be considered a valid raw network error by isRawNetworkError?
+  = TypeError
+  > source/utils/is-network-error.ts::isRawNetworkError #804cf994a8eb

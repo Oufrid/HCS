@@ -1,0 +1,20 @@
+{
+  "certificates": [
+    {
+      "digest": "57b3538eb19d",
+      "current": true
+    },
+    {
+      "digest": "ecf05f9b0354",
+      "current": false
+    },
+    {
+      "digest": "ecf05f9b0354",
+      "current": true
+    },
+    {
+      "digest": null,
+      "current": false
+    }
+  ]
+}

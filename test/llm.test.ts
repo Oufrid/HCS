@@ -342,6 +342,38 @@ test("free-tier handling: Retry-After, Google retryDelay, quota errors, rpm limi
   assert.equal(createLLM("groq:x").id, "groq:x");
 });
 
+test("a 429 without a suggested delay waits for the rate window, at most twice, instead of retrying quickly", async () => {
+  let calls = 0;
+  let failFirst = 2;
+  const server = createServer((req, res) => {
+    calls++;
+    if (req.url?.includes("always") || failFirst-- > 0) {
+      res.writeHead(429);
+      return res.end('[{"error":{"code":429,"message":"You exceeded your current quota"}}]');
+    }
+    res.writeHead(200, { "content-type": "application/json" });
+    res.end(JSON.stringify({ choices: [{ message: { content: "ok" } }] }));
+  });
+  await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
+  const url = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+  process.env.HCS_RATE_WINDOW_MS = "150";
+  try {
+    process.env.OPENAI_BASE_URL = `${url}/v1`;
+    const t0 = Date.now();
+    assert.equal(await createLLM("openai:m").complete({ system: "s", prompt: "p" }), "ok");
+    assert.equal(calls, 3);
+    assert.ok(Date.now() - t0 >= 300, "two waits of one rate window");
+    calls = 0;
+    process.env.OPENAI_BASE_URL = `${url}/always/v1`;
+    await assert.rejects(createLLM("openai:m").complete({ system: "s", prompt: "p" }), (e: Error) => e instanceof QuotaError && /after 3 attempts/.test(e.message));
+    assert.equal(calls, 3, "three requests, not six: each refused request may count against a daily quota");
+  } finally {
+    server.close();
+    delete process.env.HCS_RATE_WINDOW_MS;
+    delete process.env.OPENAI_BASE_URL;
+  }
+});
+
 test("retryDelayMs reads headers and Google bodies", () => {
   assert.equal(retryDelayMs(new Headers({ "retry-after": "12" }), ""), 12000);
   assert.equal(retryDelayMs(new Headers(), '{"retryDelay": "38s"}'), 38000);
@@ -404,6 +436,60 @@ test("reasoning models that spend the whole budget on hidden reasoning are retri
   } finally {
     server.close();
     delete process.env.GROQ_BASE_URL;
+  }
+});
+
+test("mistral: list-shaped content keeps only the text parts; a rejected reasoning_effort is dropped once", async () => {
+  const bodies: any[] = [];
+  const server = createServer((req, res) => {
+    let raw = "";
+    req.on("data", (c) => (raw += c));
+    req.on("end", () => {
+      const body = JSON.parse(raw || "{}");
+      bodies.push(body);
+      if (body.reasoning_effort) {
+        res.writeHead(400, { "content-type": "application/json" });
+        res.end(JSON.stringify({ message: "Extra inputs are not permitted: reasoning_effort" }));
+        return;
+      }
+      res.writeHead(200, { "content-type": "application/json" });
+      const content = [
+        { type: "thinking", thinking: [{ type: "text", text: "hidden" }] },
+        { type: "text", text: "po" },
+        { type: "text", text: "ng" },
+      ];
+      res.end(JSON.stringify({ choices: [{ message: { content }, finish_reason: "stop" }], usage: { prompt_tokens: 5, completion_tokens: 2 } }));
+    });
+  });
+  await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
+  process.env.MISTRAL_BASE_URL = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+  try {
+    const m = createLLM("mistral:magistral-small-latest", { reasoningEffort: "low" });
+    assert.equal(await m.complete({ system: "s", prompt: "p", maxTokens: 50 }), "pong");
+    assert.equal(await m.complete({ system: "s", prompt: "p", maxTokens: 50 }), "pong");
+    assert.deepEqual(bodies.map((b) => b.reasoning_effort), ["low", undefined, undefined], "dropped after the first refusal, not resent");
+    assert.equal(bodies[0].model, "magistral-small-latest");
+  } finally {
+    server.close();
+    delete process.env.MISTRAL_BASE_URL;
+  }
+});
+
+test("a 429 whose rate-limit header says zero fails at once instead of waiting", async () => {
+  let calls = 0;
+  const server = createServer((_req, res) => {
+    calls++;
+    res.writeHead(429, { "content-type": "application/json", "x-ratelimit-limit-req-minute": "0" });
+    res.end(JSON.stringify({ message: "Rate limit exceeded" }));
+  });
+  await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
+  process.env.MISTRAL_BASE_URL = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+  try {
+    await assert.rejects(createLLM("mistral:m").complete({ system: "s", prompt: "p" }), (e) => e instanceof QuotaError && /allows no requests.*x-ratelimit-limit-req-minute: 0/.test(e.message));
+    assert.equal(calls, 1);
+  } finally {
+    server.close();
+    delete process.env.MISTRAL_BASE_URL;
   }
 });
 

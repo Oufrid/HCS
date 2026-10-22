@@ -1,0 +1,372 @@
+{
+ "repo": "spf13__cobra",
+ "commit": "adbc8813901bba65827259daa8e22ff94ec1f30e",
+ "condition": "readme",
+ "answerer": "gemini:gemini-3.8-flash",
+ "judge": "groq:openai/gpt-oss-20b",
+ "budget": 2000,
+ "tokens": 1497,
+ "fullTokens": 1497,
+ "results": {
+  "q1": {
+   "id": "q1",
+   "question": "Which shells does Cobra support for automatically generated shell autocomplete?",
+   "expected": "bash, zsh, fish, powershell",
+   "answer": "Cobra supports bash, zsh, fish, and powershell for automatically generated shell autocomplete.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q2": {
+   "id": "q2",
+   "question": "What string prefix does AppendActiveHelp prepend to each active help string?",
+   "expected": "\"_activeHelp_ \"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q3": {
+   "id": "q3",
+   "question": "In OnlyValidArgs, what character precedes a description that must be stripped from an entry in ValidArgs?",
+   "expected": "a tab character",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q4": {
+   "id": "q4",
+   "question": "Which environment variable can be set to write bash completion debug output to a file?",
+   "expected": "BASH_COMP_DEBUG_FILE",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q5": {
+   "id": "q5",
+   "question": "Under what conditions does nonCompletableFlag consider a flag non-completable?",
+   "expected": "When the flag is hidden or its Deprecated field is not empty",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q6": {
+   "id": "q6",
+   "question": "Which environment variable does the bash completion debug function check to determine the destination file for debug output?",
+   "expected": "BASH_COMP_DEBUG_FILE",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q7": {
+   "id": "q7",
+   "question": "What is the default duration for displaying the MousetrapHelpText on Windows?",
+   "expected": "5 * time.Second",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q8": {
+   "id": "q8",
+   "question": "Under what condition will the *PreRun and *PostRun functions be executed for a command?",
+   "expected": "Only if the current command's Run function has been declared.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q9": {
+   "id": "q9",
+   "question": "What default string does ErrPrefix return when neither the command nor any parent defines an errPrefix?",
+   "expected": "\"Error:\"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q10": {
+   "id": "q10",
+   "question": "What happens if checkCommandGroups finds a subcommand assigned to a GroupID that does not exist in the command?",
+   "expected": "It panics with a message identifying the undefined group ID and the subcommand path.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q11": {
+   "id": "q11",
+   "question": "What does ParseFlags return if DisableFlagParsing is set to true on the Command?",
+   "expected": "nil",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q12": {
+   "id": "q12",
+   "question": "What is the build constraint tag specified for this file?",
+   "expected": "!windows",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q13": {
+   "id": "q13",
+   "question": "What function is used to determine if the command was started by Windows Explorer?",
+   "expected": "mousetrap.StartedByExplorer()",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q14": {
+   "id": "q14",
+   "question": "What is the integer value of the ShellCompDirectiveDefault constant?",
+   "expected": "0",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q15": {
+   "id": "q15",
+   "question": "What value does checkIfFlagCompletion return when finalCmd has DisableFlagParsing set to true?",
+   "expected": "nil, args, lastArg, nil",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q16": {
+   "id": "q16",
+   "question": "Which characters are replaced with underscores when constructing nameForVar in genFishComp?",
+   "expected": "The '-' and ':' characters.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q17": {
+   "id": "q17",
+   "question": "What is the string value of the mutuallyExclusiveAnnotation constant?",
+   "expected": "\"cobra_annotation_mutually_exclusive\"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q18": {
+   "id": "q18",
+   "question": "Which characters in the command name are replaced with underscores to construct the variable name?",
+   "expected": "The '-' and ':' characters.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q19": {
+   "id": "q19",
+   "question": "What annotation key is set on a flag when MarkFlagRequired is invoked?",
+   "expected": "BashCompOneRequiredFlag",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q20": {
+   "id": "q20",
+   "question": "Which environment variable specifies the destination file for zsh debug logs?",
+   "expected": "BASH_COMP_DEBUG_FILE",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q21": {
+   "id": "q21",
+   "question": "What command line program is used to scaffold and generate Cobra applications and command files?",
+   "expected": "cobra-cli",
+   "answer": "`cobra-cli` is the command line program used to generate Cobra applications and command files. It bootstraps your application scaffolding to rapidly develop a Cobra-based application.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q22": {
+   "id": "q22",
+   "question": "What value will GetActiveHelpConfig always return if COBRA_ACTIVE_HELP is set to \"0\"?",
+   "expected": "\"0\"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q23": {
+   "id": "q23",
+   "question": "Which function allows multiple PositionalArgs validations to be combined and evaluated together?",
+   "expected": "MatchAll",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q24": {
+   "id": "q24",
+   "question": "What fallback completion handler is added when the BashCompCustom annotation has an empty value slice?",
+   "expected": ":",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q25": {
+   "id": "q25",
+   "question": "What character is appended to the format string in writeRequiredFlag when the flag value type is not \"bool\"?",
+   "expected": "An equals sign (\"=\")",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q26": {
+   "id": "q26",
+   "question": "Which compopt option is activated to disable sorting when bash version 4.4 or higher is present?",
+   "expected": "nosort",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q27": {
+   "id": "q27",
+   "question": "What error code is passed to os.Exit by CheckErr when a non-nil message is provided?",
+   "expected": "1",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q28": {
+   "id": "q28",
+   "question": "Which stream does SetOut default to if newOut is nil?",
+   "expected": "os.Stdout",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q29": {
+   "id": "q29",
+   "question": "What default value does findSuggestions assign to SuggestionsMinimumDistance if it is less than or equal to 0?",
+   "expected": "2",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q30": {
+   "id": "q30",
+   "question": "What condition must be met for AddCommand to panic?",
+   "expected": "When a command is added as a child of itself.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  }
+ }
+}

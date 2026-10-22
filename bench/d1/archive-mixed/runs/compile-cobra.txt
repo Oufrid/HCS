@@ -1,0 +1,69 @@
+--- 2026-10-22T07:46:19Z --rpm 3
+[1/20] README.md:1-133 -> 6 claims, 3 probes
+[2/20] active_help.go:1-60 -> 5 claims, 3 probes
+[3/20] args.go:1-144 -> 6 claims, 3 probes
+[4/20] bash_completions.go:593-709 -> 6 claims, 3 probes
+[5/20] bash_completionsV2.go:1-484 -> no usable JSON in the reply (truncated or malformed)
+[6/20] cobra.go:1-246 -> 3 claims, 3 probes
+[7/20] command.go:1-596 -> 5 claims, 3 probes
+[8/20] bash_completions.go:1-592 -> 6 claims, 3 probes
+[9/20] command.go:597-1196 -> 8 claims, 3 probes
+[10/20] command.go:1197-1794 -> 8 claims, 3 probes
+[11/20] command_notwin.go:1-20 -> 2 claims, 2 probes
+[12/20] command.go:1795-2072 -> 2 claims, 3 probes
+[13/20] command_win.go:1-41 -> 5 claims, 3 probes
+[14/20] completions.go:1-598 -> 5 claims, 3 probes
+[15/20] fish_completions.go:1-292 -> 7 claims, 3 probes
+[16/20] flag_groups.go:1-290 -> 5 claims, 3 probes
+[17/20] completions.go:599-1024 -> 7 claims, 3 probes
+[18/20] powershell_completions.go:1-350 -> 4 claims, 3 probes
+[19/20] shell_completions.go:1-98 -> 5 claims, 3 probes
+[20/20] zsh_completions.go:1-308 -> not compiled: quota exhausted
+wrote /home/user/HCS/bench/d1/hcs/spf13__cobra.hcs: 95 claims, 30 probes from 15 files (15 compiled)
+  rejected by quote verification: 18/113 claims, 0/53 probes
+  INCOMPLETE: provider unavailable after 6 attempts: HTTP 503 from https://generativelanguage.googleapis.com/v1beta/openai/chat/completions: [{
+  "error": {
+    "code": 503,
+    "message": "This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.",
+    "status": "UNAVAILABLE"
+  }
+}
+]; 1 chunk(s) returned no usable JSON (truncated or malformed reply)
+  not compiled yet: 2 chunk(s): bash_completionsV2.go:1-484, zsh_completions.go:1-308
+  the partial file was saved; run the same command with --update later to finish it
+usage gemini:gemini-3.1-flash-lite: 19 requests, 95724 input + 16373 output tokens (as reported by the provider); 1 replies cut by the output limit (reasoning models: try --reasoning-effort low)
+spf13__cobra: compile stopped (exit 1); rerun this step later to resume
+exit 3
+--- 2026-10-22T08:06:22Z retry --rpm 3
+incremental: 13 files unchanged, 2 to compile
+[1/2] bash_completionsV2.go:1-484 -> no usable JSON in the reply (truncated or malformed)
+[2/2] zsh_completions.go:1-308 -> 5 claims, 3 probes
+synthesized 7 overview claims
+wrote /home/user/HCS/bench/d1/hcs/spf13__cobra.hcs: 107 claims, 30 probes from 15 files (2 compiled)
+  rejected by quote verification: 2/7 claims, 0/3 probes
+  INCOMPLETE: 1 chunk(s) returned no usable JSON (truncated or malformed reply)
+  not compiled yet: 1 chunk(s): bash_completionsV2.go:1-484
+  the partial file was saved; run the same command with --update later to finish it
+usage gemini:gemini-3.1-flash-lite: 3 requests, 16506 input + 1747 output tokens (as reported by the provider); 1 replies cut by the output limit (reasoning models: try --reasoning-effort low)
+spf13__cobra: compile stopped (exit 1); rerun this step later to resume
+exit 3
+--- 2026-10-22T08:08:03Z retry 2 --rpm 3
+incremental: 14 files unchanged, 1 to compile
+[1/1] bash_completionsV2.go:1-484 -> no usable JSON in the reply (truncated or malformed)
+synthesized 7 overview claims
+wrote /home/user/HCS/bench/d1/hcs/spf13__cobra.hcs: 107 claims, 30 probes from 15 files (1 compiled)
+  rejected by quote verification: 0/0 claims, 0/0 probes
+  INCOMPLETE: 1 chunk(s) returned no usable JSON (truncated or malformed reply)
+  not compiled yet: 1 chunk(s): bash_completionsV2.go:1-484
+  the partial file was saved; run the same command with --update later to finish it
+usage gemini:gemini-3.1-flash-lite: 2 requests, 11736 input + 805 output tokens (as reported by the provider); 1 replies cut by the output limit (reasoning models: try --reasoning-effort low)
+spf13__cobra: compile stopped (exit 1); rerun this step later to resume
+exit 3
+--- 2026-10-22T08:08:53Z bash_completionsV2.go excluded from the paths
+incremental: 14 files unchanged, 0 to compile
+synthesized 7 overview claims
+wrote /home/user/HCS/bench/d1/hcs/spf13__cobra.hcs: 107 claims, 30 probes from 14 files (0 compiled)
+  rejected by quote verification: 0/0 claims, 0/0 probes
+  context ~5571 tokens for ~55676 tokens of source. Next: hcs score /home/user/HCS/bench/d1/hcs/spf13__cobra.hcs --model <answering model> --judge <a model from another family> --write
+usage gemini:gemini-3.1-flash-lite: 1 requests, 4253 input + 482 output tokens (as reported by the provider)
+exit 0

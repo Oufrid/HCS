@@ -1,0 +1,71 @@
+{
+ "repo": "sindresorhus__ky",
+ "commit": "3541888878c4d303a8bc2ad61815f4e048f55a5d",
+ "condition": "hcs",
+ "answerer": "groq:openai/gpt-oss-120b",
+ "judge": "gemini:gemini-flash-lite-latest",
+ "budget": 2000,
+ "tokens": 1944,
+ "results": {
+  "p1": {
+   "id": "p1",
+   "question": "What is the default retry limit in Ky?",
+   "expected": "2",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p2": {
+   "id": "p2",
+   "question": "How is context merged when extending options?",
+   "expected": "Shallow merged",
+   "answer": "Options are merged shallowly for the `context` property, while other options are merged deeply when using `ky.extend()`. (c4)",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p3": {
+   "id": "p3",
+   "question": "Which Node.js version introduced support for automatic proxy configuration via environment variables?",
+   "expected": "Node.js 24.5+",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p4": {
+   "id": "p4",
+   "question": "What Node.js version is required for Ky?",
+   "expected": "Node.js 22 and later",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p5": {
+   "id": "p5",
+   "question": "What error is thrown if `input` is not a string, URL, or Request in Ky's constructor?",
+   "expected": "TypeError",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  }
+ }
+}

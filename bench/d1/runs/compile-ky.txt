@@ -1,0 +1,50 @@
+--- 2026-10-22T09:23:38Z compile ky try 1
+[1/37] readme.md:1-585 -> 7 claims, 3 probes
+[2/37] readme.md:586-1184 -> 8 claims, 3 probes
+[3/37] readme.md:1185-1783 -> 7 claims, 3 probes
+[4/37] readme.md:1784-1958 -> 8 claims, 3 probes
+[5/37] source/core/Ky.ts:1-599 -> 8 claims, 3 probes
+[6/37] source/core/Ky.ts:600-1195 -> 7 claims, 3 probes
+[7/37] source/core/Ky.ts:1196-1376 -> 8 claims, 3 probes
+[8/37] source/core/constants.ts:1-307 -> 8 claims, 3 probes
+[9/37] source/core/retry-timing.ts:1-173 -> 6 claims, 1 probes
+[10/37] source/errors/ForceRetryError.ts:1-52 -> 7 claims, 3 probes
+[11/37] source/errors/HTTPError.ts:1-34 -> 7 claims, 3 probes
+[12/37] source/errors/KyError.ts:1-14 -> 2 claims, 3 probes
+[13/37] source/errors/NetworkError.ts:1-19 -> 5 claims, 3 probes
+[14/37] source/errors/NonError.ts:1-37 -> 6 claims, 3 probes
+[15/37] source/errors/ResponseSizeError.ts:1-30 -> 3 claims, 2 probes
+[16/37] source/errors/SchemaValidationError.ts:1-33 -> 2 claims, 2 probes
+[17/37] source/index.ts:1-114 -> 6 claims, 2 probes
+[18/37] source/types/ResponsePromise.ts:1-71 -> 7 claims, 3 probes
+[19/37] source/types/common.ts:1-6 -> 2 claims, 2 probes
+[20/37] source/types/hooks.ts:1-424 -> 8 claims, 3 probes
+[21/37] source/errors/TimeoutError.ts:1-15 -> 2 claims, 3 probes
+[22/37] source/types/ky.ts:1-205 -> 7 claims, 3 probes
+[23/37] source/types/options.ts:1-555 -> 7 claims, 3 probes
+[24/37] source/types/request.ts:1-4 -> 1 claims, 2 probes
+[25/37] source/types/response.ts:1-4 -> 3 claims, 3 probes
+[26/37] source/types/retry.ts:1-189 -> 8 claims, 3 probes
+[27/37] source/types/standard-schema.ts:1-48 -> 5 claims, 3 probes
+[28/37] source/utils/body.ts:1-242 -> 8 claims, 3 probes
+[29/37] source/utils/delay.ts:1-29 -> 4 claims, 2 probes
+[30/37] source/utils/is-network-error.ts:1-46 -> 5 claims, 3 probes
+[31/37] source/utils/is.ts:1-24 -> 6 claims, 3 probes
+[32/37] source/utils/merge.ts:1-501 -> 8 claims, 3 probes
+[33/37] source/utils/normalize.ts:1-100 -> 8 claims, 3 probes
+[34/37] source/utils/options.ts:1-61 -> 6 claims, 3 probes
+[35/37] source/utils/timeout.ts:1-46 -> 4 claims, 3 probes
+[36/37] source/utils/type-guards.ts:1-155 -> 8 claims, 3 probes
+[37/37] source/utils/types.ts:1-3 -> 1 claims, 1 probes
+synthesized 8 overview claims
+wrote /home/user/HCS/bench/d1/hcs/sindresorhus__ky.hcs: 221 claims, 30 probes from 32 files (32 compiled)
+  rejected by quote verification: 9/222 claims, 2/103 probes
+  source scan: 4 line(s) with injection-like text in 2 file(s), 4 high risk
+    HIGH readme.md:119  contains chat-template markers
+    HIGH readme.md:121  contains chat-template markers
+    HIGH readme.md:741  sends private data to a URL
+    HIGH source/types/hooks.ts:379  sends private data to a URL
+  claims quoting such text are tagged suspect and not rendered; review these files if you did not expect it
+  context ~10346 tokens for ~76207 tokens of source. Next: hcs score /home/user/HCS/bench/d1/hcs/sindresorhus__ky.hcs --model <answering model> --judge <a model from another family> --write
+usage gemini:gemini-3.8-flash: 38 requests, 130846 input + 34947 output tokens (as reported by the provider)
+exit 0

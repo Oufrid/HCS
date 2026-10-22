@@ -1,0 +1,99 @@
+HCS/0.2
+@title sirupsen__logrus (independent probes)
+@root ../../.work/d1/sirupsen__logrus
+@created 2026-10-22T16:33:55.504Z
+@generator bench/d1 probes (gemini:gemini-3.8-flash)
+
+[claims]
+
+[probes]
+?q1 What function should be called to add the calling method as a field in logs?
+  = logrus.SetReportCaller(true)
+  > README.md::"Logging Method Name" #8f0cdd7719fd
+?q2 What happens if a registered exit handler panics during execution?
+  = The panic is recovered and an error message is printed to os.Stderr.
+  > alt_exit.go::runHandler.func #6c6e495d0da9
+?q3 What method signature must be implemented on a BufferPool to retrieve a buffer?
+  = Get() *bytes.Buffer
+  > buffer_pool.go::BufferPool #8bcb5a628386
+?q4 What standard logger is Logrus completely API compatible with?
+  = the standard library logger
+  > doc.go:2 #c15b9a63b369
+?q5 What is the default field name used when adding an error via WithError?
+  = "error"
+  > entry.go::ErrorKey #3e1b7509de3c
+?q6 What key is used when adding an error to an entry via WithError?
+  = The value defined in ErrorKey.
+  > exported.go:56 #6fbbe4c1b74c
+?q7 What layout is used as the defaultTimestampFormat when a custom TimestampFormat is not specified?
+  = time.RFC3339
+  > formatter.go:9 #fab9ff01542d
+?q8 What methods make up the Hook interface?
+  = Levels() []Level and Fire(*Entry) error
+  > hooks.go::Hook #be9fd4baf1d6
+?q9 When a field name in Entry.Data conflicts with a standard field, what prefix is added to it?
+  = "fields."
+  > json_formatter.go:27-28 #ced8ab8685d9
+?q10 Which ANSI color constant is assigned to TraceLevel in colorize?
+  = ansiDimWhite
+  > level.go::colorize #6ef6d9526c2e
+?q11 What is the default Formatter set when constructing a Logger via New?
+  = new(TextFormatter)
+  > logger.go::New #b9fc6b1129d8
+?q12 What string representation is returned by Level.String() when called on WarnLevel?
+  = "warning"
+  > logrus.go::Fields.Level.String #9b565281e7cc
+?q13 Which build tag is required to compile terminal_check_appengine.go?
+  = appengine
+  > terminal_check_appengine.go:1 #825ec9af5040
+?q14 What unix constant is assigned to ioctlReadTermios?
+  = unix.TIOCGETA
+  > terminal_check_bsd.go::ioctlReadTermios #e407c9f0d2d7
+?q15 What build tags are specified in the build constraint comment for this file?
+  = js || nacl || plan9 || wasi || wasip1 || tinygo
+  > terminal_check_no_terminal.go:1 #d2c60c738e8e
+?q16 What does checkIfTerminal return by default if the writer is not an *os.File?
+  = false
+  > terminal_check_notappengine.go::checkIfTerminal #00a787a6a88d
+?q17 Which build tags are required for terminal_check_solaris.go to compile?
+  = solaris && !tinygo
+  > terminal_check_solaris.go:1 #416e20aa7ba9
+?q18 What value is assigned to ioctlReadTermios?
+  = unix.TCGETS
+  > terminal_check_unix.go::ioctlReadTermios #3f462d01e27f
+?q19 What build tags are specified for compiling terminal_check_windows.go?
+  = windows && !appengine
+  > terminal_check_windows.go:1 #abd7d025fb5e
+?q20 Which sorting function is used for keys by default when SortingFunc is left uninitialized?
+  = slices.Sort
+  > text_formatter.go::TextFormatter #350993b731bd
+?q21 What is the default logging level used by Logger.Writer()?
+  = InfoLevel
+  > writer.go::Writer #1ea46664fce1
+?q22 What logging level is assigned by default to lines written to the io.Writer returned by logger.Writer()?
+  = info
+  > README.md::"Logger as an `io.Writer`" #43c8882c77fb
+?q23 How does DeferExitHandler order a new handler relative to existing exit handlers?
+  = It prepends the handler to the list of handlers.
+  > alt_exit.go:66 #6bc49627e6c7
+?q24 What is the return value of the default sync.Pool's New function?
+  = new(bytes.Buffer)
+  > buffer_pool.go::func #20cc811f5343
+?q25 What is the simplest way to use Logrus?
+  = simply the package-level exported logger
+  > doc.go:4 #a0b77d449162
+?q26 What kind of field values are considered unsupported and skipped in addField?
+  = Function types or pointers to function types (that do not implement error)
+  > entry.go::addField #f676bd1af7e1
+?q27 What exit status code is used when Fatal logs a message on the standard logger?
+  = 1
+  > exported.go:124 #ac3db11079b4
+?q28 What capacity hint value is defined for defaultFields?
+  = 3
+  > formatter.go:16 #f34e2bf44297
+?q29 What underlying type does LevelHooks use to store hooks?
+  = map[Level][]Hook
+  > hooks.go::Levels.Fire #ff97a3741d97
+?q30 How are values of type error in entry.Data processed before being added to the JSON data map?
+  = By calling v.Error()
+  > json_formatter.go::Format #969daa51b43a

@@ -1,0 +1,33 @@
+HCS/0.3
+@title t
+@root src
+[claims]
+## Overview
+#c1[overview,i5] The system has three parts.
+  > a.md:1 #e3b98a4da31a
+  > b.ts:1 #ca978112ca1b
+#c2[overview,i5] Requests flow from b to c.
+  > b.ts:2 #3e23e8160039
+## docs
+#c3[i5] First fact from the readme.
+  > a.md:2 #7692c3ad3540
+#c4[i5] Second fact from the readme.
+  > a.md:3 #3fc4ccfe7458
+#c5[i5] Third fact from the readme.
+  > a.md:4 #8b5b9db0c13d
+## src
+#c6[i4] The retry limit is 2.
+  > b.ts:3 #2e7d2c03a950
+#c7[i3] Timeouts default to 10 seconds.
+  > b.ts:4 #18ac3e7343f0
+#c8[i3] Tokens are signed with HMAC.
+  > c.py:1 #2d711642b726
+#c9[manual] Never log secrets.
+  > c.py:2 #a1fce4363854
+#c10[i5] Stale fact.
+  > c.py:2 #000000000000
+[certificates]
+!score model=m fidelity=0.5 budget=70 render=compact digest=57b3538eb19d
+!score model=m fidelity=0.5 budget=70 digest=57b3538eb19d
+!score model=m fidelity=0.5 budget=70 digest=ecf05f9b0354
+!score model=m fidelity=0.5 budget=70 render=fancy digest=57b3538eb19d

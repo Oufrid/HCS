@@ -1,0 +1,8 @@
+{
+  "op": "render",
+  "description": "The full profile on the same document and budget, for comparison: importance then document order.",
+  "args": {
+    "budget": 70,
+    "seal_against": "src"
+  }
+}

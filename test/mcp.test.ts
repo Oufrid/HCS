@@ -42,7 +42,9 @@ test("MCP handshake and tool listing", async () => {
 test("MCP tools: context, expand, search, verify, source", async () => {
   const { dir, server } = setup();
   let r = await call(server, "hcs_context");
-  assert.match(r.text, /c1: Shipping costs 25 plus 4 per kg. \(src\/rates.ts::shippingFee\)/);
+  // Compact render: claim ids and text only; the agent reads sources through hcs_expand.
+  assert.match(r.text, /^c1: Shipping costs 25 plus 4 per kg\.$/m);
+  assert.doesNotMatch(r.text, /src\/rates\.ts/);
 
   r = await call(server, "hcs_expand", { id: "c1" });
   assert.match(r.text, /status: unsealed/);

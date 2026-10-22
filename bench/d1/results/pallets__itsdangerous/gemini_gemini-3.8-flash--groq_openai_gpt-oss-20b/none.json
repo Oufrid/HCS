@@ -1,0 +1,371 @@
+{
+ "repo": "pallets__itsdangerous",
+ "commit": "672971d66a2ef9f85151e53283113f33d642dabd",
+ "condition": "none",
+ "answerer": "gemini:gemini-3.8-flash",
+ "judge": "groq:openai/gpt-oss-20b",
+ "budget": 2000,
+ "tokens": 0,
+ "results": {
+  "p1": {
+   "id": "p1",
+   "question": "Which class from itsdangerous is used in the simple example to serialize data safely?",
+   "expected": "URLSafeSerializer",
+   "answer": "The `Serializer` class is used in the simple example to serialize data safely. Alternatively, `URLSafeSerializer` is commonly used for generating URL-safe serialized strings.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p2": {
+   "id": "p2",
+   "question": "What is the default build directory defined in docs/Makefile?",
+   "expected": "_build",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p3": {
+   "id": "p3",
+   "question": "Which file does docs/changes.rst include?",
+   "expected": "../CHANGES.rst",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p4": {
+   "id": "p4",
+   "question": "What is the default digest method used by an ItsDangerous signer?",
+   "expected": "hashlib.sha1",
+   "answer": "The default digest method used by an ItsDangerous signer is SHA-512 (specifically `hashlib.sha512`).",
+   "verdict": "incorrect",
+   "by": "judge",
+   "verdicts": [
+    "incorrect"
+   ],
+   "points": 0
+  },
+  "p5": {
+   "id": "p5",
+   "question": "What Sphinx theme is set for HTML documentation?",
+   "expected": "flask",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p6": {
+   "id": "p6",
+   "question": "Which module is documented in docs/encoding.rst?",
+   "expected": "itsdangerous.encoding",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p7": {
+   "id": "p7",
+   "question": "Which module documents the BadData and BadSignature exceptions in docs/exceptions.rst?",
+   "expected": "itsdangerous.exc",
+   "answer": "The `itsdangerous` module documents the `BadData` and `BadSignature` exceptions in `docs/exceptions.rst`.",
+   "verdict": "incorrect",
+   "by": "judge",
+   "verdicts": [
+    "incorrect"
+   ],
+   "points": 0
+  },
+  "p8": {
+   "id": "p8",
+   "question": "What pip command installs and updates itsdangerous?",
+   "expected": "pip install -U itsdangerous",
+   "answer": "The command to install or update itsdangerous is `pip install --upgrade itsdangerous`. You can also use the shorthand `-U` flag instead: `pip install -U itsdangerous`.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p9": {
+   "id": "p9",
+   "question": "Which file is included under the BSD-3-Clause License heading?",
+   "expected": "../LICENSE.txt",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p10": {
+   "id": "p10",
+   "question": "What exit code is returned when SPHINXBUILD is not found (errorlevel 9009)?",
+   "expected": "1",
+   "answer": "The exit code returned is 9009 (or 1 in scripts that explicitly catch it and exit with standard failure, but the command processor itself yields exit code 9009 / 0x2329 when the executable is not recognized or found).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p11": {
+   "id": "p11",
+   "question": "What module does Serializer use by default to serialize data?",
+   "expected": "The built-in json module.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p12": {
+   "id": "p12",
+   "question": "What separates the appended signature from the original string?",
+   "expected": "A dot",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p13": {
+   "id": "p13",
+   "question": "Which class is used to add timestamp information and sign it to enable expiring signatures?",
+   "expected": "TimestampSigner",
+   "answer": "The `TimestampSigner` class (found in libraries such as Django and ItsDangerous) is used to append a signed timestamp to data to enable expiring signatures.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p14": {
+   "id": "p14",
+   "question": "Which module defines URLSafeSerializer and URLSafeTimedSerializer?",
+   "expected": "itsdangerous.url_safe",
+   "answer": "`URLSafeSerializer` and `URLSafeTimedSerializer` are defined in the `itsdangerous` module.",
+   "verdict": "incorrect",
+   "by": "judge",
+   "verdicts": [
+    "incorrect"
+   ],
+   "points": 0
+  },
+  "p15": {
+   "id": "p15",
+   "question": "Which signing algorithms are re-exported in the top-level itsdangerous module?",
+   "expected": "HMACAlgorithm and NoneAlgorithm",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p16": {
+   "id": "p16",
+   "question": "What default separators does _CompactJSON.dumps set if not provided?",
+   "expected": "(\",\", \":\")",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p17": {
+   "id": "p17",
+   "question": "What exception does base64_decode raise when base64 decoding fails?",
+   "expected": "BadData",
+   "answer": "PHP's `base64_decode` does not raise an exception when decoding fails; instead, it returns `false` (when the `$strict` parameter is set to `true`).",
+   "verdict": "incorrect",
+   "by": "judge",
+   "verdicts": [
+    "incorrect"
+   ],
+   "points": 0
+  },
+  "p18": {
+   "id": "p18",
+   "question": "What is the direct parent class of SignatureExpired?",
+   "expected": "BadTimeSignature",
+   "answer": "The direct parent class of `SignatureExpired` (in libraries like itsdangerous) is `BadTimeSignature`.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p19": {
+   "id": "p19",
+   "question": "What function determines whether a serializer generates text or binary output?",
+   "expected": "is_text_serializer",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p20": {
+   "id": "p20",
+   "question": "What is the default key derivation scheme used by Signer?",
+   "expected": "django-concat",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p21": {
+   "id": "p21",
+   "question": "What exception does TimestampSigner.unsign raise if the signature has an age less than 0 when max_age is set?",
+   "expected": "SignatureExpired",
+   "answer": "`TimestampSigner.unsign` raises `SignatureExpired` if the signature has an age less than 0 when `max_age` is set.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p22": {
+   "id": "p22",
+   "question": "Under what exact size condition does URLSafeSerializerMixin.dump_payload adopt zlib compression?",
+   "expected": "When len(compressed) < (len(json) - 1).",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p23": {
+   "id": "p23",
+   "question": "What organization develops and maintains ItsDangerous?",
+   "expected": "The Pallets organization",
+   "answer": "ItsDangerous is developed and maintained by the Pallets Projects.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p24": {
+   "id": "p24",
+   "question": "Which targets are declared as .PHONY in docs/Makefile?",
+   "expected": "help and Makefile",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p25": {
+   "id": "p25",
+   "question": "When a list of keys is provided for key rotation, in what order should they be passed?",
+   "expected": "Oldest to newest.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p26": {
+   "id": "p26",
+   "question": "What is the default role configured for inline markup in docs/conf.py?",
+   "expected": "code",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p27": {
+   "id": "p27",
+   "question": "Under what condition can a receiver modify signed data?",
+   "expected": "Only if they also have the secret key.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p28": {
+   "id": "p28",
+   "question": "What directory value is assigned to BUILDDIR in docs/make.bat?",
+   "expected": "_build",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p29": {
+   "id": "p29",
+   "question": "What does the first item returned by Serializer.loads_unsafe represent?",
+   "expected": "A boolean indicating whether the signature was correct.",
+   "answer": "The first item returned by `Serializer.loads_unsafe` represents a boolean indicating whether the signature of the payload was valid.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p30": {
+   "id": "p30",
+   "question": "Which exception is raised when unsigning fails due to a mismatched signature?",
+   "expected": "BadSignature",
+   "answer": "In Python libraries such as itsdangerous or Django's signing module, a `BadSignature` exception is raised when unsigning fails due to a mismatched signature.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  }
+ }
+}

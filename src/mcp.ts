@@ -305,7 +305,8 @@ function contextText(doc: HcsDocument, reports: ItemReport[], budget?: number): 
   const claimStatus = new Map(reports.filter((r) => r.kind === "claim").map((r) => [r.id, r.status]));
   const stale = [...claimStatus.values()].filter((s) => s === "stale" || s === "missing").length;
   const note = stale ? `\n(${stale} stale claim(s) were excluded; their sources changed.)` : "";
-  return renderContext(doc, { status: claimStatus, budget }) + note;
+  // Compact: the agent reads a claim's exact source with hcs_expand, so anchors would only take room.
+  return renderContext(doc, { status: claimStatus, budget, profile: "compact" }) + note;
 }
 
 function expandText(doc: HcsDocument, cache: SourceCache, reports: ItemReport[], id: string, maxLines: number): string {

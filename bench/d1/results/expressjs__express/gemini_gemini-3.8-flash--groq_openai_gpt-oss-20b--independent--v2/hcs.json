@@ -1,0 +1,371 @@
+{
+ "repo": "expressjs__express",
+ "commit": "0dee2c52c7c873498f8ed7d8ee4ddd0a04d3ada8",
+ "condition": "hcs",
+ "answerer": "gemini:gemini-3.8-flash",
+ "judge": "groq:openai/gpt-oss-20b",
+ "budget": 2000,
+ "tokens": 1940,
+ "results": {
+  "q1": {
+   "id": "q1",
+   "question": "What is the minimum required version of Node.js for installing Express?",
+   "expected": "Node.js 18 or higher",
+   "answer": "Based on claim c8, Express requires Node.js version 18 or higher before installation.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q2": {
+   "id": "q2",
+   "question": "Which file path is required and exported by this module?",
+   "expected": "./lib/express",
+   "answer": "The entry point file `index.js` re-exports the module located at `./lib/express` (c14).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q3": {
+   "id": "q3",
+   "question": "What is the default value set for 'subdomain offset' in defaultConfiguration?",
+   "expected": "2",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q4": {
+   "id": "q4",
+   "question": "What event does `app.listen` attach the wrapped callback to on the server instance?",
+   "expected": "'error'",
+   "answer": "According to claim c19, `app.listen` attaches the wrapped callback as an listener for the `'error'` event on the server instance.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q5": {
+   "id": "q5",
+   "question": "What module is used to mix prototypes into the express app instance?",
+   "expected": "merge-descriptors",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q6": {
+   "id": "q6",
+   "question": "What error is thrown by req.get when the name argument is omitted?",
+   "expected": "TypeError with the message 'name argument is required to req.get'",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q7": {
+   "id": "q7",
+   "question": "What error type is thrown by res.status if the provided code is not an integer?",
+   "expected": "TypeError",
+   "answer": "The context notes that `res.status` throws a `TypeError` or `RangeError` if the status code is not an integer between 100 and 999 inclusive, but it does not specify which of the two errors is thrown specifically when the code is not an integer (c35). Sources in `lib/response.js::status` would hold this detail.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q8": {
+   "id": "q8",
+   "question": "What error is thrown if a developer attempts to set the Content-Type header to an array using res.set?",
+   "expected": "A TypeError with the message 'Content-Type cannot be set to an Array'",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q9": {
+   "id": "q9",
+   "question": "What default MIME type does normalizeType use if type does not contain a slash and mime.lookup returns falsy?",
+   "expected": "'application/octet-stream'",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q10": {
+   "id": "q10",
+   "question": "What error is thrown when neither a default engine nor an extension is provided to View?",
+   "expected": "No default engine was specified and no extension was provided.",
+   "answer": "The claims state only that the `View` constructor throws an error under those conditions, but they do not specify the exact error type or message (c46). The source `lib/view.js::View` cited in claim c46 would hold this detail.",
+   "verdict": "incorrect",
+   "by": "judge",
+   "verdicts": [
+    "incorrect"
+   ],
+   "points": 0
+  },
+  "q11": {
+   "id": "q11",
+   "question": "Which package enables support for over 14 template engines in Express?",
+   "expected": "@ladjs/consolidate",
+   "answer": "Express supports over 14 template engines via the `@ladjs/consolidate` package (c9).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q12": {
+   "id": "q12",
+   "question": "Under what license is this code released?",
+   "expected": "MIT Licensed",
+   "answer": "Express is licensed under the MIT license (c13).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q13": {
+   "id": "q13",
+   "question": "Which header is added to the response in app.handle when 'x-powered-by' is enabled?",
+   "expected": "'X-Powered-By' with the value 'Express'",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q14": {
+   "id": "q14",
+   "question": "What utility function is used to wrap the callback argument in `app.listen`?",
+   "expected": "once",
+   "answer": "The callback passed to `app.listen` is wrapped with `once` and attached as an error event listener on the server (c19).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q15": {
+   "id": "q15",
+   "question": "What method on the app instance delegates the handling of requests, responses, and next callbacks?",
+   "expected": "app.handle",
+   "answer": "The `app` function delegates request handling to `app.handle(req, res, next)` (c23).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q16": {
+   "id": "q16",
+   "question": "What does req.query return when the 'query parser fn' setting is not set on the app?",
+   "expected": "An object with null prototype (Object.create(null))",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q17": {
+   "id": "q17",
+   "question": "In res.send, what does the Content-Type header default to when passing an ArrayBuffer view if no Content-Type was previously set?",
+   "expected": "'bin'",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q18": {
+   "id": "q18",
+   "question": "What expiration date does res.clearCookie assign to force cookie expiration?",
+   "expected": "new Date(1)",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q19": {
+   "id": "q19",
+   "question": "Which function does compileQueryParser assign when val is 'extended'?",
+   "expected": "parseExtendedQueryString",
+   "answer": "When `val` is `'extended'`, `exports.compileQueryParser` configures query parsing using `qs.parse` with `allowPrototypes: true` (c44).",
+   "verdict": "incorrect",
+   "by": "judge",
+   "verdicts": [
+    "incorrect"
+   ],
+   "points": 0
+  },
+  "q20": {
+   "id": "q20",
+   "question": "Which property or export on a required engine module is expected as the default engine function?",
+   "expected": "__express",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q21": {
+   "id": "q21",
+   "question": "Which CLI command should be executed to run the test suite?",
+   "expected": "npm test",
+   "answer": "The test suite for Express is executed using the command `npm test` (c11).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q22": {
+   "id": "q22",
+   "question": "What error is thrown by app.use if no middleware functions are passed?",
+   "expected": "A TypeError stating 'app.use() requires a middleware function'",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q23": {
+   "id": "q23",
+   "question": "Under what condition does `logerror` log the error using `console.error`?",
+   "expected": "When the 'env' setting is not 'test'",
+   "answer": "`logerror` logs the error using `console.error` as long as the application's `env` setting does not equal `'test'` (c20).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q24": {
+   "id": "q24",
+   "question": "Which initialization method is invoked on app right before createApplication returns?",
+   "expected": "app.init()",
+   "answer": "Before returning the created `app` instance, `createApplication` invokes `app.init()` (c25).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q25": {
+   "id": "q25",
+   "question": "Which HTTP methods are checked for weak freshness validation in req.fresh?",
+   "expected": "GET, HEAD, and QUERY",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q26": {
+   "id": "q26",
+   "question": "Which security mitigation prefix is prepended to the body in res.jsonp when a callback is defined?",
+   "expected": "/**/",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q27": {
+   "id": "q27",
+   "question": "What prefix is prepended to an object cookie value when serialized in res.cookie?",
+   "expected": "'j:'",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q28": {
+   "id": "q28",
+   "question": "What does compileTrust return when passed a number for val?",
+   "expected": "A function that checks if the hop index is less than that number (function(a, i){ return i < val }).",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q29": {
+   "id": "q29",
+   "question": "How does View.prototype.render ensure that synchronous callbacks from the template engine are made asynchronous?",
+   "expected": "By wrapping the invocation in process.nextTick",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q30": {
+   "id": "q30",
+   "question": "Who is credited as the original author of Express?",
+   "expected": "TJ Holowaychuk",
+   "answer": "TJ Holowaychuk is credited as the original author of the Express framework (c12).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  }
+ }
+}

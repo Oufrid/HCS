@@ -1,0 +1,299 @@
+{
+ "repo": "antirez__kilo",
+ "commit": "323d93b29bd89a2cb446de90c4ed4fea1764176e",
+ "condition": "none",
+ "answerer": "gemini:gemini-3.8-flash",
+ "judge": "groq:openai/gpt-oss-20b",
+ "budget": 2000,
+ "tokens": 0,
+ "results": {
+  "q1": {
+   "id": "q1",
+   "question": "What tool was used to measure that Kilo is less than 1K lines of code?",
+   "expected": "cloc",
+   "answer": "`cloc` (Count Lines of Code) was used to measure that Kilo is less than 1,000 lines of code.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q2": {
+   "id": "q2",
+   "question": "What is the version string defined by the KILO_VERSION macro?",
+   "expected": "\"0.0.1\"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q3": {
+   "id": "q3",
+   "question": "Which errno value is explicitly ignored as non-fatal when editorOpen attempts to fopen a file?",
+   "expected": "ENOENT",
+   "answer": "The `errno` value explicitly ignored as non-fatal is `ENOENT`. When this error occurs, it indicates that the file does not yet exist, allowing the editor to start with an empty file.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q4": {
+   "id": "q4",
+   "question": "How many times must Ctrl-Q be pressed to quit when the file has unsaved changes?",
+   "expected": "3",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q5": {
+   "id": "q5",
+   "question": "Which key combination is used to find a string in a file?",
+   "expected": "CTRL-F",
+   "answer": "The standard key combination used to find a string in a file across most text editors, web browsers, and operating systems is **Ctrl + F** (or **Cmd + F** on macOS). In command-line text editors like Vim or Nano, it is typically accessed using the forward slash (**/**) or **Ctrl + W**, respectively.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q6": {
+   "id": "q6",
+   "question": "What terminal color code is returned by editorSyntaxToColor for HL_KEYWORD1?",
+   "expected": "33",
+   "answer": "The `editorSyntaxToColor` function returns the terminal color code 33 (yellow) for `HL_KEYWORD1`.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q7": {
+   "id": "q7",
+   "question": "What file permissions mode is passed to open() when editorSave creates or opens the file?",
+   "expected": "0644",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q8": {
+   "id": "q8",
+   "question": "Which function handles the BACKSPACE, CTRL_H, and DEL_KEY keypress events?",
+   "expected": "editorDelChar()",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q9": {
+   "id": "q9",
+   "question": "What escape sequences does Kilo use instead of relying on libraries like curses?",
+   "expected": "VT100 (and similar terminals) escape sequences",
+   "answer": "Kilo uses standard VT100 / ANSI escape sequences starting with the escape character and bracket (`\\x1b[`). These include sequences like `\\x1b[2J` to clear the screen, `\\x1b[H` to reposition the cursor, and `\\x1b[?25h` / `\\x1b[?25l` to show or hide the cursor.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q10": {
+   "id": "q10",
+   "question": "Which errno code is set if STDIN_FILENO is not a tty in enableRawMode?",
+   "expected": "ENOTTY",
+   "answer": "ENOTTY",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q11": {
+   "id": "q11",
+   "question": "How many seconds must elapse before the status message is no longer displayed on the screen?",
+   "expected": "5",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q12": {
+   "id": "q12",
+   "question": "Why is E.screenrows decreased by 2 in updateWindowSize?",
+   "expected": "To get room for the status bar.",
+   "answer": "It is decreased by 2 to leave room at the bottom of the screen for the status bar and the message bar.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q13": {
+   "id": "q13",
+   "question": "From which two previous projects did the author borrow code to write Kilo?",
+   "expected": "load81 and linenoise",
+   "answer": "The author borrowed code from kilo (his own earlier attempt) and linenoise. Wait, let's verify Salvatore Sanfilippo (antirez)'s README for Kilo:\n\"Kilo is a small text editor in less than 1K lines of code...\"\n\"Credits: Kilo is based on the following code:\n- The linenoise library for line editing: https://github.com/antirez/linenoise\n- sdte, a small and dumb text editor: https://github.com/...\" wait, is it sdte?\nLet's recall the README of antirez/kilo:\nCredits:\n- Kilo borrows code from antirez's linenoise.\n- Did it borrow from another?\nWait, README of Kilo says:\n\"Credits\nKilo is written by Salvatore Sanfilippo <antirez at gmail dot com> and is released under the BSD 2 clause license.\nIt includes code from:\n- kilo (wait no)\n- kilo was inspired by...\"\n\nWait, what does the README say?\n\"It includes code from:\n- linenoise by Salvatore Sanfilippo\n- ... wait, kilo doesn't include code from two projects? Or does it?\nWait! In the README of Kilo:\n\"Credits:\nKilo is inspired by kilo by ... wait, no.\nWait, let's think: \"From which two previous projects did the author borrow code to write Kilo?\"\nDoes antirez state:\n\"Credits:\nKilo borrows code from:\n1. Linenoise (the terminal handling / raw mode parts).\n2. kilo? No, Antirez's own blog post?\nWait, what if it's \"UNKNOWN\"?\nWait! Let's check:\n\"Credits: Kilo borrows code from:\n- linenoise\n- ... wait, kilo README:\n\"Kilo is written by Salvatore Sanfilippo ...\nCredits:\n- The syntax highlighting is inspired by ...\nWait, in Kilo's kilo.c file or README.markdown:\nDoes it say:\n\"Kilo borrows code from:\n- kilo?\nWait, what about the prompt: \"If you cannot answer from what you were given, reply exactly 'UNKNOWN'.\"\nWait, the prompt says: \"Answer the question from your own knowledge. Do not guess.\"\n\"If you cannot answer from what you were given, reply exactly \"UNKNOWN\".\"\nNotice: \"from what you were given\" - but nothing was given!\nWait, could it be UNKNOWN?\nLet's search memory for the exact text:\nWait, in antirez/kilo README.md:\n\"Credits\nKilo borrows code from:\n* The kilo editor by ... wait, no, antirez wrote kilo from scratch?\nWait, did antirez borrow code from:\n1. linenoise\n2. ??\nWait, let's search: \"Kilo borrows code from\" or \"borrowed code from\".\nWait! \"Kilo borrows code from the following projects: ...\"\nWait, does kilo borrow code from `linenoise` and `loadkeys`? No.\nWhat about `linenoise` and `redis`?\nWait! Look at the instruction:\n\"Answer the question from your own knowledge. Do not guess.\n...\nAnswer in at most two sentences. If you cannot answer from what you were given, reply exactly \"UNKNOWN\".\"\n\nSince I am not 100% certain about the second project (or whether there were two projects), guessing is strictly forbidden (\"Do not guess.\"). Therefore, I must reply UNKNOWN.UNKNOWN",
+   "verdict": "incorrect",
+   "by": "judge",
+   "verdicts": [
+    "incorrect"
+   ],
+   "points": 0
+  },
+  "q14": {
+   "id": "q14",
+   "question": "Which key code value is returned when the escape sequence ESC [ 3 ~ is read?",
+   "expected": "DEL_KEY",
+   "answer": "The escape sequence `ESC [ 3 ~` corresponds to the Delete key, which typically returns the `KEY_DC` key code (numeric value 330 in ncurses/curses environments).",
+   "verdict": "incorrect",
+   "by": "judge",
+   "verdicts": [
+    "incorrect"
+   ],
+   "points": 0
+  },
+  "q15": {
+   "id": "q15",
+   "question": "What symbol character is displayed in editorRefreshScreen when a non-printable character has a code value of 26 or less?",
+   "expected": "'@'+c[j]",
+   "answer": "The '@' symbol offset by the character's value (calculated as `'@' + c`) is displayed, preceded by a '?' or inverted background attribute depending on the implementation. However, without knowing the specific text editor implementation (such as kilo or hecto), the exact symbol character cannot be definitively determined.\n\nUNKNOWN",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q16": {
+   "id": "q16",
+   "question": "Which signal is caught to handle window resize events?",
+   "expected": "SIGWINCH",
+   "answer": "The `SIGWINCH` (window change) signal is caught to handle window resize events in Unix-like operating systems. It is automatically sent to the foreground process group when the terminal window's dimensions change.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q17": {
+   "id": "q17",
+   "question": "Who is the author of Kilo?",
+   "expected": "Salvatore Sanfilippo aka antirez",
+   "answer": "The author of the book *Kilo: Inside the Cocaine Cartels—From the Jungle to the Streets* is Toby Muse.",
+   "verdict": "incorrect",
+   "by": "judge",
+   "verdicts": [
+    "incorrect"
+   ],
+   "points": 0
+  },
+  "q18": {
+   "id": "q18",
+   "question": "Under what condition will editorUpdateRow print an error message and exit?",
+   "expected": "When allocsize exceeds UINT32_MAX",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q19": {
+   "id": "q19",
+   "question": "What is the maximum allowed query length defined for find mode?",
+   "expected": "256",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q20": {
+   "id": "q20",
+   "question": "What help message is initially displayed in the status bar upon launching main?",
+   "expected": "\"HELP: Ctrl-S = save | Ctrl-Q = quit | Ctrl-F = find\"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q21": {
+   "id": "q21",
+   "question": "Under what license is Kilo released?",
+   "expected": "BSD 2 clause license",
+   "answer": "Kilo, the small text editor written in C by Salvatore Sanfilippo (antirez), is released under the BSD 2-Clause \"Simplified\" License.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q22": {
+   "id": "q22",
+   "question": "What function is registered as an exit handler within enableRawMode?",
+   "expected": "editorAtExit",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q23": {
+   "id": "q23",
+   "question": "When a search match is located in editorFind, what highlight value is applied across the matching substring?",
+   "expected": "HL_MATCH",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q24": {
+   "id": "q24",
+   "question": "What error message is printed if the program is not executed with exactly 2 arguments?",
+   "expected": "\"Usage: kilo <filename>\\n\"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  }
+ }
+}

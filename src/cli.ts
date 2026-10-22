@@ -16,8 +16,8 @@ import { injectionFindings, type SourceFinding } from "./guard.js";
 import { compile } from "./compile.js";
 import { emptyDocument, formatAnchor, HcsSyntaxError, parse, serialize, type HcsDocument } from "./format.js";
 import { createLLM, listModels, QuotaError, type LLM } from "./llm.js";
-import { DECODER_PROMPT, estimateTokens, renderContext, selectClaims } from "./render.js";
-import { compareContexts, findKnownProbes, hashForCertificate, scoreContext, scoreCurve, scoreDocument, type ProbeResult, type ScoreCache, type ScoreSummary } from "./score.js";
+import { DECODER_PROMPT, estimateTokens, RENDER_PROFILES, renderContext, selectClaims, type RenderProfile } from "./render.js";
+import { certificateIsCurrent, compareContexts, findKnownProbes, hashForCertificate, scoreContext, scoreCurve, scoreDocument, type ProbeResult, type ScoreCache, type ScoreSummary } from "./score.js";
 import { serveStdio } from "./mcp.js";
 import { refine, refineStore } from "./refine.js";
 import { parseConversation, toTranscript } from "./snapshot.js";
@@ -40,7 +40,9 @@ Deterministic commands (no LLM, no network; except \`models\`, which asks the pr
                                               --deps: also hash what each JS/TS/Python symbol uses, so that
                                               check reports "review" when a dependency changes)
   hcs render <file.hcs> [--budget N]          Print the context block to give an LLM
-             [--decoder] [--no-anchors] [--keep-stale]
+             [--decoder] [--no-anchors] [--keep-stale] [--profile full|compact]
+                                              (compact: no anchors, every source file covered under a budget;
+                                              score, curve, compare and the MCP server use it by default)
   hcs stats <file.hcs> [--tokenizer M]        Sizes, token estimates, compression ratio
                                               (--tokenizer: also count with that model's real tokenizer)
   hcs audit <context-file> [--root DIR]       Find broken file references in AGENTS.md, CLAUDE.md...
@@ -65,7 +67,7 @@ LLM commands (--model provider:model, optional --rpm N to stay under free-tier r
 --reasoning-effort low|medium|high to limit hidden reasoning on models that support it, optional
 --tokenizer M on score and curve to count the context with M's tokenizer instead of estimating it):
   hcs compile [paths...] --model M [-o project.hcs] [--root DIR] [--title T]
-              [--update] [--max-probes N] [--no-synthesize] [--concurrency N]
+              [--update] [--max-probes N] [--probes-per-chunk N] [--no-synthesize] [--concurrency N]
               [--anchors symbols|lines] [--filter-known M1,M2]
                                               (--filter-known: tag [known] the probes every listed model
                                               answers without context)
@@ -89,7 +91,7 @@ quota). Budgets and digests always use the deterministic estimate.
 
 Providers: openai (OPENAI_API_KEY, OPENAI_BASE_URL for any compatible server),
            anthropic (ANTHROPIC_API_KEY), gemini (GEMINI_API_KEY), groq (GROQ_API_KEY),
-           openrouter (OPENROUTER_API_KEY), ollama (OLLAMA_HOST)
+           openrouter (OPENROUTER_API_KEY), mistral (MISTRAL_API_KEY), ollama (OLLAMA_HOST)
 
 Exit codes: 0 ok, 1 verification failed, 2 usage or syntax error.`;
 
@@ -265,6 +267,7 @@ async function main(argv: string[]): Promise<number> {
       "keep-stale": { type: "boolean" },
       update: { type: "boolean" },
       "max-probes": { type: "string" },
+      "probes-per-chunk": { type: "string" },
       "no-synthesize": { type: "boolean" },
       concurrency: { type: "string" },
       "chunk-lines": { type: "string" },
@@ -276,6 +279,7 @@ async function main(argv: string[]): Promise<number> {
       rounds: { type: "string" },
       prune: { type: "boolean" },
       parser: { type: "string" },
+      profile: { type: "string" },
       "allow-write": { type: "boolean" },
       deps: { type: "boolean" },
       sign: { type: "string" },
@@ -308,6 +312,12 @@ async function main(argv: string[]): Promise<number> {
     return c;
   };
   const judges = () => (o.judge?.length ? o.judge.map(llm) : undefined);
+  /** Render profile: what `--profile` names, else the command's default (SPEC 6.2). */
+  const profileOf = (fallback: RenderProfile): RenderProfile => {
+    const p = (o.profile ?? fallback) as RenderProfile;
+    if (!RENDER_PROFILES.includes(p)) throw new UsageError(`unknown --profile "${o.profile}" (expected ${RENDER_PROFILES.join(" or ")})`);
+    return p;
+  };
   const tokenizer = () => {
     if (!o.tokenizer) return undefined;
     const c = llm(o.tokenizer);
@@ -361,10 +371,7 @@ async function main(argv: string[]): Promise<number> {
       const cs = claimStatus(reports);
       const trusted = loadTrustedKeys([o.trusted, process.env.HCS_TRUSTED_KEYS]);
       const declared = documentKeys(doc);
-      const certs = doc.certificates.map((c) => {
-        const budget = c.fields.budget ? Number(c.fields.budget) : undefined;
-        return { fields: c.fields, current: hashForCertificate(doc, cs, budget) === c.fields.digest, signature: checkSignature(c, trusted, declared) };
-      });
+      const certs = doc.certificates.map((c) => ({ fields: c.fields, current: certificateIsCurrent(doc, cs, c.fields), signature: checkSignature(c, trusted, declared) }));
       // An edited signed certificate is a failure; a signature by an unknown key cannot be checked, so it is reported.
       const tampered = certs.filter((c) => c.signature.status === "invalid").length;
       const suspect = new Set(doc.claims.filter((c) => c.tags.includes("suspect") || injectionFindings(c.text).some((f) => f.severity === "high")).map((c) => c.id));
@@ -448,6 +455,7 @@ async function main(argv: string[]): Promise<number> {
         keepStale: o["keep-stale"],
         anchors: !o["no-anchors"],
         budget: num(o.budget, "budget"),
+        profile: profileOf("full"),
       });
       console.log(o.decoder ? `${DECODER_PROMPT}\n\n${text}` : text);
       return 0;
@@ -469,7 +477,12 @@ async function main(argv: string[]): Promise<number> {
       console.log(`  rendered context  ~${ctxTokens} tokens`);
       if (src) console.log(`  source material   ~${src} tokens  (context is ${pct(ctxTokens / src)} of the source)`);
       for (const b of [500, 1000, 2000, 4000]) {
-        if (b < ctxTokens) console.log(`  --budget ${String(b).padEnd(5)}    keeps ${selectClaims(doc, { budget: b }).length} claims`);
+        if (b < ctxTokens) {
+          const full = selectClaims(doc, { budget: b });
+          const compact = selectClaims(doc, { budget: b, profile: "compact" });
+          const files = (cs: typeof full) => new Set(cs.flatMap((c) => (c.tags.includes("overview") ? [] : c.anchors.slice(0, 1).map((a) => a.path)))).size;
+          console.log(`  --budget ${String(b).padEnd(5)}    keeps ${full.length} claims from ${files(full)} files (compact profile: ${compact.length} claims from ${files(compact)} files)`);
+        }
       }
       for (const c of doc.certificates) console.log(`  certificate       ${Object.entries(c.fields).map(([k, v]) => `${k}=${v}`).join(" ")}`);
       const counter = tokenizer();
@@ -498,6 +511,7 @@ async function main(argv: string[]): Promise<number> {
         title: o.title ?? basename(root),
         previous,
         maxProbes: num(o["max-probes"], "max-probes"),
+        probesPerChunk: num(o["probes-per-chunk"], "probes-per-chunk"),
         synthesize: !o["no-synthesize"],
         anchorMode: anchorMode(o.anchors),
         concurrency: num(o.concurrency, "concurrency"),
@@ -543,10 +557,11 @@ async function main(argv: string[]): Promise<number> {
       const answerer = llm(requireModel(o.model));
       const judgeList = judges();
       const budget = num(o.budget, "budget");
+      const profile = profileOf("compact");
       const runs = num(o.runs, "runs") ?? 1;
       // Results are saved per probe, so a score stopped by a quota resumes with the same command.
       const saved = scoreCacheFile(file, {
-        digest: hashForCertificate(doc, claimStatus(reports), budget),
+        digest: hashForCertificate(doc, claimStatus(reports), budget, profile),
         probes: doc.probes.map((p) => [p.id, p.question, p.answer]),
         answerer: answerer.id,
         judges: (judgeList ?? [answerer]).map((j) => j.id),
@@ -560,6 +575,7 @@ async function main(argv: string[]): Promise<number> {
           answerer,
           judge: judgeList,
           budget,
+          profile,
           baseline: o.baseline,
           runs,
           concurrency: num(o.concurrency, "concurrency"),
@@ -680,11 +696,12 @@ async function main(argv: string[]): Promise<number> {
       const judgeList = judges();
       const runs = num(o.runs, "runs") ?? 1;
       const budgets = (o.budgets ?? "250,500,1000,2000,4000").split(",").map((b) => num(b.trim(), "budgets")!);
+      const profile = profileOf("compact");
       // One resumable result store per budget, like `score`: a quota stop keeps every answered probe.
       const stores: ReturnType<typeof scoreCacheFile>[] = [];
       const cacheFor = (budget: number) => {
         const saved = scoreCacheFile(file, {
-          digest: hashForCertificate(doc, claimStatus(reports), budget),
+          digest: hashForCertificate(doc, claimStatus(reports), budget, profile),
           probes: doc.probes.map((p) => [p.id, p.question, p.answer]),
           answerer: answerer.id,
           judges: (judgeList ?? [answerer]).map((j) => j.id),
@@ -700,6 +717,7 @@ async function main(argv: string[]): Promise<number> {
         curve = await scoreCurve(doc, statusMap(reports), budgets, {
           answerer,
           judge: judgeList,
+          profile,
           runs,
           baseline: o.baseline,
           concurrency: num(o.concurrency, "concurrency"),
@@ -814,7 +832,7 @@ async function main(argv: string[]): Promise<number> {
         if (extname(side) !== ".hcs") return readFileSync(side, "utf8");
         const d = load(side);
         const reports = checkDocument(d, new SourceCache(rootDir(d, side)));
-        return renderContext(d, { status: claimStatus(reports), budget: num(o.budget, "budget") });
+        return renderContext(d, { status: claimStatus(reports), budget: num(o.budget, "budget"), profile: profileOf("compact") });
       };
       const [a, b] = positionals;
       const answerer = llm(requireModel(o.model));
@@ -889,10 +907,7 @@ async function main(argv: string[]): Promise<number> {
       const trusted = loadTrustedKeys([o.trusted, process.env.HCS_TRUSTED_KEYS]);
       if (!trusted.size) throw new UsageError("a badge is only drawn from a certificate signed by a trusted key: pass --trusted <keys file>");
       const cs = claimStatus(reports);
-      const eligible = doc.certificates.filter((c) => {
-        const budget = c.fields.budget ? Number(c.fields.budget) : undefined;
-        return hashForCertificate(doc, cs, budget) === c.fields.digest && checkSignature(c, trusted, new Map()).status === "trusted";
-      });
+      const eligible = doc.certificates.filter((c) => certificateIsCurrent(doc, cs, c.fields) && checkSignature(c, trusted, new Map()).status === "trusted");
       const cert = eligible.at(-1);
       if (!cert) {
         console.error(`hcs: no certificate in ${file} is both current and signed by a trusted key; no badge written`);

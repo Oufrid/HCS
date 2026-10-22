@@ -153,6 +153,29 @@ full context, `groq:qwen/qwen3.8-27b` scored 44.6% (A1). Small local models foll
 from the context, else UNKNOWN" too literally to measure anything. The run took about 25 minutes for 259 requests
 thanks to Ollama's prompt-prefix cache.
 
+### 2026-10-22: Gemini 3.8 Flash, an informative curve
+
+Command: `hcs curve bench/a1/gemini.hcs --model gemini:gemini-3.8-flash --judge groq:openai/gpt-oss-20b --budgets
+250,500,1000,2000,4000 --reasoning-effort low --rpm 8 --concurrency 1 --baseline --write` (paid key; 316,045 input
+tokens). Output: `bench/c1/curve-gemini.txt`; every request and reply: `bench/c1/logs/curve-gemini.jsonl.gz`; the
+five certificates are in `bench/a1/gemini.hcs`.
+
+| Budget | Context tokens | Claims | Fidelity [95% CI] | Misled | Abstained |
+|---|---|---|---|---|---|
+| 250 | 245 | 4 | 0.0% [0.0-0.0] | 0.0% | 100.0% |
+| 500 | 461 | 7 | 1.4% [0.0-4.1] | 2.7% | 94.6% |
+| 1000 | 951 | 18 | 5.4% [0.0-13.5] | 0.0% | 94.6% |
+| 2000 | 1941 | 40 | 9.5% [1.4-18.9] | 2.7% | 86.5% |
+| 4000 | 3906 | 84 | 32.4% [18.9-47.3] | 8.1% | 56.8% |
+| no context | 0 | 0 | 0.0% | | |
+
+Fidelity rises with the budget and is clearly above zero only from 2,000 tokens. The knee is the largest budget
+tested (4,000), which means no plateau was reached: on this file (about 4,300 tokens in full), the model keeps
+gaining from more claims, and the budget selection by importance does not put the claims these probes need first.
+These are the compiler's own probes (see D1 for why that favors the context); the shape, not the level, is the
+result. A second curve with groq:qwen/qwen3.8-27b is still running on Groq's free tier and will be added when it
+completes.
+
 ## C3. Dependency-aware invalidation
 
 ### 2026-10-21: false-positive rate on this repository's history
@@ -252,3 +275,268 @@ remain unneeded: the main source left is classes used as parameter types (`cache
 cannot tell from a use. Three needed events is too few to claim recall is preserved in general. Proposed as an RFC
 (`rfcs/0000-deps-ignore-types-and-keys.md`), since it changes the normative dependency hash; postponed by the
 maintainer until there is more evidence.
+
+## C2. Self-improving compilation (`hcs refine`)
+
+### 2026-10-22: first repository (this one, `bench/a1/gemini.hcs`), budget 1,000 tokens: no held-out gain
+
+Command (output `bench/c2/a1-refine.txt`, model replies `bench/c2/logs/a1-refine.jsonl`, result
+`bench/c2/a1-refined.hcs`):
+
+```
+hcs refine bench/a1/gemini.hcs -o bench/c2/a1-refined.hcs --model groq:openai/gpt-oss-120b \
+  --judge groq:qwen/qwen3.8-27b --budget 1000 --reasoning-effort low --rpm 8 --concurrency 1
+```
+
+gpt-oss-120b wrote the new claims and answered the probes; qwen3.8-27b judged. The file was compiled by Gemini
+(A1). 11 of the 37 probes were held out, never shown to refine. The run was stopped once by Groq's daily token
+quota after round 1 and resumed the next day from its saved results (121 requests in total).
+
+| | Fidelity [95% CI] | Abstained | Probes |
+|---|---|---|---|
+| Training, before | 7.7% [0.0%-17.3%] | 88.5% | 26 |
+| Training, after | 19.2% [5.8%-34.6%] | 76.9% | 26 |
+| **Held-out, before** | **4.5% [0.0%-13.6%]** | 90.9% | 11 |
+| **Held-out, after** | **4.5% [0.0%-13.6%]** | 90.9% | 11 |
+
+- Round 1: 25 failed training probes, 29 claims proposed, all 29 quote-verified and new; training fidelity rose
+  from 7.7% to 19.2%, so the round was kept. Round 2: 27 more verified claims, no training gain, not kept.
+- **Held-out fidelity did not change.** The gain is on the probes refine optimized for, which is what the hold-out
+  is there to expose.
+- Why, in part: under the 1,000-token budget only **3 of the 29 added claims are rendered** (the budget keeps
+  claims by importance, then file order, and 23 of the new claims share the top importance with the existing
+  ones). The answering model never saw the other 26, and the 3 it saw displaced 3 original claims. The training gain
+  comes from those 3 claims.
+- The setting is harsh: at 1,000 tokens the model abstained on about 90% of the probes before refining.
+
+What this says: on this file, at this budget, refine overfits to the training probes and does not generalize.
+It does not say whether the added claims would help without a budget, since most of them were never rendered.
+Next measurements, with the same split: the same file without a budget (about four times the tokens), and the
+second repository (pallets/itsdangerous, once compiled for D1). A possible change, to be measured rather than
+assumed: under a budget, rank claims by how many training probes they help (ablation) instead of by the writer's
+importance.
+
+## D1. Public benchmark
+
+Protocol, repositories and known biases: `bench/d1/README.md`. Full table with per-repository CIs:
+`bench/d1/results.md` (raw per-probe answers and verdicts in `bench/d1/results/`).
+
+### 2026-10-22: first model family (Gemini 3.8 Flash answers, gpt-oss-20b judges)
+
+All five repositories were compiled and summarized by one model, gemini-3.8-flash (paid key; 379,536 input and
+99,360 output tokens). A first attempt on free tiers used five different Gemini models and is archived in
+`bench/d1/archive-mixed/` without results. Every context gets the same 2,000-token budget.
+
+Pooled over the 147 probes of the five repositories (paired bootstrap, 95% CI):
+
+| Condition | Fidelity [95% CI] | HCS minus condition |
+|---|---|---|
+| HCS context | 29.9% [23.1%-37.4%] | |
+| No context | 30.3% [22.8%-37.8%] | -0.3 points [-10.5, +10.2] |
+| README (cut to the budget) | 8.8% [4.8%-13.6%] | **+21.1 points [+13.6, +29.3]** |
+| Naive summary, same budget | 23.5% [17.0%-30.6%] | +6.5 points [-1.4, +14.3] |
+
+Per repository, HCS minus no context: kilo -25.9, itsdangerous +16.7, anyhow +10.0, cobra -13.3, ky +8.3
+points (every interval includes 0 or nearly).
+
+What this shows, and what it does not:
+
+- **HCS clearly beats the repositories' own README** at the same budget, on every repository (ky's AGENTS.md:
+  0.0%, HCS 26.7%). This is the only difference that is clearly outside the noise.
+- **HCS does not measurably beat a naive summary of the same size** made by the same model: +6.5 points, with an
+  interval that includes zero. With 147 probes, a real gain of a few points cannot be shown.
+- **HCS does not beat no context at all, pooled.** On the two best-known projects (antirez/kilo, spf13/cobra) the
+  model answers better from its own knowledge: without context it may use what it knows, while every context
+  condition tells it to answer only from the context and to say "UNKNOWN" otherwise. The no-context condition
+  measures something different (memory of public code), and it favors popular repositories. A private codebase
+  would not have this advantage, but none was measured.
+- Fidelity is low everywhere (about 30%): the probes ask precise details (names, values, messages) and 2,000
+  tokens cover a small part of 13k to 76k tokens of source.
+- The probes are written by the compiling model from the chunks it compiles, which favors HCS over the README and
+  the summary (`bench/d1/README.md`, biases). The +6.5 points over the summary may be partly that bias.
+- One answering family so far. The second (gpt-oss-120b answering, Gemini judging) is running on Groq's free tier.
+
+Not yet measured: a second answering family, larger budgets, and whether `--filter-known` (dropping probes models
+answer without context) changes the comparison with no context.
+
+### 2026-10-22: without a budget, and a second repository: no held-out gain either
+
+With a paid key, refine was run without a budget, so that every added claim reaches the answering model.
+gemini-3.8-flash wrote the claims and answered; gpt-oss-20b judged. Same deterministic hold-out split.
+
+| File | Training before -> after | **Held-out before -> after** | Claims added |
+|---|---|---|---|
+| this repository (`bench/a1/gemini.hcs`, 26 + 11 probes) | 38.5% -> 100.0% | **50.0% [27.3%-77.3%] -> 40.9% [18.2%-63.6%]** (misled 9.1% -> 18.2%) | 24 |
+| pallets/itsdangerous (`bench/d1/hcs/pallets__itsdangerous.hcs`, 21 + 9 probes) | 90.5% -> 95.2% | **44.4% [11.1%-77.8%] -> 44.4%** | 2 |
+
+Outputs: `bench/c2/a1-refine-nobudget.txt`, `bench/c2/a1-refined-nobudget.hcs`, `bench/c2/itsdangerous-refine.txt`,
+`bench/d1/hcs/pallets__itsdangerous.refined.hcs`; model replies in `bench/c2/logs/`. Cost: 670,299 input and 6,307
+output tokens on gemini-3.8-flash.
+
+**Conclusion for C2: refine does not improve held-out fidelity on either repository.** On this repository it reached
+100% on the training probes in one round and made the held-out probes slightly worse, with more wrong answers:
+claims written to answer specific failed questions do not carry over to other questions, and can mislead. On
+itsdangerous there was little to fill (90% training fidelity before) and nothing changed on the held-out probes.
+With 9 to 11 held-out probes the intervals are very wide, so a small real effect in either direction cannot be
+excluded, but there is no evidence of a gain. `refine` stays available as an experiment; the README says it did not
+generalize. Ideas not tried: asking the writer for claims about the whole cited symbol rather than the question,
+and ranking added claims by ablation over many probes.
+
+### 2026-10-22: independent probes and an agentic mode
+
+Two weaknesses of the run above were addressed. **Independent probes**: 144 new probes (`bench/d1/probes/`), written
+by gemini-3.8-flash from each source chunk alone in calls that never saw the compiled claims, each kept only when its
+quote is found in the source (`node bench/d1/d1.mjs probes`). **Agentic conditions**: the model may ask once for
+more source before answering, with the same reading budget (3,000 tokens) on both sides: `hcs+expand` reads the
+exact source behind up to 3 claims (what the MCP tool `hcs_expand` returns), `summary+open` opens up to 2 files
+named in the naive summary. Same answerer (gemini-3.8-flash) and judge (gpt-oss-20b). Raw results:
+`bench/d1/results/*/*--independent/`; table: `bench/d1/results.md`.
+
+Pooled over 144 independent probes (paired bootstrap, 95% CI); "unknown" are the 103 probes the model could not
+answer without context:
+
+| Condition | Fidelity | On unknown probes |
+|---|---|---|
+| HCS context (2,000 tokens) | 31.9% [24.3-39.6] | 27.2% [19.4-35.9] |
+| Naive summary (2,000 tokens) | 25.7% [18.8-32.6] | 26.2% [18.4-35.0] |
+| README (cut to 2,000 tokens) | 10.8% [5.9-16.0] | 5.3% [1.5-9.7] |
+| No context | 27.4% [20.8-34.7] | 0.0% |
+| HCS + read claims' source | 51.4% [43.1-59.7] | 50.5% [40.8-60.2] |
+| Summary + open files | 48.6% [41.0-56.3] | 43.2% [34.0-52.4] |
+
+| Difference (points) | All probes | Unknown probes |
+|---|---|---|
+| HCS minus naive summary | +6.3 [-1.4, +13.9] | +1.0 [-7.8, +9.7] |
+| HCS minus README | **+21.2 [+13.9, +28.8]** | **+21.8 [+13.1, +31.1]** |
+| HCS + source minus summary + files | +2.8 [-7.3, +12.5] | +7.3 [-3.9, +18.0] |
+| HCS + source minus HCS alone | **+19.4 [+13.2, +25.7]** | **+23.3 [+15.5, +32.0]** |
+| Summary + files minus summary alone | **+22.9 [+16.3, +30.2]** | **+17.0 [+10.2, +24.3]** |
+
+The model asked for more source on 49 of 144 questions with HCS (exact claim sources) and on 75 of 144 with the
+summary (whole files). Per repository the agentic comparison goes both ways: HCS + source ahead on kilo (75.0% vs
+41.7%) and ky (53.3% vs 26.7%), behind on itsdangerous (53.3% vs 80.0%), cobra (40.0% vs 48.3%) and anyhow (40.0% vs
+45.0%).
+
+What this shows:
+
+- With probes written apart from the claims, **the HCS context is not measurably better than a naive summary of
+  the same size**, in either setting (static or agentic). The +9.8 points on unknown probes measured earlier with
+  the compiler's own probes came from that bias; it is +1.0 here.
+- **HCS clearly beats the repositories' own README and AGENTS.md** (+21 points), with any probe set.
+- **Reading source matters far more than the form of the summary**: one round of retrieval adds about 20 points
+  to either context. HCS gets there with fewer reads (its anchors point to the exact code), but not to a
+  significantly higher score.
+- Limits: one answering model, one judge, 144 probes; the independent probes come from the same model family as
+  the compiler; one retrieval round only.
+
+Conclusion for the project: what HCS demonstrably adds is not better compression but verifiability (every claim
+cites hashed source), drift detection in CI, and precise retrieval through anchors. Answer quality is about the
+same as a naive summary of the same size, and far better than hand-written README or AGENTS.md files.
+
+### 2026-10-22: the render was the handicap: compact profile
+
+Diagnosis of the run above (no model calls, `node dist/src/cli.js stats bench/d1/hcs/<repo>.hcs`): in the 2,000-token
+`full` render, anchors took 31% to 39% of the tokens, and selection by importance then document order left whole
+files without a claim (cobra: 8 of 15 files covered at 2,000 tokens, 1 of 15 at 500). Real token counts by Gemini
+also showed that the estimate overcounts prose: the naive summaries were 1,272 to 1,714 real tokens against about
+1,900 for the HCS render, so the earlier comparison did not handicap HCS on size. The fix is the `compact` render
+profile (SPEC 6.2): claims as `id: text`, then one claim per source file in turn.
+
+All conditions were re-scored together with the final decoder instructions (results tagged `v2`, in
+`bench/d1/results/*/*--independent--v2/`; no-context results reused, since that prompt does not use the decoder;
+analysis output `bench/d1/analysis-v2.txt`; 1,215 Gemini requests, 2,485,528 input tokens). 144 independent probes,
+103 of them unknown without context:
+
+| Condition | Fidelity [95% CI] | On unknown probes |
+|---|---|---|
+| **HCS, compact profile** | **43.8% [36.1-52.1]** | **39.8% [31.1-49.5]** |
+| HCS, full profile | 32.6% [25.0-40.3] | 28.2% [20.4-36.9] |
+| Naive summary, same budget | 24.7% [18.1-31.3] | 24.3% [16.5-33.0] |
+| No context | 27.4% [20.8-34.7] | 0.0% |
+| README, cut to the budget | 10.4% [5.6-15.3] | 4.9% [1.0-9.7] |
+| **HCS compact + read claims' source** | **58.3% [50.0-66.0]** | **56.3% [46.6-65.0]** |
+| HCS full + read claims' source | 50.7% [43.1-59.0] | 49.5% [39.8-58.3] |
+| Summary + open files | 48.6% [41.0-56.3] | 43.7% [34.0-53.4] |
+
+| Paired difference (points) | All probes | Unknown probes |
+|---|---|---|
+| Compact minus full | **+11.1 [+4.9, +18.1]** | **+11.7 [+3.9, +20.4]** |
+| Compact minus naive summary | **+19.1 [+10.4, +28.1]** | **+15.5 [+5.8, +26.2]** |
+| Compact minus no context | **+16.3 [+5.9, +26.7]** | **+39.8 [+31.1, +49.5]** |
+| Compact minus README | **+33.3 [+25.0, +41.7]** | **+35.0 [+25.2, +45.6]** |
+| Compact + source minus summary + files | +9.7 [-0.7, +20.1] | +12.6 [0.0, +24.3] |
+
+Per repository, compact versus naive summary: kilo 50.0 vs 25.0, itsdangerous 66.7 vs 43.3, anyhow 43.3 vs 16.7,
+cobra 33.3 vs 18.3, ky 26.7 vs 20.0. With one round of reading, compact + source read more source on 45 of 144
+questions against 77 for summary + files.
+
+What this shows: with the compact profile, the HCS context clearly beats a naive summary of the same budget, no
+context and the README, on probes written apart from the claims; the earlier "no better than a summary" came
+mostly from the render. In the agentic setting it is ahead with fewer reads, but the interval still touches zero.
+
+Limits, to be read with the numbers: the compact profile was designed after looking at these five repositories
+(its rules are generic, anchors and coverage, but it has not yet been confirmed on fresh repositories); one
+answering model (gemini-3.8-flash), which also compiled the files and wrote the independent probes; one judge
+(gpt-oss-20b); 144 probes. Next: the same comparison with a second answering family and on repositories not used to
+design the profile.
+
+### 2026-10-22: confirmation on three new repositories (pre-registered)
+
+The protocol was committed before any model call on these repositories (`bench/d1/CONFIRMATION.md`, commit
+51204e5): expressjs/express, psf/requests and sirupsen/logrus, the same pipeline as the v2 run, and one primary
+endpoint fixed in advance: `hcs-compact` minus `summary`, pooled, confirmed only if its 95% interval is entirely above
+zero. Analysis output: `bench/d1/analysis-confirmation.txt`; raw results under
+`bench/d1/results/{expressjs__express,psf__requests,sirupsen__logrus}/*--independent--v2/`.
+
+| Condition (gemini-3.8-flash answers, gpt-oss-20b judges) | Fidelity [95% CI], 90 probes | On the 56 unknown probes |
+|---|---|---|
+| **HCS, compact profile** | **46.7% [36.7-56.7]** | **48.2% [35.7-62.5]** |
+| HCS, full profile | 32.2% [23.3-42.2] | 37.5% [25.0-50.0] |
+| Naive summary, same budget | 27.8% [18.9-37.2] | 24.1% [13.4-35.7] |
+| No context | 37.2% [27.8-47.2] | 0.0% |
+| README, cut to the budget | 10.0% [4.4-16.7] | 8.9% [1.8-17.9] |
+| HCS compact + read claims' source | 62.8% [52.2-72.2] | 64.3% [51.8-76.8] |
+| Summary + open files | 51.7% [41.1-62.2] | 52.7% [40.2-64.3] |
+
+- **Primary endpoint, compact minus naive summary: +18.9 points [+7.2, +30.6]: confirmed** (+24.1 [+8.9, +39.3] on
+  unknown probes). The five design repositories gave +19.1 [+10.4, +28.1].
+- Secondary: compact minus full +14.4 [+6.7, +23.3]; minus README +36.7 [+26.7, +47.8]; minus no context +9.4
+  [-5.0, +23.9] (not significant here: these are well-known libraries; on unknown probes +48.2); compact + source
+  minus summary + files +11.1 [-2.2, +24.4] (33 and 30 reads of 90).
+- Per repository, compact versus summary: express 43.3 vs 31.7, requests 43.3 vs 20.0, logrus 53.3 vs 31.7.
+
+**Second answering family (pre-registered secondary endpoint).** mistral:ministral-14b-latest answers, gemini-3.8-flash
+judges, conditions `hcs-compact` and `summary`, same probes and budget. The family was changed from gpt-oss-20b
+before any call with the new model, because Groq's free tier covered only part of one repository per day (amendment
+in `bench/d1/CONFIRMATION.md`). The abandoned gpt-oss-20b run stopped on express after `summary` 30/30 probes (13
+correct) and `hcs-compact` 13/30 (7 correct); it is kept under `results/expressjs__express/groq_*` and counts for
+nothing. Analysis: `node bench/d1/paired.mjs` (output `bench/d1/analysis-confirmation-family2.txt`, which reproduces
+the family 1 numbers above from their raw results).
+
+| ministral-14b answers, Gemini judges | Fidelity [95% CI], 90 probes |
+|---|---|
+| **HCS, compact profile** | **43.3% [33.9-53.3]** |
+| Naive summary, same budget | 27.2% [18.3-36.7] |
+
+- **Compact minus naive summary: +16.1 points [+3.9, +27.8]**, entirely above zero, so the result holds with a
+  second, smaller answering model from another family. Per repository: express 48.3 vs 38.3, requests 38.3 vs 20.0,
+  logrus 43.3 vs 23.3.
+
+The same family on the five design repositories (output `bench/d1/analysis-v2-family2.txt`; the script reproduces
+family 1's +19.1 [+10.4, +28.1] from its raw results):
+
+| ministral-14b answers, Gemini judges | Fidelity [95% CI], 144 probes |
+|---|---|
+| **HCS, compact profile** | **45.5% [37.2-53.8]** |
+| Naive summary, same budget | 26.7% [19.8-33.7] |
+
+- **Compact minus naive summary: +18.8 points [+9.4, +28.5].** Per repository: kilo 54.2 vs 29.2, itsdangerous 70.0
+  vs 46.7, anyhow 46.7 vs 18.3, cobra 30.0 vs 13.3, ky 28.3 vs 26.7 (ky is the one repository where the two are
+  close, with both families).
+
+Summary of D1: with two answering families from different providers, on eight repositories, the compact HCS context
+beats a naive summary of the same 2,000-token budget by 16 to 19 points, every 95% interval above zero.
+
+Limits that remain: one model (gemini-3.8-flash) compiled the files, wrote the probes and the summaries, and judges
+family 2, which may favor material in its own words; the probes are generated, 24 to 30 per repository; one budget
+(2,000 tokens); only the `hcs-compact` and `summary` conditions were run for family 2.

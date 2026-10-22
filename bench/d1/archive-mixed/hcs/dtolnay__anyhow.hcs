@@ -1,0 +1,214 @@
+HCS/0.2
+@title dtolnay__anyhow
+@root ../../.work/d1/dtolnay__anyhow
+@created 2026-10-22T07:41:07.537Z
+@updated 2026-10-22T07:43:39.182Z
+@generator hcs-cli compile (gemini:gemini-3-flash-preview)
+@source-files 13
+@source-tokens 56298
+@incomplete src/lib.rs:1-469,src/lib.rs:470-728,src/macros.rs:1-245,src/nightly.rs:1-58,src/ptr.rs:1-187,src/wrapper.rs:1-84
+
+[claims]
+
+## (root)
+#c1[i5] The anyhow library provides a trait object based error type called anyhow::Error for idiomatic error handling in Rust applications.
+  > README.md:9-10 #332995edd222
+#c2[i4] The anyhow::Result<T> type is an alias for Result<T, anyhow::Error> and is recommended as the return type for fallible functions.
+  > README.md:23-24 #150385c39c7f
+#c3[i3] Anyhow supports downcasting by value, shared reference, or mutable reference.
+  > README.md:66-67 #e41e0e6ce253
+#c4[i3] Setting RUST_LIB_BACKTRACE=1 enables backtraces specifically for errors, while RUST_BACKTRACE=1 enables them for both panics and errors.
+  > README.md:85 #e2e2fa1521f8
+#c5[i4] The anyhow! macro creates one-off error messages with string interpolation, and the bail! macro provides a shorthand for early returns.
+  > README.md:111-112 #f47f319312be
+#c6[i4] In no_std mode, the 'std' feature must be disabled in Cargo.toml and a global allocator is required.
+  > README.md::"No-std support" #c52f3dc8d20d
+#c7[i5] Anyhow is intended for application code where easy error handling is prioritized, whereas thiserror is for designing dedicated library error types.
+  > README.md::"Comparison to thiserror" #6fd2d02da2d2
+
+## src
+#c8[i5] The Backtrace type is an alias for std::backtrace::Backtrace when the std feature is enabled, otherwise it is an empty enum.
+  > src/backtrace.rs:2 #6160332ee130
+#c9[i4] The backtrace! macro captures a standard backtrace if the std feature is enabled, returning Some(std::backtrace::Backtrace::capture()).
+  > src/backtrace.rs:10 #d945ce0779d4
+#c10[i4] When the std feature is disabled, the backtrace! macro always returns None.
+  > src/backtrace.rs:17 #8da9f519eca1
+#c11[i5] If error_generic_member_access is enabled, backtrace_if_absent checks if the error already contains a backtrace before capturing a new one.
+  > src/backtrace.rs:24-27 #1937b53ed61c
+#c12[i3] Without error_generic_member_access but with the std feature, backtrace_if_absent unconditionally attempts to capture a backtrace.
+  > src/backtrace.rs:26 #de4432aeea80
+#c13[i3] The Backtrace type is statically asserted to implement both Send and Sync traits.
+  > src/backtrace.rs::_assert_send_sync #5f81a69db8b9
+#c14[i5] The Chain struct provides an iterator over a sequence of errors, starting from a head error and following its source chain.
+  > src/chain.rs::Chain #af852a4e439f
+#c15[i4] ChainState uses a Linked variant for lazy traversal via error sources and a Buffered variant for pre-collected error sequences.
+  > src/chain.rs::ChainState #a5a153eebc6b
+#c16[i5] The Iterator implementation for Chain traverses the error hierarchy by calling error.source() on each step in the Linked state.
+  > src/chain.rs::next #2da112204c77
+#c17[i4] Calling next_back on a Linked Chain triggers a side effect that exhausts the source chain into a Vec and transitions the state to Buffered.
+  > src/chain.rs::DoubleEndedIterator.next_back #95c585d2e85c
+#c18[i3] The Chain iterator reports an exact size by traversing the remaining source chain to count elements.
+  > src/chain.rs::ExactSizeIterator.len #0a50876f32c7
+#c19[i3] The Buffered state and DoubleEndedIterator implementation are conditionally compiled based on the std feature or the absence of anyhow_no_core_error.
+  > src/chain.rs::ChainState #a5a153eebc6b
+#c20[i4] A new Chain is initialized in the Linked state with the provided head error as the first element.
+  > src/chain.rs::new #87c2ee6783ff
+#c21[i5] The Context trait is implemented for Result<T, E> where E implements the internal ext::StdError trait, allowing the attachment of context to errors.
+  > src/context.rs:42-45 #9fed42fb4d16
+#c22[i4] Implementations of context and with_context use explicit match statements instead of map_err or ok_or_else to avoid adding extra frames to captured backtraces.
+  > src/context.rs::context #f36af7f6ccb8
+#c23[i4] ContextError wraps a context and an error, implementing Display by showing only the context and source to return the underlying error.
+  > src/context.rs:128-135 #596477ecfe4a
+#c24[i3] The Debug implementation for ContextError uses a Quoted wrapper to escape the context string and labels the underlying error as 'source'.
+  > src/context.rs::fmt #72ff97c1a9b3
+#c25[i3] When error_generic_member_access is enabled, ContextError delegates the provide method to the underlying error's implementation.
+  > src/context.rs:146-149 #a2a8e22c4710
+#c26[i2] The Quoted struct ensures that context strings are wrapped in double quotes and debug-escaped during formatting.
+  > src/context.rs:168-178 #3368701a1d35
+#c27[i4] The BothDebug trait provides a method to dispatch error creation by rendering two Debug-implementing values into a message.
+  > src/ensure.rs::__dispatch_ensure #55435802d61b
+#c28[i4] The NotBothDebug trait serves as a fallback that returns a plain Error message when values do not both implement Debug.
+  > src/ensure.rs:29-33 #e2b0c2c27232
+#c29[i3] The Buf struct uses a fixed-size 40-byte array of MaybeUninit<u8> for stack-based string formatting.
+  > src/ensure.rs::Buf #4a5b381c47a4
+#c30[i3] Buf::write_str rejects strings containing spaces or newlines and returns fmt::Error if the input exceeds remaining capacity.
+  > src/ensure.rs::Write.write_str #bd9dd04c4ac4
+#c31[i5] The render function attempts to format two Debug values into a message; if formatting fails or exceeds Buf capacity, it returns the original message.
+  > src/ensure.rs:83-85 #e2a3e1eb458c
+#c32[i5] The __parse_ensure macro implements a recursive descent parser for Rust expressions to support 'fancy' ensure assertions.
+  > src/ensure.rs:105-108 #917c66a62c94
+#c33[i3] Low-precedence control flow constructs like return, break, and continue trigger a fallback ensure mechanism.
+  > src/ensure.rs:112-114 #76d586786a64
+#c34[i4] The macro parser handles complex Rust syntax including qualified paths, generics, and various pointer types like &raw mut.
+  > src/ensure.rs:158-160 #0547e5cd245d
+#c35[i5] The `Error` type is a thin pointer to an `ErrorImpl` structure, erasing the concrete error type `E` while preserving behavior via a custom vtable.
+  > src/error.rs::Error.construct #018b71bbe165
+#c36[i4] Creating a new `Error` via `Error::new` requires the error type to be `StdError + Send + Sync + 'static` and automatically captures a backtrace if one is absent.
+  > src/error.rs::Error.new #e23a67bf8e65
+#c37[i3] The `Error::msg` method creates an error from printable messages using `MessageError`, which is `repr(transparent)` to allow casting between the wrapper and the message.
+  > src/error.rs::Error.msg #f3a6a5f5f2f1
+#c38[i3] The `Error::chain` method provides an iterator over the cause chain, starting from the error the object was created from.
+  > src/error.rs::Error.chain #a481f44c167b
+#c39[i3] Backtrace availability depends on `RUST_LIB_BACKTRACE` or `RUST_BACKTRACE` environment variables; `RUST_LIB_BACKTRACE=1` enables them specifically for errors.
+  > src/error.rs:387-390 #05511d70cab1
+#c40[i3] The `Error::root_cause` method returns the final `StdError` in the chain, which is the lowest level cause.
+  > src/error.rs::Error.root_cause #8321e6ef8956
+#c41[i3] The `ErrorImpl` struct uses `repr(C)` to ensure the error object `E` remains in the final position, facilitating type erasure and vtable-based manipulation.
+  > src/error.rs::Some #bf9085671ef1
+#c42[i3] The `vtable` function retrieves the `ErrorVTable` by assuming it is the first field of the `ErrorImpl` struct.
+  > src/error.rs::vtable #2a024b6ce718
+#c43[i2] The `Error` type implements `UnwindSafe` and `RefUnwindSafe` traits.
+  > src/error.rs:1059-1060 #1fed0d0ee956
+#c44[i4] The __parse_ensure macro handles generic argument lists by recursively parsing literals, blocks, lifetimes, and associated type assignments.
+  > src/ensure.rs:601-603 #4e1ce0f1e561
+#c45[i4] The macro distinguishes between single '>' and double '>>' right angle brackets to correctly handle nested generics and bitwise shifts.
+  > src/ensure.rs:633-635 #da9a2e753cb4
+#c46[i4] Pattern parsing in __parse_ensure supports complex Rust patterns including pipes, ranges, references, and qualified paths.
+  > src/ensure.rs:639-641 #d201744f3e68
+#c47[i5] The macro identifies comparison operators like ==, <=, <, !=, >=, and > to split expressions into left-hand and right-hand sides.
+  > src/ensure.rs:725-727 #fc9182af4329
+#c48[i3] High and low precedence binary operators, including arithmetic and assignment operators, are parsed to maintain expression structure.
+  > src/ensure.rs:783-785 #743484948c21
+#c49[i5] __fancy_ensure captures operands by reference and uses __dispatch_ensure to provide detailed error messages if a comparison fails.
+  > src/ensure.rs:893 #8d3dc7ac564e
+#c50[i5] __fallback_ensure provides a default error mechanism using anyhow! when specialized parsing fails or for simple boolean conditions.
+  > src/ensure.rs:932 #1f333e4bbf21
+#c51[i3] If __parse_ensure encounters an unrecognized expression state, it defaults to the __fallback_ensure macro.
+  > src/ensure.rs:879-881 #b879cfda425e
+#c52[i4] When debugging an error with multiple sources, the Indented helper formats each cause with a 5-character right-aligned index.
+  > src/fmt.rs::ErrorImpl.debug.Some #504931faafd0
+#c53[i3] The Indented struct wraps a Write implementation to handle multi-line indentation and optional line numbering for error causes.
+  > src/fmt.rs::Indented #e9d06997ec87
+#c54[i3] Indented::write_str uses a 4-space indentation for lines when no number is provided.
+  > src/fmt.rs::write_str #60d458fbc0cc
+#c55[i3] For numbered Indented output, subsequent lines of a single error message are indented by 7 spaces to align with the numbered header.
+  > src/fmt.rs::write_str #60d458fbc0cc
+#c56[i4] AdhocKind is implemented for references to types that satisfy Display, Debug, Send, Sync, and 'static, serving as a fallback when a type lacks a standard error implementation.
+  > src/kind.rs:65 #0010101a0807
+#c57[i4] TraitKind is implemented for any type E that can be converted into an Error via the Into trait, providing higher precedence than AdhocKind.
+  > src/kind.rs:87 #7ecb203553be
+#c58[i5] The anyhow! macro resolves the error type by calling anyhow_kind() on a reference to the message, which returns a tag (Adhoc, Trait, or Boxed) to select the appropriate new() method.
+  > src/kind.rs:45 #978145f219ba
+#c59[i3] Adhoc::new constructs an Error from a message and a backtrace for types that do not implement the standard error trait.
+  > src/kind.rs::Adhoc.new #a8a73a767218
+#c60[i3] BoxedKind and its associated logic are only available when the 'std' feature is enabled or when anyhow_no_core_error is not set.
+  > src/kind.rs:50 #ff628647226b
+#c61[i3] Boxed::new handles boxed standard errors by capturing a backtrace if one is absent and calling Error::construct_from_boxed.
+  > src/kind.rs::Boxed.new #7bd61358ca79
+
+[probes]
+?p1 Which environment variable should be set to enable backtraces for errors only?
+  = RUST_LIB_BACKTRACE=1
+  > README.md:85 #e2e2fa1521f8
+?p2 What does the backtrace! macro return when the std feature is not enabled?
+  = None
+  > src/backtrace.rs:17 #8da9f519eca1
+?p3 What happens to the internal state of a Linked Chain when next_back() is called?
+  = It collects all remaining errors into a Vec and transitions the state to Buffered.
+  > src/chain.rs::DoubleEndedIterator.next_back #95c585d2e85c
+?p4 Why does the implementation of context for Result use a match statement instead of map_err?
+  = To save 2 useless frames off the captured backtrace.
+  > src/context.rs::context #f36af7f6ccb8
+?p5 What is the maximum capacity of the internal formatting buffer used during error rendering?
+  = 40 bytes
+  > src/ensure.rs::Buf #4a5b381c47a4
+?p6 What trait bounds are required for a type to be used with Error::new?
+  = The type must implement StdError + Send + Sync + 'static.
+  > src/error.rs::Error.new #e23a67bf8e65
+?p7 What assumption does the `vtable` function make about the layout of `ErrorImpl`?
+  = It assumes that `ErrorVTable` is the first field of the `ErrorImpl` struct.
+  > src/error.rs::vtable #2a024b6ce718
+?p8 What specific requirement must be met to use Anyhow in no_std mode?
+  = A global allocator is required.
+  > README.md::"No-std support" #c52f3dc8d20d
+?p9 Which function is used to check for an existing backtrace in an error when error_generic_member_access is active?
+  = $crate::nightly::request_ref_backtrace
+  > src/backtrace.rs:24 #d53b93d0d758
+?p10 How does the Chain iterator determine the next error in a Linked state?
+  = It calls the source() method on the current error.
+  > src/chain.rs::next #2da112204c77
+?p11 What does the Display implementation of ContextError output?
+  = It outputs the context field using its Display implementation.
+  > src/context.rs:133 #5ea9ce45e221
+?p12 What characters cause Buf::write_str to return an error regardless of remaining capacity?
+  = Spaces (' ') or newlines ('\n')
+  > src/ensure.rs::Write.write_str #bd9dd04c4ac4
+?p13 Which environment variable configuration enables backtraces for errors but not for panics?
+  = Setting RUST_LIB_BACKTRACE=1 and RUST_BACKTRACE=0 (or leaving RUST_BACKTRACE unset while setting RUST_LIB_BACKTRACE=1).
+  > src/error.rs:396-397 #0266d56d22a4
+?p14 What traits must the Backtrace type satisfy according to the internal assertions?
+  = Send and Sync
+  > src/backtrace.rs::_assert_send_sync.assert #c40ef0856c1b
+?p15 Under what configuration is the Default trait implemented for Chain?
+  = When the 'std' feature is enabled or anyhow_no_core_error is not set.
+  > src/chain.rs:93-94 #768fa202e942
+?p16 How is the source of a ContextError<C, Error> retrieved?
+  = It uses an unsafe call to crate::ErrorImpl::error on the inner error reference.
+  > src/context.rs:157 #5854e0dee432
+?p17 How does the render function format the final error message when both sides are successfully buffered?
+  = It combines the message, lhs, and rhs in the format "{msg} ({lhs} vs {rhs})"
+  > src/ensure.rs:91-96 #e3a28df2d215
+?p18 What happens in __fancy_ensure if the condition `lhs op rhs` is false?
+  = It returns an Err containing a message generated by stringifying the expression and calling __dispatch_ensure on the operands.
+  > src/ensure.rs:893 #8d3dc7ac564e
+?p19 How does ErrorImpl::display change its output when the alternate flag (#) is used?
+  = It appends the error's causes from the chain, each prefixed with ': '.
+  > src/fmt.rs::ErrorImpl.display #7137505ce0e0
+?p20 What trait bounds are required for a type to use AdhocKind?
+  = Display + Debug + Send + Sync + 'static.
+  > src/kind.rs:65 #0010101a0807
+?p21 How does the macro handle the 'in' keyword during pattern parsing?
+  = It transitions the state to '0' and continues parsing.
+  > src/ensure.rs:647-649 #10fef9920a8f
+?p22 What specific string prefix does the debug implementation look for to capitalize the backtrace?
+  = "stack backtrace:"
+  > src/fmt.rs::ErrorImpl.debug #dfe9d90dac0b
+?p23 What specific method is called on the tag returned by anyhow_kind() to create the final Error?
+  = The new() method.
+  > src/kind.rs:45 #978145f219ba
+?p24 Which traits are imported in __fancy_ensure to facilitate error dispatching?
+  = BothDebug and NotBothDebug from the __private module.
+  > src/ensure.rs:892 #47003f4166b3
+?p25 In the Indented helper, how many spaces are used for the prefix when a number is present?
+  = A 5-character right-aligned field followed by a colon and a space (total 7 characters).
+  > src/fmt.rs::write_str #60d458fbc0cc

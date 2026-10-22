@@ -1,0 +1,299 @@
+{
+ "repo": "antirez__kilo",
+ "commit": "323d93b29bd89a2cb446de90c4ed4fea1764176e",
+ "condition": "summary",
+ "answerer": "mistral:ministral-14b-latest",
+ "judge": "gemini:gemini-3.8-flash",
+ "budget": 2000,
+ "tokens": 1646,
+ "results": {
+  "q1": {
+   "id": "q1",
+   "question": "What tool was used to measure that Kilo is less than 1K lines of code?",
+   "expected": "cloc",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q2": {
+   "id": "q2",
+   "question": "What is the version string defined by the KILO_VERSION macro?",
+   "expected": "\"0.0.1\"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q3": {
+   "id": "q3",
+   "question": "Which errno value is explicitly ignored as non-fatal when editorOpen attempts to fopen a file?",
+   "expected": "ENOENT",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q4": {
+   "id": "q4",
+   "question": "How many times must Ctrl-Q be pressed to quit when the file has unsaved changes?",
+   "expected": "3",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q5": {
+   "id": "q5",
+   "question": "Which key combination is used to find a string in a file?",
+   "expected": "CTRL-F",
+   "answer": "The key combination to search for a string in a file is **`CTRL-F`** (cited from **README.md:1-26**).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q6": {
+   "id": "q6",
+   "question": "What terminal color code is returned by editorSyntaxToColor for HL_KEYWORD1?",
+   "expected": "33",
+   "answer": "The terminal color code returned by `editorSyntaxToColor` for `HL_KEYWORD1` is **yellow (33)** (cited from **kilo.c:1-589**).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q7": {
+   "id": "q7",
+   "question": "What file permissions mode is passed to open() when editorSave creates or opens the file?",
+   "expected": "0644",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q8": {
+   "id": "q8",
+   "question": "Which function handles the BACKSPACE, CTRL_H, and DEL_KEY keypress events?",
+   "expected": "editorDelChar()",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q9": {
+   "id": "q9",
+   "question": "What escape sequences does Kilo use instead of relying on libraries like curses?",
+   "expected": "VT100 (and similar terminals) escape sequences",
+   "answer": "Kilo uses VT100/ANSI escape sequences like `\\x1b[6n` (query cursor position) and `\\x1b[rows;colsR` (response format), as well as `\\x1b[999C\\x1b[999B` (fallback cursor repositioning) for terminal control (c12, kilo.c:1-589). It also parses sequences starting with `ESC [` or `ESC O` for arrow keys and other key actions (c12).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q10": {
+   "id": "q10",
+   "question": "Which errno code is set if STDIN_FILENO is not a tty in enableRawMode?",
+   "expected": "ENOTTY",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q11": {
+   "id": "q11",
+   "question": "How many seconds must elapse before the status message is no longer displayed on the screen?",
+   "expected": "5",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q12": {
+   "id": "q12",
+   "question": "Why is E.screenrows decreased by 2 in updateWindowSize?",
+   "expected": "To get room for the status bar.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q13": {
+   "id": "q13",
+   "question": "From which two previous projects did the author borrow code to write Kilo?",
+   "expected": "load81 and linenoise",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q14": {
+   "id": "q14",
+   "question": "Which key code value is returned when the escape sequence ESC [ 3 ~ is read?",
+   "expected": "DEL_KEY",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q15": {
+   "id": "q15",
+   "question": "What symbol character is displayed in editorRefreshScreen when a non-printable character has a code value of 26 or less?",
+   "expected": "'@'+c[j]",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q16": {
+   "id": "q16",
+   "question": "Which signal is caught to handle window resize events?",
+   "expected": "SIGWINCH",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q17": {
+   "id": "q17",
+   "question": "Who is the author of Kilo?",
+   "expected": "Salvatore Sanfilippo aka antirez",
+   "answer": "The author of Kilo is **Salvatore Sanfilippo (antirez)** (README.md:1-26).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q18": {
+   "id": "q18",
+   "question": "Under what condition will editorUpdateRow print an error message and exit?",
+   "expected": "When allocsize exceeds UINT32_MAX",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q19": {
+   "id": "q19",
+   "question": "What is the maximum allowed query length defined for find mode?",
+   "expected": "256",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q20": {
+   "id": "q20",
+   "question": "What help message is initially displayed in the status bar upon launching main?",
+   "expected": "\"HELP: Ctrl-S = save | Ctrl-Q = quit | Ctrl-F = find\"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q21": {
+   "id": "q21",
+   "question": "Under what license is Kilo released?",
+   "expected": "BSD 2 clause license",
+   "answer": "Kilo is released under the **BSD-2-Clause** license (README.md:1-26).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q22": {
+   "id": "q22",
+   "question": "What function is registered as an exit handler within enableRawMode?",
+   "expected": "editorAtExit",
+   "answer": "The function registered as an exit handler in `enableRawMode` is **`editorAtExit`** (cited in **kilo.c:1-589**). This is done via `atexit` to ensure terminal settings are restored on program termination.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q23": {
+   "id": "q23",
+   "question": "When a search match is located in editorFind, what highlight value is applied across the matching substring?",
+   "expected": "HL_MATCH",
+   "answer": "The matching substring in `editorFind` is assigned the highlight value **`HL_MATCH` (8)** (cited from the **Syntax Highlighting Types** in `kilo.c:1-589`). This is explicitly defined in the enum for search matches.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q24": {
+   "id": "q24",
+   "question": "What error message is printed if the program is not executed with exactly 2 arguments?",
+   "expected": "\"Usage: kilo <filename>\\n\"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  }
+ }
+}

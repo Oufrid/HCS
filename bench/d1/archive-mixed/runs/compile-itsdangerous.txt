@@ -1,0 +1,35 @@
+[1/22] docs/changes.rst:1-4 -> 1 claims, 1 probes
+[2/22] README.md:1-50 -> 3 claims, 2 probes
+[3/22] docs/encoding.rst:1-8 -> 1 claims, 1 probes
+[4/22] docs/exceptions.rst:1-22 -> 1 claims, 1 probes
+[5/22] docs/concepts.rst:1-154 -> 6 claims, 3 probes
+[6/22] docs/Makefile:1-19 -> not compiled: quota exhausted
+[7/22] docs/license.rst:1-5 -> 2 claims, 2 probes
+[8/22] docs/index.rst:1-63 -> 4 claims, 2 probes
+[9/22] docs/conf.py:1-55 -> 5 claims, 2 probes
+wrote /home/user/HCS/bench/d1/hcs/pallets__itsdangerous.hcs: 23 claims, 14 probes from 22 files (22 compiled)
+  rejected by quote verification: 0/23 claims, 0/14 probes
+  INCOMPLETE: provider unavailable after 6 attempts: HTTP 429 from https://generativelanguage.googleapis.com/v1beta/openai/chat/completions: [{
+  "error": {
+    "code": 429,
+    "message": "You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rat
+  not compiled yet: 14 chunk(s): docs/Makefile:1-19, docs/make.bat:1-35, docs/serializer.rst:1-112, docs/signer.rst:1-49, docs/timed.rst:1-28, docs/url_safe.rst:1-21, src/itsdangerous/__init__.py:1-17, src/itsdangerous/_json.py:1-18, src/itsdangerous/encoding.py:1-54, src/itsdangerous/exc.py:1-106, src/itsdangerous/serializer.py:1-404, src/itsdangerous/signer.py:1-266, src/itsdangerous/timed.py:1-228, src/itsdangerous/url_safe.py:1-83
+  the partial file was saved; run the same command with --update later to finish it
+usage gemini:gemini-3.6-flash: 8 requests, 7114 input + 3162 output tokens (as reported by the provider)
+pallets__itsdangerous: compile stopped (exit 1); rerun this step later to resume
+exit 3
+--- resume 2026-10-22T07:43:39Z --rpm 3
+incremental: 8 files unchanged, 14 to compile
+[1/14] docs/Makefile:1-19 -> 3 claims, 2 probes
+[2/14] docs/serializer.rst:1-112 -> not compiled: quota exhausted
+[3/14] docs/make.bat:1-35 -> 5 claims, 3 probes
+[4/14] docs/signer.rst:1-49 -> not compiled: quota exhausted
+[5/14] docs/timed.rst:1-28 -> not compiled: quota exhausted
+wrote /home/user/HCS/bench/d1/hcs/pallets__itsdangerous.hcs: 31 claims, 19 probes from 22 files (14 compiled)
+  rejected by quote verification: 0/8 claims, 0/5 probes
+  INCOMPLETE: rate limit or quota exhausted at https://generativelanguage.googleapis.com/v1beta/openai/chat/completions (server asks to wait 83739s; quota GenerateRequestsPerDayPerProjectPerModel-FreeTier = 20 for model gemini-3.6-flash). Try later, lower --rpm, or use another model.
+  not compiled yet: 12 chunk(s): docs/serializer.rst:1-112, docs/signer.rst:1-49, docs/timed.rst:1-28, docs/url_safe.rst:1-21, src/itsdangerous/__init__.py:1-17, src/itsdangerous/_json.py:1-18, src/itsdangerous/encoding.py:1-54, src/itsdangerous/exc.py:1-106, src/itsdangerous/serializer.py:1-404, src/itsdangerous/signer.py:1-266, src/itsdangerous/timed.py:1-228, src/itsdangerous/url_safe.py:1-83
+  the partial file was saved; run the same command with --update later to finish it
+usage gemini:gemini-3.6-flash: 2 requests, 1410 input + 1181 output tokens (as reported by the provider)
+pallets__itsdangerous: compile stopped (exit 1); rerun this step later to resume
+exit 3

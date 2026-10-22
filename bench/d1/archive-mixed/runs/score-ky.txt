@@ -1,0 +1,2 @@
+sindresorhus__ky hcs: stopped by the quota, 5/30 saved: rate limit or quota exhausted at https://api.groq.com/openai/v1/chat/completions (server asks to wait 655s; Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kq6dek8kf3ptkrbhwjhgsk0f` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199257, Requested 2259. Please try again in 10m54.912s. Need more token). Try later, lower --rpm, or use another model.
+exit 3

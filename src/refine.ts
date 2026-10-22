@@ -9,7 +9,7 @@ import { anchorFor, oneLine, sectionOf } from "./compile.js";
 import type { Claim, HcsDocument, Probe } from "./format.js";
 import { isHighRisk, SUSPECT_TAG } from "./guard.js";
 import { extractJSON, mapLimit, QuotaError, type LLM } from "./llm.js";
-import { renderContext } from "./render.js";
+import { renderContext, type RenderProfile } from "./render.js";
 import { scoreContext, type ProbeResult, type ScoreCache, type ScoreOptions, type ScoreSummary } from "./score.js";
 import type { Chunk } from "./sources.js";
 
@@ -26,6 +26,8 @@ export interface RefineOptions {
   rounds?: number;
   /** Render under this token budget, as `score --budget` does. */
   budget?: number;
+  /** Render profile for the answering model (default "compact", as `score`). */
+  profile?: RenderProfile;
   /** Also try dropping groups of claims (by section) that the training probes do not need. Costs requests. */
   prune?: boolean;
   /** Lines of source around each cited passage shown to the writer (default 15). */
@@ -205,7 +207,7 @@ export async function refine(doc: HcsDocument, opts: RefineOptions): Promise<Ref
   const scoreOpts: ScoreOptions = { answerer: opts.answerer ?? opts.llm, judge: opts.judge, concurrency: opts.concurrency };
   const render = (d: HcsDocument) => {
     const claimStatus = new Map(checkDocument(d, opts.cache).filter((r) => r.kind === "claim").map((r) => [r.id, r.status]));
-    return renderContext(d, { status: claimStatus, budget: opts.budget });
+    return renderContext(d, { status: claimStatus, budget: opts.budget, profile: opts.profile ?? "compact" });
   };
   const score = (d: HcsDocument, probes: Probe[]) => {
     const context = render(d);

@@ -1,0 +1,81 @@
+HCS/0.2
+@title antirez__kilo (independent probes)
+@root ../../.work/d1/antirez__kilo
+@created 2026-10-22T11:50:24.965Z
+@generator bench/d1 probes (gemini:gemini-3.8-flash)
+
+[claims]
+
+[probes]
+?q1 What tool was used to measure that Kilo is less than 1K lines of code?
+  = cloc
+  > README.md:4 #292daf6ba680
+?q2 What is the version string defined by the KILO_VERSION macro?
+  = "0.0.1"
+  > kilo.c:35 #90ed84b08fdd
+?q3 Which errno value is explicitly ignored as non-fatal when editorOpen attempts to fopen a file?
+  = ENOENT
+  > kilo.c::editorOpen #a74a759a7b82
+?q4 How many times must Ctrl-Q be pressed to quit when the file has unsaved changes?
+  = 3
+  > kilo.c:1187 #bddc20b86e60
+?q5 Which key combination is used to find a string in a file?
+  = CTRL-F
+  > README.md:14 #a0280e8f56cc
+?q6 What terminal color code is returned by editorSyntaxToColor for HL_KEYWORD1?
+  = 33
+  > kilo.c::editorSyntaxToColor #819747c749b1
+?q7 What file permissions mode is passed to open() when editorSave creates or opens the file?
+  = 0644
+  > kilo.c::editorSave #a9e9709084c7
+?q8 Which function handles the BACKSPACE, CTRL_H, and DEL_KEY keypress events?
+  = editorDelChar()
+  > kilo.c::editorProcessKeypress #1164e28a1a02
+?q9 What escape sequences does Kilo use instead of relying on libraries like curses?
+  = VT100 (and similar terminals) escape sequences
+  > README.md:16-17 #efb6b4eb18e1
+?q10 Which errno code is set if STDIN_FILENO is not a tty in enableRawMode?
+  = ENOTTY
+  > kilo.c::enableRawMode #cd72cf1e3c04
+?q11 How many seconds must elapse before the status message is no longer displayed on the screen?
+  = 5
+  > kilo.c:977 #2ed6dc6f2d15
+?q12 Why is E.screenrows decreased by 2 in updateWindowSize?
+  = To get room for the status bar.
+  > kilo.c::updateWindowSize #6516dd852835
+?q13 From which two previous projects did the author borrow code to write Kilo?
+  = load81 and linenoise
+  > README.md:18-19 #21ed19e0bfb9
+?q14 Which key code value is returned when the escape sequence ESC [ 3 ~ is read?
+  = DEL_KEY
+  > kilo.c::editorReadKey #1235ba3b05b0
+?q15 What symbol character is displayed in editorRefreshScreen when a non-printable character has a code value of 26 or less?
+  = '@'+c[j]
+  > kilo.c:924-925 #c14df5fcfc38
+?q16 Which signal is caught to handle window resize events?
+  = SIGWINCH
+  > kilo.c::initEditor #880014f10916
+?q17 Who is the author of Kilo?
+  = Salvatore Sanfilippo aka antirez
+  > README.md:25-26 #1738738f099b
+?q18 Under what condition will editorUpdateRow print an error message and exit?
+  = When allocsize exceeds UINT32_MAX
+  > kilo.c::editorUpdateRow #298eb05dee6b
+?q19 What is the maximum allowed query length defined for find mode?
+  = 256
+  > kilo.c:1012 #f8ea1756a445
+?q20 What help message is initially displayed in the status bar upon launching main?
+  = "HELP: Ctrl-S = save | Ctrl-Q = quit | Ctrl-F = find"
+  > kilo.c::main #846ece275c31
+?q21 Under what license is Kilo released?
+  = BSD 2 clause license
+  > README.md:25-26 #1738738f099b
+?q22 What function is registered as an exit handler within enableRawMode?
+  = editorAtExit
+  > kilo.c::enableRawMode #cd72cf1e3c04
+?q23 When a search match is located in editorFind, what highlight value is applied across the matching substring?
+  = HL_MATCH
+  > kilo.c:1092 #1a6b887bd822
+?q24 What error message is printed if the program is not executed with exactly 2 arguments?
+  = "Usage: kilo <filename>\n"
+  > kilo.c::main #846ece275c31

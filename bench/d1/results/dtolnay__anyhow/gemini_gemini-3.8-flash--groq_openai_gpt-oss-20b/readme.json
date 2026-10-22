@@ -1,0 +1,372 @@
+{
+ "repo": "dtolnay__anyhow",
+ "commit": "2cbb4e1bcbf8e7015f8d8b04a291c4c0597030b4",
+ "condition": "readme",
+ "answerer": "gemini:gemini-3.8-flash",
+ "judge": "groq:openai/gpt-oss-20b",
+ "budget": 2000,
+ "tokens": 1857,
+ "fullTokens": 1857,
+ "results": {
+  "p1": {
+   "id": "p1",
+   "question": "What is required to depend on Anyhow in no_std mode besides disabling the default \"std\" feature?",
+   "expected": "A global allocator is required.",
+   "answer": "A global allocator is required.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p2": {
+   "id": "p2",
+   "question": "What does the `backtrace!` macro expand to when `feature = \"std\"` is disabled?",
+   "expected": "None",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p3": {
+   "id": "p3",
+   "question": "What does Chain::new set as the initial ChainState?",
+   "expected": "ChainState::Linked with next set to Some(head).",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p4": {
+   "id": "p4",
+   "question": "Why does `Result::context` use pattern matching instead of `map_err`?",
+   "expected": "To save 2 useless frames off the captured backtrace in ext_context.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p5": {
+   "id": "p5",
+   "question": "What is the capacity of the byte buffer used in `Buf` for formatting debug representations?",
+   "expected": "40 bytes.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p6": {
+   "id": "p6",
+   "question": "What traits does __fancy_ensure import to support conditional debug formatting of operands?",
+   "expected": "BothDebug and NotBothDebug from $crate::__private.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p7": {
+   "id": "p7",
+   "question": "What type of pointer does Error::construct store inside Error to erase the concrete type?",
+   "expected": "A thin pointer via Own<ErrorImpl> cast from Box<ErrorImpl<E>>.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p8": {
+   "id": "p8",
+   "question": "What happens to the backtrace when converting via reallocate_into_boxed_dyn_error_without_backtrace?",
+   "expected": "It is discarded.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p9": {
+   "id": "p9",
+   "question": "What does ErrorImpl::debug output when alternate formatting (f.alternate()) is enabled?",
+   "expected": "It returns the result of Debug::fmt(error, f).",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p10": {
+   "id": "p10",
+   "question": "What constructor does Adhoc::new invoke to generate an Error?",
+   "expected": "Error::construct_from_adhoc(message, backtrace!())",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p11": {
+   "id": "p11",
+   "question": "What traits must a context type `C` implement to be passed to `context` or `with_context`?",
+   "expected": "Display + Send + Sync + 'static",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p12": {
+   "id": "p12",
+   "question": "What does doc-mode `ensure!($cond)` return as the error message when called without a custom message or error?",
+   "expected": "A message constructed via `concat!(\"Condition failed: `\", stringify!($cond), \"`\")`.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p13": {
+   "id": "p13",
+   "question": "Which compiler feature does src/nightly.rs enable under anyhow_build_probe?",
+   "expected": "error_generic_member_access",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p14": {
+   "id": "p14",
+   "question": "What standard library method does Own::new use to obtain a NonNull pointer from a Box<T>?",
+   "expected": "Box::leak",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p15": {
+   "id": "p15",
+   "question": "What formatting trait does DisplayError<M>'s Debug implementation delegate to?",
+   "expected": "Display (via Display::fmt).",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p16": {
+   "id": "p16",
+   "question": "Which environment variable settings ensure only panics have backtraces, while errors do not?",
+   "expected": "RUST_BACKTRACE=1 and RUST_LIB_BACKTRACE=0.",
+   "answer": "To ensure only panics have backtraces, set `RUST_BACKTRACE=1` and `RUST_LIB_BACKTRACE=0`.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "p17": {
+   "id": "p17",
+   "question": "How is `Backtrace` declared in src/backtrace.rs when the `std` feature is not enabled?",
+   "expected": "As an empty enum: pub(crate) enum Backtrace {}",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p18": {
+   "id": "p18",
+   "question": "What state does next_back transition a Chain into if it was currently Linked?",
+   "expected": "Buffered holding the remaining iterator.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p19": {
+   "id": "p19",
+   "question": "How does `ContextError<C, Error>` retrieve its `StdError::source`?",
+   "expected": "Through `unsafe { crate::ErrorImpl::error(self.error.inner.by_ref()) }`.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p20": {
+   "id": "p20",
+   "question": "Which specific characters cause `Buf::write_str` to return `Err(fmt::Error)`?",
+   "expected": "Spaces (b' ') and newlines (b'\\n').",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p21": {
+   "id": "p21",
+   "question": "What helper function evaluates negation of the condition in __fallback_ensure?",
+   "expected": "$crate::__private::not",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p22": {
+   "id": "p22",
+   "question": "Why is ErrorImpl marked with #[repr(C)]?",
+   "expected": "To ensure that E remains in the final position.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p23": {
+   "id": "p23",
+   "question": "When Indented has no number set (None), how many spaces are prepended to the start of each line?",
+   "expected": "4 spaces.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p24": {
+   "id": "p24",
+   "question": "What trait bound does TraitKind require for its generic type E?",
+   "expected": "Into<Error>",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p25": {
+   "id": "p25",
+   "question": "What downcast targets are supported on an `anyhow::Error` after attaching context of type `C` onto an error of type `E`?",
+   "expected": "Either `C` or `E`.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p26": {
+   "id": "p26",
+   "question": "Why does the internal `__anyhow!` macro omit `must_use` compared to the public `anyhow!` macro?",
+   "expected": "Because it is used by other macros where the constructed value is already known to be used.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p27": {
+   "id": "p27",
+   "question": "What function is invoked internally by request_ref to extract a value from an Error?",
+   "expected": "error::request_ref::<T>(err)",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p28": {
+   "id": "p28",
+   "question": "What method on Mut<'a, T> allows changing its lifetime parameter to another lifetime 'b?",
+   "expected": "extend",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p29": {
+   "id": "p29",
+   "question": "What traits must M implement for MessageError<M> to implement StdError?",
+   "expected": "Display + Debug + 'static",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p30": {
+   "id": "p30",
+   "question": "Under what dual licenses is Anyhow distributed?",
+   "expected": "Apache License, Version 2.0 or MIT license.",
+   "answer": "Anyhow is licensed under either the Apache License, Version 2.0 or the MIT license at your option.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  }
+ }
+}

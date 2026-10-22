@@ -1,0 +1,299 @@
+{
+ "repo": "antirez__kilo",
+ "commit": "323d93b29bd89a2cb446de90c4ed4fea1764176e",
+ "condition": "hcs",
+ "answerer": "gemini:gemini-3.8-flash",
+ "judge": "groq:openai/gpt-oss-20b",
+ "budget": 2000,
+ "tokens": 1425,
+ "results": {
+  "q1": {
+   "id": "q1",
+   "question": "What tool was used to measure that Kilo is less than 1K lines of code?",
+   "expected": "cloc",
+   "answer": "The tool used to measure that Kilo is fewer than 1,000 lines of code is cloc (c9).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q2": {
+   "id": "q2",
+   "question": "What is the version string defined by the KILO_VERSION macro?",
+   "expected": "\"0.0.1\"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q3": {
+   "id": "q3",
+   "question": "Which errno value is explicitly ignored as non-fatal when editorOpen attempts to fopen a file?",
+   "expected": "ENOENT",
+   "answer": "The errno value explicitly ignored as non-fatal is `ENOENT` (c21). If `fopen` fails with any errno other than `ENOENT`, `editorOpen` exits the program immediately.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q4": {
+   "id": "q4",
+   "question": "How many times must Ctrl-Q be pressed to quit when the file has unsaved changes?",
+   "expected": "3",
+   "answer": "When the editor buffer is modified, Ctrl-Q must be pressed 3 consecutive times to exit (c25). Any other keypress resets the confirmation counter (c25).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q5": {
+   "id": "q5",
+   "question": "Which key combination is used to find a string in a file?",
+   "expected": "CTRL-F",
+   "answer": "The key combination used to find a string is CTRL-F (c11).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q6": {
+   "id": "q6",
+   "question": "What terminal color code is returned by editorSyntaxToColor for HL_KEYWORD1?",
+   "expected": "33",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q7": {
+   "id": "q7",
+   "question": "What file permissions mode is passed to open() when editorSave creates or opens the file?",
+   "expected": "0644",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q8": {
+   "id": "q8",
+   "question": "Which function handles the BACKSPACE, CTRL_H, and DEL_KEY keypress events?",
+   "expected": "editorDelChar()",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q9": {
+   "id": "q9",
+   "question": "What escape sequences does Kilo use instead of relying on libraries like curses?",
+   "expected": "VT100 (and similar terminals) escape sequences",
+   "answer": "Kilo relies on standard VT100 escape sequences instead of external libraries like curses (c12).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q10": {
+   "id": "q10",
+   "question": "Which errno code is set if STDIN_FILENO is not a tty in enableRawMode?",
+   "expected": "ENOTTY",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q11": {
+   "id": "q11",
+   "question": "How many seconds must elapse before the status message is no longer displayed on the screen?",
+   "expected": "5",
+   "answer": "The status message is no longer displayed once 5 or more seconds have elapsed since `E.statusmsg_time` (c23).",
+   "verdict": "incorrect",
+   "by": "judge",
+   "verdicts": [
+    "incorrect"
+   ],
+   "points": 0
+  },
+  "q12": {
+   "id": "q12",
+   "question": "Why is E.screenrows decreased by 2 in updateWindowSize?",
+   "expected": "To get room for the status bar.",
+   "answer": "`updateWindowSize` subtracts 2 from `E.screenrows` to reserve room for the status bar after querying the terminal dimensions (c27).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q13": {
+   "id": "q13",
+   "question": "From which two previous projects did the author borrow code to write Kilo?",
+   "expected": "load81 and linenoise",
+   "answer": "According to claim c13, the author incorporated code from their previous projects load81 and linenoise.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q14": {
+   "id": "q14",
+   "question": "Which key code value is returned when the escape sequence ESC [ 3 ~ is read?",
+   "expected": "DEL_KEY",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q15": {
+   "id": "q15",
+   "question": "What symbol character is displayed in editorRefreshScreen when a non-printable character has a code value of 26 or less?",
+   "expected": "'@'+c[j]",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q16": {
+   "id": "q16",
+   "question": "Which signal is caught to handle window resize events?",
+   "expected": "SIGWINCH",
+   "answer": "Window resize events are handled by catching the `SIGWINCH` signal (c5, c29, c30).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q17": {
+   "id": "q17",
+   "question": "Who is the author of Kilo?",
+   "expected": "Salvatore Sanfilippo aka antirez",
+   "answer": "Kilo was written by Salvatore Sanfilippo (antirez) (c14).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q18": {
+   "id": "q18",
+   "question": "Under what condition will editorUpdateRow print an error message and exit?",
+   "expected": "When allocsize exceeds UINT32_MAX",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q19": {
+   "id": "q19",
+   "question": "What is the maximum allowed query length defined for find mode?",
+   "expected": "256",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q20": {
+   "id": "q20",
+   "question": "What help message is initially displayed in the status bar upon launching main?",
+   "expected": "\"HELP: Ctrl-S = save | Ctrl-Q = quit | Ctrl-F = find\"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q21": {
+   "id": "q21",
+   "question": "Under what license is Kilo released?",
+   "expected": "BSD 2 clause license",
+   "answer": "Kilo is released under the BSD 2-clause license (c14).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q22": {
+   "id": "q22",
+   "question": "What function is registered as an exit handler within enableRawMode?",
+   "expected": "editorAtExit",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q23": {
+   "id": "q23",
+   "question": "When a search match is located in editorFind, what highlight value is applied across the matching substring?",
+   "expected": "HL_MATCH",
+   "answer": "When a search match is located, `editorFind` temporarily highlights the matching substring with the value `HL_MATCH` (c24).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q24": {
+   "id": "q24",
+   "question": "What error message is printed if the program is not executed with exactly 2 arguments?",
+   "expected": "\"Usage: kilo <filename>\\n\"",
+   "answer": "The context states that usage instructions are printed to stderr if the program is not executed with the required filename argument (c31), but it does not specify the exact text of the message. To find the exact error message, refer to `kilo.c::main`.",
+   "verdict": "incorrect",
+   "by": "judge",
+   "verdicts": [
+    "incorrect"
+   ],
+   "points": 0
+  }
+ }
+}

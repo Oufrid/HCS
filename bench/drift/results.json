@@ -1,0 +1,1669 @@
+[
+ {
+  "repo": "openai/codex",
+  "head": "9a8a85bc539325f2819dd0717f88b6ba6286495e",
+  "contexts": [
+   {
+    "file": "codex-rs/exec-server/src/sandbox_integrity/AGENTS.md",
+    "bytes": 2721,
+    "lastEdit": "2026-10-07",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "codex-rs/tui/src/bottom_pane/AGENTS.md",
+    "bytes": 564,
+    "lastEdit": "2026-05-27",
+    "references": 0,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "sindresorhus/ky",
+  "head": "3541888878c4d303a8bc2ad61815f4e048f55a5d",
+  "contexts": [
+   {
+    "file": "AGENTS.md",
+    "bytes": 622,
+    "lastEdit": "2026-10-08",
+    "references": 0,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "vercel/next.js",
+  "head": "68f20d1c3ee3e4ee6f65412db826038b8b004ff8",
+  "contexts": [
+   {
+    "file": ".github/AGENTS.md",
+    "bytes": 2925,
+    "lastEdit": "2026-05-26",
+    "references": 1,
+    "broken": [
+     {
+      "path": "actions/checkout",
+      "line": 43,
+      "removed": null
+     }
+    ]
+   },
+   {
+    "file": "AGENTS.md",
+    "bytes": 31148,
+    "lastEdit": "2026-10-20",
+    "references": 53,
+    "broken": [
+     {
+      "path": "packages/next/dist",
+      "line": 32,
+      "removed": null
+     },
+     {
+      "path": "turbopack/crates/README.md",
+      "line": 49,
+      "removed": null
+     },
+     {
+      "path": "vercel/next.js",
+      "line": 284,
+      "removed": null
+     },
+     {
+      "path": ".husky/post-checkout",
+      "line": 314,
+      "removed": null
+     },
+     {
+      "path": "react-dom/server.edge",
+      "line": 500,
+      "removed": null
+     },
+     {
+      "path": "docs/README.md",
+      "line": 541,
+      "removed": null
+     },
+     {
+      "path": "crates/turborepo-cli/src/cli/agent_guidance.rs",
+      "line": 543,
+      "removed": null
+     }
+    ]
+   },
+   {
+    "file": "apps/bundle-analyzer/AGENTS.md",
+    "bytes": 1159,
+    "lastEdit": "2026-09-29",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "evals/AGENTS.md",
+    "bytes": 130,
+    "lastEdit": "2026-09-18",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "evals/next-upgrade/apps/member-dashboard/next-13/AGENTS.md",
+    "bytes": 148,
+    "lastEdit": "2026-10-10",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "evals/next-upgrade/apps/member-dashboard/next-13/CLAUDE.md",
+    "bytes": 11,
+    "lastEdit": "2026-10-10",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "evals/next-upgrade/apps/member-dashboard/next-15/AGENTS.md",
+    "bytes": 148,
+    "lastEdit": "2026-10-10",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "evals/next-upgrade/apps/member-dashboard/next-15/CLAUDE.md",
+    "bytes": 11,
+    "lastEdit": "2026-10-10",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "packages/next/AGENTS.md",
+    "bytes": 310,
+    "lastEdit": "2026-09-18",
+    "references": 1,
+    "broken": []
+   },
+   {
+    "file": "test/AGENTS.md",
+    "bytes": 386,
+    "lastEdit": "2026-08-03",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "turbopack/AGENTS.md",
+    "bytes": 651,
+    "lastEdit": "2026-07-15",
+    "references": 1,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "vercel/ai",
+  "head": "36e4ce7c7f4c2a51676167634adb8c4eb3b18e77",
+  "contexts": [
+   {
+    "file": "AGENTS.md",
+    "bytes": 13568,
+    "lastEdit": "2026-10-20",
+    "references": 19,
+    "broken": [
+     {
+      "path": "src/stream-text/openai.ts",
+      "line": 94,
+      "removed": null
+     }
+    ]
+   },
+   {
+    "file": "apps/docs/AGENTS.md",
+    "bytes": 2951,
+    "lastEdit": "2026-09-10",
+    "references": 6,
+    "broken": []
+   },
+   {
+    "file": "apps/docs/CLAUDE.md",
+    "bytes": 11,
+    "lastEdit": "2026-09-10",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "packages/ai/AGENTS.md",
+    "bytes": 1083,
+    "lastEdit": "2026-01-14",
+    "references": 0,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "facebook/react",
+  "head": "9ffcb463b0ab01a42e781d4dc2e00f3a1b97a188",
+  "contexts": [
+   {
+    "file": "CLAUDE.md",
+    "bytes": 359,
+    "lastEdit": "2026-06-09",
+    "references": 2,
+    "broken": []
+   },
+   {
+    "file": "compiler/CLAUDE.md",
+    "bytes": 10333,
+    "lastEdit": "2026-06-09",
+    "references": 15,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "microsoft/vscode",
+  "error": "Command failed: git -C /home/user/HCS/bench/.work/drift/microsoft__vscode log -1 --format=%cs %h HEAD -- ../../../protocol.md"
+ },
+ {
+  "repo": "microsoft/TypeScript",
+  "head": "98add1bbed1c814e97457587c2da407dc3f78330",
+  "contexts": []
+ },
+ {
+  "repo": "microsoft/playwright",
+  "head": "ca7ca36145b84183cf423c2a099bd7e9cd8b1cb3",
+  "contexts": [
+   {
+    "file": "AGENTS.md",
+    "bytes": 8738,
+    "lastEdit": "2026-10-12",
+    "references": 10,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "astral-sh/uv",
+  "head": "4954c25a16b246c1b88aef6c3798a76d675c5cd0",
+  "contexts": [
+   {
+    "file": "AGENTS.md",
+    "bytes": 3505,
+    "lastEdit": "2026-10-08",
+    "references": 1,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "astral-sh/ruff",
+  "head": "734d75ae5baf6471ac37dd9b766fceecd8a09497",
+  "contexts": [
+   {
+    "file": "AGENTS.md",
+    "bytes": 20391,
+    "lastEdit": "2026-10-07",
+    "references": 10,
+    "broken": []
+   },
+   {
+    "file": "CLAUDE.md",
+    "bytes": 11,
+    "lastEdit": "2026-03-07",
+    "references": 0,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "pydantic/pydantic",
+  "head": "374a11de11d95e014060204bb9dd1354c2fcbbbd",
+  "contexts": []
+ },
+ {
+  "repo": "fastapi/fastapi",
+  "head": "ce6ee83e5411b98582e996e47edf7870418a68f4",
+  "contexts": []
+ },
+ {
+  "repo": "langchain-ai/langchain",
+  "head": "b84fa61edd48fa8a989b21437ca442c9152be2f1",
+  "contexts": [
+   {
+    "file": "AGENTS.md",
+    "bytes": 20352,
+    "lastEdit": "2026-09-23",
+    "references": 27,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "huggingface/transformers",
+  "head": "c27b9231b7b6af46d7a84a8125317141b612cefe",
+  "contexts": [
+   {
+    "file": ".ai/AGENTS.md",
+    "bytes": 3263,
+    "lastEdit": "2026-09-07",
+    "references": 2,
+    "broken": []
+   },
+   {
+    "file": "AGENTS.md",
+    "bytes": 13,
+    "lastEdit": "2026-03-18",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "CLAUDE.md",
+    "bytes": 13,
+    "lastEdit": "2026-03-18",
+    "references": 0,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "denoland/deno",
+  "head": "d7205acbed60f68414d1485407a5b50bc867131e",
+  "contexts": [
+   {
+    "file": "CLAUDE.md",
+    "bytes": 11862,
+    "lastEdit": "2026-07-30",
+    "references": 22,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "oven-sh/bun",
+  "head": "38afee6c84fcf48c0edb2466aa4b27d287a59c30",
+  "contexts": [
+   {
+    "file": ".github/workflows/CLAUDE.md",
+    "bytes": 13840,
+    "lastEdit": "2026-10-13",
+    "references": 21,
+    "broken": [
+     {
+      "path": "src/deps",
+      "line": 28,
+      "removed": "2026-05-04 e643d7b08"
+     },
+     {
+      "path": "target/mordant/over-baseline.txt",
+      "line": 138,
+      "removed": null
+     }
+    ]
+   },
+   {
+    "file": "AGENTS.md",
+    "bytes": 9,
+    "lastEdit": "2025-06-27",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "CLAUDE.md",
+    "bytes": 17723,
+    "lastEdit": "2026-10-15",
+    "references": 52,
+    "broken": [
+     {
+      "path": "src/shell",
+      "line": 142,
+      "removed": "2026-05-14 23427dbc1"
+     },
+     {
+      "path": "src/bake",
+      "line": 146,
+      "removed": "2026-05-14 23427dbc1"
+     }
+    ]
+   },
+   {
+    "file": "scripts/build/CLAUDE.md",
+    "bytes": 44510,
+    "lastEdit": "2026-10-15",
+    "references": 27,
+    "broken": [
+     {
+      "path": "rust/plan.json",
+      "line": 171,
+      "removed": null
+     },
+     {
+      "path": "rust/shim",
+      "line": 171,
+      "removed": null
+     },
+     {
+      "path": "src/runtime/bake/generated.ts",
+      "line": 188,
+      "removed": null
+     },
+     {
+      "path": "rust-target/plan.json",
+      "line": 222,
+      "removed": null
+     }
+    ]
+   },
+   {
+    "file": "scripts/build/ci-images/CLAUDE.md",
+    "bytes": 18055,
+    "lastEdit": "2026-10-20",
+    "references": 10,
+    "broken": []
+   },
+   {
+    "file": "scripts/verify-baseline-static/CLAUDE.md",
+    "bytes": 13842,
+    "lastEdit": "2026-09-25",
+    "references": 9,
+    "broken": [
+     {
+      "path": "vendor/boringssl/crypto/cpu_intel.c",
+      "line": 161,
+      "removed": null
+     },
+     {
+      "path": "vendor/zstd/lib/common/cpu.h",
+      "line": 162,
+      "removed": null
+     },
+     {
+      "path": "vendor/libdeflate/lib/x86/cpu_features.c",
+      "line": 163,
+      "removed": null
+     }
+    ]
+   },
+   {
+    "file": "src/AGENTS.md",
+    "bytes": 9,
+    "lastEdit": "2025-10-04",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "src/CLAUDE.md",
+    "bytes": 21635,
+    "lastEdit": "2026-10-12",
+    "references": 14,
+    "broken": []
+   },
+   {
+    "file": "src/format/CLAUDE.md",
+    "bytes": 84762,
+    "lastEdit": "2026-10-20",
+    "references": 101,
+    "broken": [
+     {
+      "path": "oxc_formatter/src/options.rs",
+      "line": 37,
+      "removed": null
+     },
+     {
+      "path": "ast_nodes/generated/format.rs",
+      "line": 38,
+      "removed": null
+     },
+     {
+      "path": "formatter/trivia.rs",
+      "line": 40,
+      "removed": null
+     },
+     {
+      "path": "src/main/core.js",
+      "line": 54,
+      "removed": null
+     },
+     {
+      "path": "css/doc.rs:",
+      "line": 92,
+      "removed": null
+     },
+     {
+      "path": "css/embed.rs:",
+      "line": 108,
+      "removed": null
+     },
+     {
+      "path": "embed/html.js",
+      "line": 109,
+      "removed": null
+     },
+     {
+      "path": "template/mod.rs",
+      "line": 125,
+      "removed": null
+     },
+     {
+      "path": "verify/tree.rs:",
+      "line": 363,
+      "removed": null
+     }
+    ]
+   },
+   {
+    "file": "src/js/AGENTS.md",
+    "bytes": 9,
+    "lastEdit": "2025-09-06",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "src/js/CLAUDE.md",
+    "bytes": 2596,
+    "lastEdit": "2026-07-04",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "src/jsc/bindings/v8/AGENTS.md",
+    "bytes": 10698,
+    "lastEdit": "2026-10-20",
+    "references": 8,
+    "broken": []
+   },
+   {
+    "file": "src/jsc/bindings/v8/CLAUDE.md",
+    "bytes": 10698,
+    "lastEdit": "2026-10-20",
+    "references": 8,
+    "broken": []
+   },
+   {
+    "file": "src/lint/CLAUDE.md",
+    "bytes": 86720,
+    "lastEdit": "2026-10-20",
+    "references": 40,
+    "broken": [
+     {
+      "path": "json/jsonc",
+      "line": 211,
+      "removed": null
+     },
+     {
+      "path": "markdown/gfm",
+      "line": 211,
+      "removed": null
+     }
+    ]
+   },
+   {
+    "file": "test/AGENTS.md",
+    "bytes": 9,
+    "lastEdit": "2025-06-27",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "test/CLAUDE.md",
+    "bytes": 7549,
+    "lastEdit": "2026-04-21",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "test/internal/source-lints/CLAUDE.md",
+    "bytes": 66,
+    "lastEdit": "2026-08-17",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "test/js/node/test/parallel/CLAUDE.md",
+    "bytes": 467,
+    "lastEdit": "2026-01-14",
+    "references": 0,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "biomejs/biome",
+  "head": "0be8d10cd226050c08eaba7d76aaf9d7650dd17f",
+  "contexts": [
+   {
+    "file": "AGENTS.md",
+    "bytes": 5172,
+    "lastEdit": "2026-10-12",
+    "references": 7,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "vitejs/vite",
+  "head": "4ca25e1d3a24cb3343352f781a276cbfd2d206d6",
+  "contexts": []
+ },
+ {
+  "repo": "sveltejs/svelte",
+  "head": "2334f5ed0bc9628fddd9767a92f7f12c09e50cd5",
+  "contexts": [
+   {
+    "file": "AGENTS.md",
+    "bytes": 667,
+    "lastEdit": "2026-10-22",
+    "references": 1,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "withastro/astro",
+  "head": "6cf3423e4c62af5e54a2676c8304a209ab1e064d",
+  "contexts": [
+   {
+    "file": "AGENTS.md",
+    "bytes": 8905,
+    "lastEdit": "2026-10-08",
+    "references": 9,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "prisma/prisma",
+  "head": "dc3ea6b5b33643dd7fc7695399affa7a9fc43ce6",
+  "contexts": [
+   {
+    "file": "AGENTS.md",
+    "bytes": 11425,
+    "lastEdit": "2026-10-22",
+    "references": 26,
+    "broken": [
+     {
+      "path": ".claude/skills",
+      "line": 37,
+      "removed": "2026-05-17 d61853fd1"
+     },
+     {
+      "path": ".agents/skills",
+      "line": 37,
+      "removed": "2026-05-18 4eacb126b"
+     },
+     {
+      "path": "docs/drive",
+      "line": 38,
+      "removed": "2026-06-04 5baa26bbb"
+     },
+     {
+      "path": "skills/.pilot",
+      "line": 38,
+      "removed": null
+     },
+     {
+      "path": ".cursor/rules",
+      "line": 39,
+      "removed": "2026-07-17 7a565d327"
+     },
+     {
+      "path": ".claude/rules",
+      "line": 39,
+      "removed": "2026-07-17 7a565d327"
+     },
+     {
+      "path": ".agents/skills/publish-npm-version/SKILL.md",
+      "line": 115,
+      "removed": "2026-05-17 d61853fd1"
+     }
+    ]
+   },
+   {
+    "file": "CLAUDE.md",
+    "bytes": 9,
+    "lastEdit": "2026-03-03",
+    "references": 0,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "supabase/supabase",
+  "head": "2aed6c5ea8bc7e8023469d62f5c1c0fb3e8779bb",
+  "contexts": [
+   {
+    "file": "AGENTS.md",
+    "bytes": 6858,
+    "lastEdit": "2026-10-02",
+    "references": 29,
+    "broken": [
+     {
+      "path": "supabase/functions/common/database-types.ts",
+      "line": 47,
+      "removed": "2026-02-17 105df5291"
+     }
+    ]
+   },
+   {
+    "file": "CLAUDE.md",
+    "bytes": 11,
+    "lastEdit": "2026-09-03",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "apps/docs/AGENTS.md",
+    "bytes": 1942,
+    "lastEdit": "2026-09-25",
+    "references": 6,
+    "broken": []
+   },
+   {
+    "file": "apps/docs/CLAUDE.md",
+    "bytes": 11,
+    "lastEdit": "2026-09-03",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "apps/kb/AGENTS.md",
+    "bytes": 5422,
+    "lastEdit": "2026-10-21",
+    "references": 11,
+    "broken": [
+     {
+      "path": "src/content/troubleshooting",
+      "line": 77,
+      "removed": null
+     },
+     {
+      "path": "supabase/troubleshooting",
+      "line": 79,
+      "removed": null
+     }
+    ]
+   },
+   {
+    "file": "apps/kb/CLAUDE.md",
+    "bytes": 11,
+    "lastEdit": "2026-09-03",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "apps/studio/AGENTS.md",
+    "bytes": 11574,
+    "lastEdit": "2026-10-15",
+    "references": 20,
+    "broken": [
+     {
+      "path": "lib/telemetry/track",
+      "line": 39,
+      "removed": null
+     },
+     {
+      "path": "hooks/misc/useCheckPermissions",
+      "line": 84,
+      "removed": null
+     },
+     {
+      "path": "data/sql/execute-sql-mutation",
+      "line": 89,
+      "removed": null
+     }
+    ]
+   },
+   {
+    "file": "apps/studio/CLAUDE.md",
+    "bytes": 11,
+    "lastEdit": "2026-09-03",
+    "references": 0,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "n8n-io/n8n",
+  "head": "7fee181e20f279fd00b160dfaea844bb889d6804",
+  "contexts": [
+   {
+    "file": ".agents/skills/AGENTS.md",
+    "bytes": 1950,
+    "lastEdit": "2026-06-16",
+    "references": 2,
+    "broken": []
+   },
+   {
+    "file": ".github/CLAUDE.md",
+    "bytes": 1509,
+    "lastEdit": "2026-09-01",
+    "references": 1,
+    "broken": []
+   },
+   {
+    "file": "AGENTS.md",
+    "bytes": 22715,
+    "lastEdit": "2026-10-14",
+    "references": 33,
+    "broken": [
+     {
+      "path": ".agent-setup/summary.json",
+      "line": 95,
+      "removed": null
+     }
+    ]
+   },
+   {
+    "file": "CLAUDE.md",
+    "bytes": 11,
+    "lastEdit": "2025-11-25",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "packages/@n8n/agents/AGENTS.md",
+    "bytes": 6645,
+    "lastEdit": "2026-10-08",
+    "references": 4,
+    "broken": [
+     {
+      "path": ".agents/specs",
+      "line": 145,
+      "removed": null
+     }
+    ]
+   },
+   {
+    "file": "packages/@n8n/ai-utilities/AGENTS.md",
+    "bytes": 1698,
+    "lastEdit": "2026-09-30",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "packages/@n8n/ai-workflow-builder.ee/AGENTS.md",
+    "bytes": 1308,
+    "lastEdit": "2026-01-22",
+    "references": 2,
+    "broken": []
+   },
+   {
+    "file": "packages/@n8n/ai-workflow-builder.ee/CLAUDE.md",
+    "bytes": 11,
+    "lastEdit": "2026-01-22",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "packages/@n8n/db/AGENTS.md",
+    "bytes": 1675,
+    "lastEdit": "2026-07-21",
+    "references": 7,
+    "broken": []
+   },
+   {
+    "file": "packages/@n8n/engine/AGENTS.md",
+    "bytes": 6115,
+    "lastEdit": "2026-09-25",
+    "references": 5,
+    "broken": []
+   },
+   {
+    "file": "packages/@n8n/instance-ai/CLAUDE.md",
+    "bytes": 3502,
+    "lastEdit": "2026-10-22",
+    "references": 9,
+    "broken": []
+   },
+   {
+    "file": "packages/@n8n/node-cli/src/template/templates/shared/default/AGENTS.md",
+    "bytes": 4996,
+    "lastEdit": "2026-03-09",
+    "references": 7,
+    "broken": []
+   },
+   {
+    "file": "packages/@n8n/node-cli/src/template/templates/shared/default/CLAUDE.md",
+    "bytes": 11,
+    "lastEdit": "2026-03-09",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "packages/@n8n/nodes-langchain/AGENTS.md",
+    "bytes": 644,
+    "lastEdit": "2026-09-30",
+    "references": 1,
+    "broken": []
+   },
+   {
+    "file": "packages/cli/AGENTS.md",
+    "bytes": 2950,
+    "lastEdit": "2026-10-07",
+    "references": 2,
+    "broken": []
+   },
+   {
+    "file": "packages/cli/src/modules/agents/AGENTS.md",
+    "bytes": 6141,
+    "lastEdit": "2026-10-21",
+    "references": 7,
+    "broken": []
+   },
+   {
+    "file": "packages/cli/src/modules/instance-ai/AGENTS.md",
+    "bytes": 898,
+    "lastEdit": "2026-10-20",
+    "references": 1,
+    "broken": []
+   },
+   {
+    "file": "packages/cli/src/modules/knowledge/AGENTS.md",
+    "bytes": 6110,
+    "lastEdit": "2026-10-21",
+    "references": 5,
+    "broken": []
+   },
+   {
+    "file": "packages/cli/src/modules/n8n-packages/CLAUDE.md",
+    "bytes": 5146,
+    "lastEdit": "2026-10-21",
+    "references": 8,
+    "broken": []
+   },
+   {
+    "file": "packages/cli/src/modules/skills/AGENTS.md",
+    "bytes": 1539,
+    "lastEdit": "2026-10-21",
+    "references": 3,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "getsentry/sentry",
+  "head": "deeff23d1a4241dcc59140a807ffe483e9556838",
+  "contexts": [
+   {
+    "file": "AGENTS.md",
+    "bytes": 6980,
+    "lastEdit": "2026-10-21",
+    "references": 7,
+    "broken": [
+     {
+      "path": ".artifacts/dev.log",
+      "line": 40,
+      "removed": null
+     }
+    ]
+   },
+   {
+    "file": "CLAUDE.md",
+    "bytes": 11,
+    "lastEdit": "2025-10-30",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "src/AGENTS.md",
+    "bytes": 8228,
+    "lastEdit": "2026-10-16",
+    "references": 18,
+    "broken": []
+   },
+   {
+    "file": "src/CLAUDE.md",
+    "bytes": 11,
+    "lastEdit": "2025-12-10",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "src/sentry/issues/action_log/AGENTS.md",
+    "bytes": 191,
+    "lastEdit": "2026-10-15",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "src/sentry/issues/derived/AGENTS.md",
+    "bytes": 656,
+    "lastEdit": "2026-08-14",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "static/AGENTS.md",
+    "bytes": 8509,
+    "lastEdit": "2026-10-21",
+    "references": 10,
+    "broken": [
+     {
+      "path": "static/app/images",
+      "line": 118,
+      "removed": null
+     }
+    ]
+   },
+   {
+    "file": "static/CLAUDE.md",
+    "bytes": 11,
+    "lastEdit": "2025-12-10",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "tests/AGENTS.md",
+    "bytes": 5469,
+    "lastEdit": "2026-10-16",
+    "references": 5,
+    "broken": []
+   },
+   {
+    "file": "tests/CLAUDE.md",
+    "bytes": 11,
+    "lastEdit": "2025-12-10",
+    "references": 0,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "apache/airflow",
+  "head": "e5d8cbbe67931dd13a027ed3386ddcc1877800cd",
+  "contexts": [
+   {
+    "file": "AGENTS.md",
+    "bytes": 22477,
+    "lastEdit": "2026-10-18",
+    "references": 36,
+    "broken": [
+     {
+      "path": "tests/cli/test_cli_parser.py",
+      "line": 168,
+      "removed": "2025-03-21 243fe86d4"
+     }
+    ]
+   },
+   {
+    "file": "CLAUDE.md",
+    "bytes": 9,
+    "lastEdit": "2026-02-25",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "airflow-core/src/airflow/_shared/AGENTS.md",
+    "bytes": 738,
+    "lastEdit": "2026-05-05",
+    "references": 1,
+    "broken": []
+   },
+   {
+    "file": "airflow-core/src/airflow/api_fastapi/execution_api/AGENTS.md",
+    "bytes": 4743,
+    "lastEdit": "2026-10-14",
+    "references": 15,
+    "broken": []
+   },
+   {
+    "file": "airflow-core/src/airflow/ui/AGENTS.md",
+    "bytes": 2336,
+    "lastEdit": "2026-08-31",
+    "references": 9,
+    "broken": []
+   },
+   {
+    "file": "dev/AGENTS.md",
+    "bytes": 1344,
+    "lastEdit": "2026-03-30",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "dev/ide_setup/AGENTS.md",
+    "bytes": 800,
+    "lastEdit": "2026-03-15",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "providers/AGENTS.md",
+    "bytes": 6166,
+    "lastEdit": "2026-08-27",
+    "references": 7,
+    "broken": []
+   },
+   {
+    "file": "providers/common/ai/AGENTS.md",
+    "bytes": 4103,
+    "lastEdit": "2026-09-23",
+    "references": 5,
+    "broken": []
+   },
+   {
+    "file": "providers/elasticsearch/AGENTS.md",
+    "bytes": 1621,
+    "lastEdit": "2026-04-19",
+    "references": 7,
+    "broken": []
+   },
+   {
+    "file": "providers/opensearch/AGENTS.md",
+    "bytes": 1645,
+    "lastEdit": "2026-04-19",
+    "references": 7,
+    "broken": []
+   },
+   {
+    "file": "registry/AGENTS.md",
+    "bytes": 22393,
+    "lastEdit": "2026-10-07",
+    "references": 15,
+    "broken": [
+     {
+      "path": "dev/registry/.inventory_cache",
+      "line": 570,
+      "removed": null
+     }
+    ]
+   },
+   {
+    "file": "registry/CLAUDE.md",
+    "bytes": 9,
+    "lastEdit": "2026-03-11",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "scripts/ci/prek/AGENTS.md",
+    "bytes": 1885,
+    "lastEdit": "2026-10-21",
+    "references": 1,
+    "broken": []
+   },
+   {
+    "file": "task-sdk/src/airflow/sdk/_shared/AGENTS.md",
+    "bytes": 57,
+    "lastEdit": "2026-04-10",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "task-sdk/src/airflow/sdk/execution_time/schema/AGENTS.md",
+    "bytes": 4831,
+    "lastEdit": "2026-08-07",
+    "references": 2,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "home-assistant/core",
+  "head": "bd750a9a831dda56515df92c443155fc6f2fed72",
+  "contexts": [
+   {
+    "file": "AGENTS.md",
+    "bytes": 5552,
+    "lastEdit": "2026-08-04",
+    "references": 3,
+    "broken": []
+   },
+   {
+    "file": "CLAUDE.md",
+    "bytes": 9,
+    "lastEdit": "2026-01-23",
+    "references": 0,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "grafana/grafana",
+  "error": "Command failed: git -C /home/user/HCS/bench/.work/drift/grafana__grafana log -1 --format=%cs %h HEAD -- ../helpers"
+ },
+ {
+  "repo": "zed-industries/zed",
+  "error": "Command failed: git -C /home/user/HCS/bench/.work/drift/zed-industries__zed log -1 --format=%cs %h HEAD -- ../telemetry.md"
+ },
+ {
+  "repo": "tauri-apps/tauri",
+  "head": "ba1e205f3bfba19a9cbe6032bb4ece3068429d04",
+  "contexts": []
+ },
+ {
+  "repo": "excalidraw/excalidraw",
+  "head": "1d4dc2c0e6e476911d0760e9c3cf3694f2d43384",
+  "contexts": [
+   {
+    "file": "AGENTS.md",
+    "bytes": 373,
+    "lastEdit": "2026-09-08",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "CLAUDE.md",
+    "bytes": 1295,
+    "lastEdit": "2025-05-25",
+    "references": 1,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "calcom/cal.com",
+  "head": "0f19cc46ef6b6426ee398c670575b3c96be7af9e",
+  "contexts": [
+   {
+    "file": ".opencode/skill/vercel-react-best-practices/AGENTS.md",
+    "bytes": 60499,
+    "lastEdit": "2026-01-16",
+    "references": 1,
+    "broken": []
+   },
+   {
+    "file": "AGENTS.md",
+    "bytes": 9223,
+    "lastEdit": "2026-04-15",
+    "references": 13,
+    "broken": [
+     {
+      "path": "packages/features/ee/workflows/lib/constants.ts",
+      "line": 130,
+      "removed": "2026-04-15 ab21c7f80"
+     }
+    ]
+   },
+   {
+    "file": "CLAUDE.md",
+    "bytes": 9,
+    "lastEdit": "2026-06-14",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "agents/skills/vercel-react-best-practices/AGENTS.md",
+    "bytes": 60499,
+    "lastEdit": "2026-02-03",
+    "references": 1,
+    "broken": []
+   },
+   {
+    "file": "specs/_templates/AGENTS.md",
+    "bytes": 442,
+    "lastEdit": "2026-02-10",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "specs/_templates/CLAUDE.md",
+    "bytes": 9,
+    "lastEdit": "2026-02-10",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "specs/cancellation-reason-requirement/CLAUDE.md",
+    "bytes": 778,
+    "lastEdit": "2026-02-24",
+    "references": 0,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "nodejs/node",
+  "head": "53f037ecc346bc5bde198e43f05da7a0f7b81b29",
+  "contexts": [
+   {
+    "file": "AGENTS.md",
+    "bytes": 3083,
+    "lastEdit": "2026-09-12",
+    "references": 2,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "electron/electron",
+  "head": "64f1326109f3e1f29ef046e15f4f7090b6e2b0ad",
+  "contexts": [
+   {
+    "file": "CLAUDE.md",
+    "bytes": 13822,
+    "lastEdit": "2026-10-14",
+    "references": 15,
+    "broken": []
+   },
+   {
+    "file": "docs/CLAUDE.md",
+    "bytes": 2662,
+    "lastEdit": "2026-03-12",
+    "references": 4,
+    "broken": []
+   },
+   {
+    "file": "spec/CLAUDE.md",
+    "bytes": 2271,
+    "lastEdit": "2026-09-25",
+    "references": 1,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "modelcontextprotocol/servers",
+  "head": "51b6382a3e827aceb6bce430b1208d69b93d95ea",
+  "contexts": [
+   {
+    "file": "AGENTS.md",
+    "bytes": 46671,
+    "lastEdit": "2026-10-18",
+    "references": 30,
+    "broken": [
+     {
+      "path": ".github/dependabot.yml",
+      "line": 214,
+      "removed": "2026-10-07 abb1c90"
+     }
+    ]
+   },
+   {
+    "file": "src/everything/AGENTS.md",
+    "bytes": 3046,
+    "lastEdit": "2026-10-11",
+    "references": 15,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "modelcontextprotocol/typescript-sdk",
+  "head": "c05225a636c679870b65f8ca4fe83a76ea1cf113",
+  "contexts": [
+   {
+    "file": "CLAUDE.md",
+    "bytes": 1278,
+    "lastEdit": "2026-10-02",
+    "references": 1,
+    "broken": []
+   },
+   {
+    "file": "test/e2e/CLAUDE.md",
+    "bytes": 6745,
+    "lastEdit": "2026-06-26",
+    "references": 2,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "google-gemini/gemini-cli",
+  "head": "09d81bf116b6f0ef084731dc996aa9d56438bb70",
+  "contexts": []
+ },
+ {
+  "repo": "BerriAI/litellm",
+  "head": "f2118fc7670ba3fa736d9b8f4deef9077a45a720",
+  "contexts": [
+   {
+    "file": "AGENTS.md",
+    "bytes": 18256,
+    "lastEdit": "2026-10-16",
+    "references": 13,
+    "broken": []
+   },
+   {
+    "file": "litellm-rust/AGENTS.md",
+    "bytes": 4507,
+    "lastEdit": "2026-10-15",
+    "references": 4,
+    "broken": []
+   },
+   {
+    "file": "litellm-rust/crates/cache-response/AGENTS.md",
+    "bytes": 5386,
+    "lastEdit": "2026-10-09",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "litellm-rust/crates/callbacks-legacy-python/AGENTS.md",
+    "bytes": 3375,
+    "lastEdit": "2026-10-09",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "litellm-rust/crates/coroutine/AGENTS.md",
+    "bytes": 3308,
+    "lastEdit": "2026-10-14",
+    "references": 1,
+    "broken": []
+   },
+   {
+    "file": "litellm-rust/crates/gateway-auth/AGENTS.md",
+    "bytes": 4804,
+    "lastEdit": "2026-10-09",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "litellm-rust/crates/gateway-inference/AGENTS.md",
+    "bytes": 981,
+    "lastEdit": "2026-10-09",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "litellm-rust/crates/gateway-mcp/AGENTS.md",
+    "bytes": 4314,
+    "lastEdit": "2026-10-11",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "litellm-rust/crates/gateway/AGENTS.md",
+    "bytes": 655,
+    "lastEdit": "2026-10-09",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "litellm-rust/crates/host-http/AGENTS.md",
+    "bytes": 574,
+    "lastEdit": "2026-09-28",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "litellm-rust/crates/host-native/AGENTS.md",
+    "bytes": 1060,
+    "lastEdit": "2026-10-09",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "litellm-rust/crates/host-python/AGENTS.md",
+    "bytes": 6903,
+    "lastEdit": "2026-10-14",
+    "references": 5,
+    "broken": []
+   },
+   {
+    "file": "litellm-rust/crates/host/AGENTS.md",
+    "bytes": 5395,
+    "lastEdit": "2026-10-09",
+    "references": 1,
+    "broken": []
+   },
+   {
+    "file": "litellm-rust/crates/host/src/machine/AGENTS.md",
+    "bytes": 3293,
+    "lastEdit": "2026-10-09",
+    "references": 1,
+    "broken": []
+   },
+   {
+    "file": "litellm-rust/crates/http/AGENTS.md",
+    "bytes": 543,
+    "lastEdit": "2026-09-27",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "litellm-rust/crates/inference-chat/AGENTS.md",
+    "bytes": 404,
+    "lastEdit": "2026-10-09",
+    "references": 2,
+    "broken": []
+   },
+   {
+    "file": "litellm-rust/crates/inference-messages/AGENTS.md",
+    "bytes": 1739,
+    "lastEdit": "2026-10-19",
+    "references": 2,
+    "broken": []
+   },
+   {
+    "file": "litellm-rust/crates/inference-ocr/AGENTS.md",
+    "bytes": 796,
+    "lastEdit": "2026-10-21",
+    "references": 4,
+    "broken": []
+   },
+   {
+    "file": "litellm-rust/crates/inference-responses/AGENTS.md",
+    "bytes": 770,
+    "lastEdit": "2026-10-18",
+    "references": 5,
+    "broken": []
+   },
+   {
+    "file": "litellm-rust/crates/inference-transcription/AGENTS.md",
+    "bytes": 406,
+    "lastEdit": "2026-10-09",
+    "references": 2,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "ollama/ollama",
+  "head": "efabf6bc450454dc856c1f799aac7ea865e3a4cf",
+  "contexts": [
+   {
+    "file": "AGENTS.md",
+    "bytes": 358,
+    "lastEdit": "2026-06-07",
+    "references": 1,
+    "broken": []
+   },
+   {
+    "file": "CLAUDE.md",
+    "bytes": 84,
+    "lastEdit": "2026-06-07",
+    "references": 0,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "open-webui/open-webui",
+  "head": "91ea4e3421d1d8069f13d4a463fcb5986d94ea60",
+  "contexts": []
+ },
+ {
+  "repo": "shadcn-ui/ui",
+  "head": "25af02b1b467fcd53b63e0c6d6d324c57c16ef18",
+  "contexts": [
+   {
+    "file": "templates/next-app/AGENTS.md",
+    "bytes": 674,
+    "lastEdit": "2026-09-30",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "templates/next-app/CLAUDE.md",
+    "bytes": 11,
+    "lastEdit": "2026-09-30",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "templates/next-monorepo/AGENTS.md",
+    "bytes": 674,
+    "lastEdit": "2026-09-30",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "templates/next-monorepo/CLAUDE.md",
+    "bytes": 11,
+    "lastEdit": "2026-09-30",
+    "references": 0,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "tailwindlabs/tailwindcss",
+  "head": "8cc0551b1217d36dc565840b90920964d37cb46c",
+  "contexts": []
+ },
+ {
+  "repo": "honojs/hono",
+  "head": "5ca49b0720755c585c9a9835f0a479ceea36fb52",
+  "contexts": []
+ },
+ {
+  "repo": "drizzle-team/drizzle-orm",
+  "head": "eab8bedbb65d5429c54e612ddbd88aa23091d398",
+  "contexts": []
+ },
+ {
+  "repo": "trpc/trpc",
+  "head": "1c9bf51ea572fd46fa52fb725999b8d0c6950386",
+  "contexts": []
+ },
+ {
+  "repo": "anthropics/anthropic-sdk-python",
+  "head": "9313f13a5a643ceed10fafba6785eab8e04b6e6e",
+  "contexts": [
+   {
+    "file": "CLAUDE.md",
+    "bytes": 31559,
+    "lastEdit": "2026-09-22",
+    "references": 30,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "openai/openai-agents-python",
+  "head": "841dfdd938bfd4ca052475eb76d6245a356868e0",
+  "contexts": [
+   {
+    "file": "AGENTS.md",
+    "bytes": 38241,
+    "lastEdit": "2026-09-28",
+    "references": 34,
+    "broken": []
+   },
+   {
+    "file": "CLAUDE.md",
+    "bytes": 9,
+    "lastEdit": "2026-04-15",
+    "references": 0,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "pola-rs/polars",
+  "head": "6974d3a78c0b32a777384f7bd951551f2716ce3a",
+  "contexts": []
+ },
+ {
+  "repo": "duckdb/duckdb",
+  "head": "088e85df277190030b842e6b912b13f98a0fa91a",
+  "contexts": [
+   {
+    "file": ".github/patches/extensions/AGENTS.md",
+    "bytes": 4863,
+    "lastEdit": "2026-09-01",
+    "references": 2,
+    "broken": []
+   },
+   {
+    "file": "AGENTS.md",
+    "bytes": 18354,
+    "lastEdit": "2026-10-21",
+    "references": 36,
+    "broken": []
+   },
+   {
+    "file": "CLAUDE.md",
+    "bytes": 10,
+    "lastEdit": "2026-06-04",
+    "references": 0,
+    "broken": []
+   },
+   {
+    "file": "scripts/lldb/AGENTS.md",
+    "bytes": 6484,
+    "lastEdit": "2026-10-06",
+    "references": 7,
+    "broken": []
+   }
+  ]
+ },
+ {
+  "repo": "mastodon/mastodon",
+  "head": "a8b8d3780e8df3861cb57abad9c1ac2b12a81834",
+  "contexts": []
+ },
+ {
+  "repo": "microsoft/autogen",
+  "head": "004749e6b7102c8fd317b9b1499ce5807223c278",
+  "contexts": []
+ }
+]

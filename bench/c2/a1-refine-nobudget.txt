@@ -1,0 +1,17 @@
+--- 2026-10-22T10:50:09Z
+hold-out: 11 of 37 probes, never shown to refine
+before: training fidelity 38.5%
+round 1: 16 gaps, 24 claims proposed, 24 new and verified
+round 1: training fidelity 38.5% -> 100.0%
+bench/a1/gemini.hcs: refined with gemini:gemini-3.8-flash; 11 hold-out probes never shown to refine (@holdout)
+train before     fidelity  38.5% [95% CI 19.2%-57.7%]   misled   0.0%   abstained  61.5%   (26 probes)
+train after      fidelity 100.0% [95% CI 100.0%-100.0%]   misled   0.0%   abstained   0.0%   (26 probes)
+hold-out before  fidelity  50.0% [95% CI 27.3%-77.3%]   misled   9.1%   abstained  27.3%   (11 probes)
+hold-out after   fidelity  40.9% [95% CI 18.2%-63.6%]   misled  18.2%   abstained  27.3%   (11 probes)
+  round 1: 16 gaps, 24 claims proposed, 24 new and verified, training 100.0%
+  stopped: every training probe is answered
+  wrote bench/c2/a1-refined-nobudget.hcs: 24 claims added
+  judge the gain on the hold-out probes only; with few probes the intervals are wide
+usage gemini:gemini-3.8-flash: 90 requests, 387702 input + 4450 output tokens (as reported by the provider)
+usage groq:openai/gpt-oss-20b: 29 requests, 7121 input + 2555 output tokens (as reported by the provider)
+exit 0

@@ -1,0 +1,11 @@
+--- 2026-10-22T09:10:49Z compile kilo try 1
+[1/4] README.md:1-26 -> 6 claims, 5 probes
+[2/4] kilo.c:1-589 -> 4 claims, 7 probes
+[3/4] kilo.c:590-1184 -> 6 claims, 8 probes
+[4/4] kilo.c:1185-1308 -> 8 claims, 7 probes
+synthesized 8 overview claims
+wrote /home/user/HCS/bench/d1/hcs/antirez__kilo.hcs: 32 claims, 27 probes from 2 files (2 compiled)
+  rejected by quote verification: 6/30 claims, 0/27 probes
+  context ~1425 tokens for ~12810 tokens of source. Next: hcs score /home/user/HCS/bench/d1/hcs/antirez__kilo.hcs --model <answering model> --judge <a model from another family> --write
+usage gemini:gemini-3.8-flash: 5 requests, 22243 input + 7380 output tokens (as reported by the provider)
+exit 0

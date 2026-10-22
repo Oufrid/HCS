@@ -30,7 +30,7 @@ FAIL: 1 item(s) no longer match their sources. ...
 ```
 *(Example output.)*
 
-> **Status: v0.2, early.** The format, the deterministic engine (`check`, `seal`, `render`, `audit`) and the MCP server are complete and tested. A second, independent implementation of the deterministic core in Python passes the same [conformance suite](conformance/) in CI. The LLM features (`compile`, `score`, `snapshot`) are tested against mock OpenAI/Anthropic-compatible servers, and `compile` and `score` have run end to end on real free-tier models (Gemini, Groq); what broke and what was measured is in [bench/REPORT.md](bench/REPORT.md). **There is no benchmark yet.** Benchmark numbers will be published from `bench/` with their raw results, never as bare claims in this README.
+> **Status: format SPEC 1.0 (stable); CLI v0.3, experimental.** The format, the deterministic engine (`check`, `seal`, `render`, `audit`, `impact`) and the MCP server are complete and tested, and a second implementation of the deterministic core in Python passes the same [conformance suite](conformance/) in CI. **Measured** ([bench/REPORT.md](bench/REPORT.md), D1): on eight public repositories, with test questions written apart from the context, an HCS context of 2,000 tokens in the compact profile answered 43.8% of questions on the five design repositories and 46.7% on three new ones (pre-registered), against 24.7% and 27.8% for a naive summary of the same budget, and 10% for the repositories' own README. A second, smaller answering model from another family (ministral-14b) shows the same gap: +18.8 and +16.1 points over the summary. `hcs refine` did not help (same report, C2). Every number here links to its raw results.
 
 ---
 
@@ -100,7 +100,8 @@ not recovered from the context:
   claims from the probes' cited sources (quote verification still applies), and keeps them only if training
   fidelity rises. 30% of the probes are held out (recorded in an `@holdout` header) and never shown to refine: judge
   the gain on them. `--prune` also drops sections the training probes do not need (it costs requests). A quota stop
-  resumes on the next run. Whether it helps on real projects is being measured (roadmap C2).
+  resumes on the next run. **Measured, it did not help:** on two repositories the held-out fidelity did not improve
+  (once it got worse) while training fidelity rose; see bench/REPORT.md, C2. Treat it as an experiment.
 - **`--tokenizer M`** counts the context with model M's tokenizer instead of estimating it (also on `curve`, and
   `hcs stats --tokenizer M`); the certificate then records `tokenizer=M`. Anthropic and Gemini (with
   `GEMINI_API_KEY` set) have free counting endpoints; other providers are asked a 1-token completion whose
@@ -118,6 +119,11 @@ hcs render project.hcs --decoder --budget 2000 | pbcopy     # paste into any cha
 ```
 
 Or connect it through MCP (next section) so the model can also open the sources behind each claim.
+
+Two render profiles exist (SPEC 6.2). `full`, the default of `hcs render`, writes each claim with its sources, for
+people. `compact`, used by `score`, `curve`, `compare` and the MCP server, writes `id: text` only and, under a budget,
+takes one claim per source file in turn, so that the budget covers the whole project. On the D1 benchmark ([bench/REPORT.md](bench/REPORT.md)), sources
+took about a third of a 2,000-token `full` render. Certificates record the profile they were scored on.
 
 ### 4. Keep it true
 
@@ -344,6 +350,7 @@ Models are written `provider:model`:
 | `gemini:` | `GEMINI_API_KEY` |
 | `groq:` | `GROQ_API_KEY` |
 | `openrouter:` | `OPENROUTER_API_KEY` |
+| `mistral:` | `MISTRAL_API_KEY`, `MISTRAL_BASE_URL` |
 | `openai:` | `OPENAI_API_KEY`, `OPENAI_BASE_URL` (any OpenAI-compatible API: Mistral, vLLM, LM Studio…) |
 | `anthropic:` | `ANTHROPIC_API_KEY`, `ANTHROPIC_BASE_URL` |
 | `ollama:` | `OLLAMA_HOST` (default `http://localhost:11434`) |
@@ -385,7 +392,7 @@ See [PRIOR_ART.md](PRIOR_ART.md). In short: drift checkers, prompt compressors, 
 ## Repository layout
 
 ```
-SPEC.md         the format, normative (v0.3)
+SPEC.md         the format, normative (v1.0, stable)
 src/            CLI, MCP server and library (TypeScript, no runtime dependencies)
 python/         second implementation of the deterministic core (Python >= 3.9, no dependencies)
 conformance/    language-agnostic test cases both implementations pass in CI

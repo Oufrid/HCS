@@ -1,0 +1,373 @@
+{
+ "repo": "sirupsen__logrus",
+ "commit": "6ef0748d1177dadaeee9aa79ffef604570f487d7",
+ "condition": "hcs-compact+expand",
+ "answerer": "gemini:gemini-3.8-flash",
+ "judge": "groq:openai/gpt-oss-20b",
+ "budget": 2000,
+ "tokens": 1917,
+ "results": {
+  "q1": {
+   "id": "q1",
+   "question": "What function should be called to add the calling method as a field in logs?",
+   "expected": "logrus.SetReportCaller(true)",
+   "answer": "To include the caller in logs, call `SetReportCaller(true)` on the package or logger instance.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q2": {
+   "id": "q2",
+   "question": "What happens if a registered exit handler panics during execution?",
+   "expected": "The panic is recovered and an error message is printed to os.Stderr.",
+   "answer": "If a registered exit handler panics during execution, `runHandler` catches the panic and prints an error message to `os.Stderr` (c17).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q3": {
+   "id": "q3",
+   "question": "What method signature must be implemented on a BufferPool to retrieve a buffer?",
+   "expected": "Get() *bytes.Buffer",
+   "answer": "To retrieve a buffer, the `BufferPool` interface requires implementing the method signature `Get() *bytes.Buffer` (c21).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q4": {
+   "id": "q4",
+   "question": "What standard logger is Logrus completely API compatible with?",
+   "expected": "the standard library logger",
+   "answer": "Logrus is completely API-compatible with the Go standard library logger (c26).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q5": {
+   "id": "q5",
+   "question": "What is the default field name used when adding an error via WithError?",
+   "expected": "\"error\"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q6": {
+   "id": "q6",
+   "question": "What key is used when adding an error to an entry via WithError?",
+   "expected": "The value defined in ErrorKey.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q7": {
+   "id": "q7",
+   "question": "What layout is used as the defaultTimestampFormat when a custom TimestampFormat is not specified?",
+   "expected": "time.RFC3339",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q8": {
+   "id": "q8",
+   "question": "What methods make up the Hook interface?",
+   "expected": "Levels() []Level and Fire(*Entry) error",
+   "answer": "The `Hook` interface requires implementing `Levels() []Level` and `Fire(*Entry) error` (c50).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q9": {
+   "id": "q9",
+   "question": "When a field name in Entry.Data conflicts with a standard field, what prefix is added to it?",
+   "expected": "\"fields.\"",
+   "answer": "When a field name conflicts with a standard field, the prefix `'fields.'` is added to it (c48, c99).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q10": {
+   "id": "q10",
+   "question": "Which ANSI color constant is assigned to TraceLevel in colorize?",
+   "expected": "ansiDimWhite",
+   "answer": "In `colorize`, `TraceLevel` is assigned the ANSI color constant `ansiDimWhite` (c61).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q11": {
+   "id": "q11",
+   "question": "What is the default Formatter set when constructing a Logger via New?",
+   "expected": "new(TextFormatter)",
+   "answer": "When constructing a `Logger` via `New`, the default formatter is set to `TextFormatter` (c64).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q12": {
+   "id": "q12",
+   "question": "What string representation is returned by Level.String() when called on WarnLevel?",
+   "expected": "\"warning\"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q13": {
+   "id": "q13",
+   "question": "Which build tag is required to compile terminal_check_appengine.go?",
+   "expected": "appengine",
+   "answer": "The `appengine` build tag is required to compile `terminal_check_appengine.go` (c78).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q14": {
+   "id": "q14",
+   "question": "What unix constant is assigned to ioctlReadTermios?",
+   "expected": "unix.TIOCGETA",
+   "answer": "Depending on the target platform, `ioctlReadTermios` is set to either `unix.TIOCGETA` (for BSD/Darwin targets) or `unix.TCGETS` (for Linux, AIX, or z/OS targets) (c80, c92).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q15": {
+   "id": "q15",
+   "question": "What build tags are specified in the build constraint comment for this file?",
+   "expected": "js || nacl || plan9 || wasi || wasip1 || tinygo",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q16": {
+   "id": "q16",
+   "question": "What does checkIfTerminal return by default if the writer is not an *os.File?",
+   "expected": "false",
+   "answer": "`checkIfTerminal` returns `false` for any `io.Writer` that is not an `*os.File` (c85, c95).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q17": {
+   "id": "q17",
+   "question": "Which build tags are required for terminal_check_solaris.go to compile?",
+   "expected": "solaris && !tinygo",
+   "answer": "Based on claim c88, `terminal_check_solaris.go` targets `solaris` builds while excluding `tinygo` via its build constraint directive.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q18": {
+   "id": "q18",
+   "question": "What value is assigned to ioctlReadTermios?",
+   "expected": "unix.TCGETS",
+   "answer": "Depending on the build target, `ioctlReadTermios` is set to `unix.TIOCGETA` (for BSD/Darwin/Hurd systems) or `unix.TCGETS` (for Linux, AIX, or z/OS) [c79, c80, c91, c92].",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q19": {
+   "id": "q19",
+   "question": "What build tags are specified for compiling terminal_check_windows.go?",
+   "expected": "windows && !appengine",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q20": {
+   "id": "q20",
+   "question": "Which sorting function is used for keys by default when SortingFunc is left uninitialized?",
+   "expected": "slices.Sort",
+   "answer": "When `SortingFunc` is nil and sorting is enabled, logrus uses `slices.Sort(keys)` to sort the data keys (c103). Fixed standard keys are left intact rather than sorted.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q21": {
+   "id": "q21",
+   "question": "What is the default logging level used by Logger.Writer()?",
+   "expected": "InfoLevel",
+   "answer": "The default logging level used by `Logger.Writer()` is `InfoLevel` (c106).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q22": {
+   "id": "q22",
+   "question": "What logging level is assigned by default to lines written to the io.Writer returned by logger.Writer()?",
+   "expected": "info",
+   "answer": "Lines written to the `io.Writer` returned by `logger.Writer()` are assigned `InfoLevel` by default (c106).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q23": {
+   "id": "q23",
+   "question": "How does DeferExitHandler order a new handler relative to existing exit handlers?",
+   "expected": "It prepends the handler to the list of handlers.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q24": {
+   "id": "q24",
+   "question": "What is the return value of the default sync.Pool's New function?",
+   "expected": "new(bytes.Buffer)",
+   "answer": "The default `sync.Pool`'s `New` function allocates and returns a new `bytes.Buffer` (c22).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q25": {
+   "id": "q25",
+   "question": "What is the simplest way to use Logrus?",
+   "expected": "simply the package-level exported logger",
+   "answer": "The simplest usage of Logrus relies on its package-level exported logger (c27).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q26": {
+   "id": "q26",
+   "question": "What kind of field values are considered unsupported and skipped in addField?",
+   "expected": "Function types or pointers to function types (that do not implement error)",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q27": {
+   "id": "q27",
+   "question": "What exit status code is used when Fatal logs a message on the standard logger?",
+   "expected": "1",
+   "answer": "Logging with `Fatal` invokes `os.Exit(1)`, using an exit status code of 1 (c11).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q28": {
+   "id": "q28",
+   "question": "What capacity hint value is defined for defaultFields?",
+   "expected": "3",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q29": {
+   "id": "q29",
+   "question": "What underlying type does LevelHooks use to store hooks?",
+   "expected": "map[Level][]Hook",
+   "answer": "`LevelHooks` uses a map type keyed by logging level (`Level`) to a slice of hooks (`[]Hook`) (e.g., `map[Level][]Hook`), as indicated by indexing `hooks[level]` and appending hooks to it.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q30": {
+   "id": "q30",
+   "question": "How are values of type error in entry.Data processed before being added to the JSON data map?",
+   "expected": "By calling v.Error()",
+   "answer": "`JSONFormatter` converts error values in `Entry.Data` into their error strings using `v.Error()` so that `encoding/json` does not ignore them (c54). Conflicting keys like `logrus_error` are also renamed by prepending `'fields.'` and deleting the original key (c48).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  }
+ },
+ "reads": 10,
+ "asked": 30
+}

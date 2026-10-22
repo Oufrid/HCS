@@ -1,0 +1,3 @@
+{
+  "text": "<hcs-context title=\"t\">\n[Overview]\nc1: The system has three parts.\nc2: Requests flow from b to c.\n[docs]\nc3: First fact from the readme.\nc4: Second fact from the readme.\nc5: Third fact from the readme.\n[src]\nc6: The retry limit is 2.\nc7: Timeouts default to 10 seconds.\nc8: Tokens are signed with HMAC.\nc9: Never log secrets.\n</hcs-context>"
+}

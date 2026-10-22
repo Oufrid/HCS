@@ -13,6 +13,25 @@ HCS was designed after looking for existing tools that already solve its problem
 | Prompt compression | LLMLingua-2, Sentinel, SCOPE ([arXiv 2403.12968](https://arxiv.org/pdf/2403.12968), [2505.23277](https://arxiv.org/pdf/2505.23277), [2508.15813](https://arxiv.org/pdf/2508.15813)) | Remove tokens from prompts while preserving task performance. | Output is not human-readable or verifiable. Research-oriented, usually tied to specific models. |
 | Summary and compression evaluation | Factory's probe-based evaluation of agent context compression ([factory.ai](https://factory.ai/news/evaluating-compression)), DeepEval's summarization metric (coverage questions), Ragas faithfulness | Ask questions to measure what a compressed context retains. | A method or metric, not a file format. Probes are not stored with the context, are not tied to source anchors, and are not invalidated when sources change. |
 
+## Survey, October 2026: linting and verifying agent context files
+
+A survey on 2026-10-22 found the space crowded. Verified (page or README read): **agentslint**, **etymd**,
+**vigiles** and **agents-md-doctor** lint `AGENTS.md`, `CLAUDE.md` and Cursor rules for dead paths and missing
+commands and fail CI (vigiles also posts a pull-request comment); **docpin** pins Markdown to `file:lines` or a
+Python symbol with an inline content hash and fails CI when stale; **docrot** anchors documentation claims to a hash
+of the normalized symbol body and annotates pull requests; Claude Code Review flags `CLAUDE.md` statements that a
+pull request makes outdated (LLM, paid). Seen in search results only: ctxlint, ctxharness, cclint, rules-auditor,
+DeepDocs, Ruler, rulesync, agentscribe. Generators (`/init` in Claude Code and Codex, several MCP generators)
+write context files without citations. An ETH study reported in secondary sources (arXiv 2602.11988) found that
+LLM-generated context files slightly lowered coding agents' success (about -0.5 to -3%) and raised cost, while
+developer-written files helped (+4%); HCS's D1 benchmark measures question answering, not agent task success.
+
+So HCS is not first at linting agent files, nor at hash-pinning documentation to code. What did not turn up
+elsewhere, as a combination: a citation with a content hash required on every statement of an agent context file,
+generation that checks each quote verbatim, a deterministic pull-request comment listing the statements whose cited
+lines changed, and MCP expansion from a statement to its cited code. This is an impression from one survey, not a
+proof of absence.
+
 ## What HCS adds
 
 None of the individual ideas is new. HCS combines them into one **portable, model-agnostic file** that:
@@ -35,5 +54,7 @@ HCS complements the formats above rather than competing with them. `hcs audit` c
   this repository's context it was 11% above Groq's count for gpt-oss-120b (bench/c5/tokens-groq.txt); other
   tokenizers differ.
 - The symbol locator is heuristic and dependency-free, not a full parser. It reports what it cannot resolve as missing rather than guessing, but unusual syntax can still produce a wrong range. The optional tree-sitter back-end (`--parser tree-sitter`) covers TypeScript, JavaScript and Python only, and the Python implementation (hcs-py) does not have it: it refuses files sealed with it.
+- `hcs refine` overfits: on two repositories it raised fidelity on the probes it optimized for, not on held-out
+  probes (bench/REPORT.md, C2).
 - The injection guard is pattern-based. It stops common attacks, not a determined adversary: on a held-out
   set it caught 7 of 15 novel attacks (see README, Security).

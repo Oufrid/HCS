@@ -1,0 +1,4 @@
+antirez__kilo hcs: stopped by the quota, 16/27 saved: rate limit or quota exhausted at https://api.groq.com/openai/v1/chat/completions (server asks to wait 124s; Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kq6dek8kf3ptkrbhwjhgsk0f` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 198649, Requested 1637. Please try again in 2m3.552s. Need more tokens?). Try later, lower --rpm, or use another model.
+usage groq:openai/gpt-oss-120b: 16 requests, 25105 input + 629 output tokens (as reported by the provider)
+usage gemini:gemini-3.8-flash: 3 requests, 444 input + 24 output tokens (as reported by the provider)
+exit 3

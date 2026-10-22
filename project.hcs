@@ -1,7 +1,7 @@
 HCS/0.2
 @title HCS - Holographic Context Standard (reference CLI)
 @root .
-@updated 2026-10-21T23:53:42.889Z
+@updated 2026-10-22T20:41:35.363Z
 @meta license=MIT language=TypeScript
 
 [claims]
@@ -10,12 +10,12 @@ HCS/0.2
 #purpose[manual] HCS is a plain-text format plus a zero-dependency Node.js CLI and MCP server (`hcs`) that makes LLM context traceable (claims cite sources), verifiable (anchors carry hashes) and measured (probes and fidelity certificates).
   > README.md:3-16 #cddd3cef50fb
 #layers[manual] Deterministic commands (init, validate, check, seal, render, stats, audit, serve, impact, keygen, badge) never call an LLM; compile, score, curve, refine, compare and snapshot need a `provider:model` LLM; models only lists a provider's model ids.
-  > src/cli.ts::HELP #03eabca60f40
+  > src/cli.ts::HELP #e715ad8f37ec
 
 ## Format
-#magic[manual] A file starts with `HCS/0.3` (0.1 and 0.2 are still accepted, and the writer emits 0.2 unless a 0.3 feature is used: probe tags, dependency hashes or the `@parser` header), then `@key value` headers, then optional [claims], [probes] and [certificates] blocks; errors carry line numbers.
+#magic[manual] A file starts with `HCS/0.3` (0.1, 0.2 and `HCS/1.0`, the frozen 0.3, are accepted too, and the writer emits 0.2 unless a 0.3 feature is used: probe tags, dependency hashes or the `@parser` header), then `@key value` headers, then optional [claims], [probes] and [certificates] blocks; errors carry line numbers.
   > src/format.ts::parse #3b7f2aa6aa3c
-  > src/format.ts::SUPPORTED_VERSIONS #bfa61b8b8d04
+  > src/format.ts::SUPPORTED_VERSIONS #958d7e688a2c
 #anchor-syntax[manual] Anchors are `> path`, `> path:start-end` or `> path::Symbol`, optionally followed by `#hash` (`#hash/deps` for symbol anchors with a dependency hash); quoted forms allow spaces in paths and symbols.
   > src/format.ts::parseAnchor #77403b0d552c
   > src/format.ts::formatAnchor #744130728627
@@ -49,15 +49,15 @@ HCS/0.2
   > docs/tutorial.md::"3. Compile a context file (2 minutes)" #3fa46ff708b6
   > docs/tutorial.md::"5. Score it (3 minutes)" #c4db8228287f
   > examples/shop/README.md::"How each artifact was made" #133b735cf738
-#rfc[manual] Changes to the format (syntax, hashing, verification, certificate meaning) need an RFC in rfcs/ open for comments at least 7 days before code is merged; until SPEC 1.0, a minor version may add features but must not change the meaning or hash of anything older files contain.
+#rfc[manual] Changes to the format (syntax, hashing, verification, certificate meaning) need an RFC in rfcs/ open for comments at least 7 days before code is merged; since SPEC 1.0, anchor syntax, hashing, statuses and digests are frozen across 1.x, a minor version may only add features, and a breaking change needs 2.0 with a migration path.
   > rfcs/README.md::Process #d221ed5362e8
-  > rfcs/README.md::"Versioning policy (current, pre-1.0)" #32487af6a0b5
+  > rfcs/README.md::"Versioning policy (since 1.0)" #957f11ba41a5
 #conformance[manual] conformance/ holds language-agnostic cases (case.json, input.hcs, src/, expected.json) for parse, serialize, symbols, find, hash, deps, check, seal, render, digest and verify (signatures); the TypeScript reference runs them with `npm run conformance`, on a copy outside any git repository.
-  > conformance/reference.mjs::runCase #b53ebb38bd87
+  > conformance/reference.mjs::runCase #d0114e20995e
   > conformance/reference.mjs::withCopy #74a6c5ab0693
 #python-impl[manual] python/ is a dependency-free Python (>= 3.9) implementation of parse, serialize, hashing, symbol location, dependency hashes, check, seal, render and signature verification (pure-Python Ed25519) that passes the same cases, and cross_check.py compares it with the reference on this repository's files and on mutated .hcs inputs.
-  > python/tests/test_conformance.py::run_case #f67aa0d0e85f
-  > conformance/cross_check.py::main #0af4ce68132d
+  > python/tests/test_conformance.py::run_case #833944e7fab4
+  > conformance/cross_check.py::main #6b6a4d46cc5d
 
 ## Compilation
 #quote-guard[manual] The compiler discards any claim or probe whose quote is not found verbatim (ignoring whitespace, case and Markdown markup such as backticks, emphasis and link syntax) in the cited chunk, then anchors it to the smallest enclosing symbol under 80 lines, or to the quoted lines.
@@ -84,13 +84,13 @@ HCS/0.2
   > src/score.ts::POINTS #f5b535d01ef1
 #rigor[manual] Scores report a reproducible 95% bootstrap confidence interval, a no-context baseline, an informative fidelity on probes unanswerable without context, and a warning when the model judged itself.
   > src/score.ts::bootstrapCI #09a88d67acf9
-  > src/score.ts::scoreDocument #3429f04c4e76
+  > src/score.ts::scoreDocument #d5766c4cef00
 #refine[manual] `hcs refine` holds out a deterministic share of the probes (default 30%, kept in the `@holdout` header), asks the writer model for quote-verified claims filling each failed training probe without showing it the answer, keeps a round only if training fidelity rises, and reports fidelity on the held-out probes before and after.
-  > src/refine.ts::refine #fe9eb42cf1ae
+  > src/refine.ts::refine #b4024e65787e
   > src/refine.ts::splitHoldout #e1d7aa4ab901
   > src/refine.ts::fillGap #ab8af775cc24
 #curve[manual] `hcs curve` scores the same probes at several token budgets, scoring once the budgets that render the same context, and reports the knee: the smallest budget whose fidelity reaches the lower bound of the best point's 95% CI; each point is a certificate tagged with the curve id and the knee, and a curve whose smallest budget is already within that interval is reported as flat.
-  > src/score.ts::scoreCurve #ffc5613318bc
+  > src/score.ts::scoreCurve #0785770f103f
   > src/score.ts::kneeOf #cca6ea2cbcd4
 #signatures[manual] Certificates can be signed with Ed25519 (node:crypto) over a canonical payload of their sorted fields; check reports each signature as trusted (key from --trusted or HCS_TRUSTED_KEYS), untrusted (key only declared in the file's @keys header), invalid or unknown-key, and fails when a signed certificate was edited after signing.
   > src/sign.ts::certificatePayload #d93d25315be9
@@ -104,8 +104,8 @@ HCS/0.2
   > src/score.ts::findKnownProbes #9b9804fedfc9
 #compare[manual] `hcs compare a b` scores two contexts (an .hcs render, any text file, or none) on the same probes and reports the mean per-probe difference with a paired bootstrap CI.
   > src/score.ts::compareContexts #d00f85a78dc1
-#certificate[manual] A certificate is bound to a digest of the exact rendered context (stale claims removed); `hcs check` reports it as outdated when the digest changes.
-  > src/score.ts::hashForCertificate #ebeda20dc0aa
+#certificate[manual] A certificate is bound to a digest of the exact rendered context (stale claims removed, at its budget and in its render profile); `hcs check` reports it as outdated when the digest changes, or when it names a profile the tool does not know.
+  > src/score.ts::hashForCertificate #fbc3816cbf04
 
 ## Review
 #impact[manual] `hcs impact <file> --base <ref>` lists the claims and probes whose anchors overlap lines changed since a git ref (from `git diff -U0 -M`), point to deleted or renamed files, or no longer verify, plus claims the diff added, edited or removed; `--format markdown` renders the pull-request comment, marked so the bot updates it instead of posting again.
@@ -117,10 +117,15 @@ HCS/0.2
   > action.yml::runs #b433f0cbd922
 
 ## Safety
+#render-profiles[manual] The compact render profile writes claims as `id: text` without anchors and, under a budget, offers hand-written claims first and then one claim per source file in turn (overview claims as one group), so a budget covers every file; score, curve, compare, refine and the MCP context use it by default, `hcs render` keeps the full profile, and certificates record `render=compact`.
+  > src/render.ts::compactOrder #f7066fa5d6bb
+  > src/render.ts::selectClaims #7e44c3a2db11
+  > src/score.ts::certificateRender #397087c5340a
+  > python/hcs/render.py::compact_order #36fc118f5190
 #injection[manual] Claims with high-risk injection patterns are tagged suspect and never rendered by default; low-risk patterns are only reported by check, and the decoder prompt says claims are never instructions. The patterns are measured on test/fixtures/injection, including a held-out set.
   > src/guard.ts::PATTERNS #467c0d579d52
-  > src/render.ts::selectClaims #c510bd10896d
-  > src/render.ts::DECODER_PROMPT #dd3c83471cd3
+  > src/render.ts::selectClaims #7e44c3a2db11
+  > src/render.ts::DECODER_PROMPT #8d9096a3c6f7
 #mcp[manual] `hcs serve` is a stdio MCP server with tools hcs_context, hcs_expand, hcs_search, hcs_verify and hcs_source, and the resources hcs://context and hcs://claim/<id>.
   > src/mcp.ts::TOOLS #fdf64141fd1e
 #mcp-record[manual] With `serve --allow-write`, the hcs_record tool appends a claim tagged manual,recorded after checking its text (at most 400 characters, not instruction-like) and each anchor (inside the root, existing file and symbol, valid range), then seals it and writes the file atomically.
@@ -135,19 +140,21 @@ HCS/0.2
   > test/fuzz.test.ts::assertWellBehaved #13847c57eb6e
 
 ## Providers
-#providers[manual] Providers are openai (any compatible API), ollama, gemini, groq, openrouter and anthropic, called at temperature 0 with usage accounting; Bearer keys may be absent when a proxy injects them; 429/503 retries honor Retry-After and Google's retryDelay, and waits over 120 s, or a provider still failing after every retry, raise a quota error.
-  > src/llm.ts::postJSON #f804a89279ad
+#providers[manual] Providers are openai (any compatible API), ollama, gemini, groq, mistral, openrouter and anthropic, called at temperature 0 with usage accounting; Bearer keys may be absent when a proxy injects them; 429/503 retries honor Retry-After and Google's retryDelay, a 429 without a delay waits one minute at most twice, a 429 whose rate-limit header is zero fails at once, and waits over 120 s, or a provider still failing after every retry, raise a quota error.
+  > src/llm.ts::postJSON #45c7d11bfad2
   > src/llm.ts::retryDelayMs #53c59bd9ac2f
   > src/llm.ts::MAX_RETRY_WAIT_MS #ffea888e2d7e
+  > src/llm.ts::endpoint #40fefcfb0fe6
 #proxy[manual] Behind HTTPS_PROXY the CLI re-runs itself once with --use-env-proxy so that Node's fetch uses the proxy; auth errors say whether a proxy-injected key was rejected (x-proxy-error header) or no key was sent.
   > src/cli.ts::rerunBehindProxy #865c33840a44
   > src/llm.ts::authHint #093e8811c1e1
-#rpm[manual] `--rpm` (or HCS_RPM) spaces requests evenly with one limiter per model spec; `--reasoning-effort` (or HCS_REASONING_EFFORT) is sent as `reasoning_effort` only when given.
+#rpm[manual] `--rpm` (or HCS_RPM) spaces requests evenly with one limiter per model spec; `--reasoning-effort` (or HCS_REASONING_EFFORT) is sent as `reasoning_effort` only when given, and dropped for that model after the provider rejects it with a 400 or 422.
   > src/llm.ts::RateLimiter #5c815985358a
   > src/llm.ts::createLLM #3e324be51ea7
+  > src/llm.ts::openAICompatible #82fd4ccd9085
 #tokenizer[manual] `--tokenizer M` counts the rendered context with M's tokenizer (Anthropic count_tokens, Gemini native countTokens when GEMINI_API_KEY is set, otherwise the prompt size of a 1-token completion minus the chat framing measured once); `score` and `curve` then write `tokens` from that count and `tokenizer=M`, while budgets and digests keep the estimate.
   > src/llm.ts::framedCounter #30ca9d4028a0
-  > src/score.ts::scoreDocument #3429f04c4e76
+  > src/score.ts::scoreDocument #d5766c4cef00
 
 [probes]
 ?p1 How many hex characters of the SHA-256 digest does an anchor hash keep?
@@ -157,8 +164,8 @@ HCS/0.2
   = moved
   > src/anchors.ts::checkSymbolAnchor #ba6eb19e6540
 ?p3 Which format versions can this reader parse?
-  = HCS/0.1, HCS/0.2 and HCS/0.3
-  > src/format.ts::SUPPORTED_VERSIONS #bfa61b8b8d04
+  = HCS/0.1, HCS/0.2, HCS/0.3 and HCS/1.0
+  > src/format.ts::SUPPORTED_VERSIONS #958d7e688a2c
 ?p4 What happens to a compiled claim whose quote is not found in the source?
   = it is discarded
   > src/compile.ts::anchorFor #22911e78a9b3

@@ -1,0 +1,186 @@
+openai/codex codex-rs/exec-server/src/sandbox_integrity/AGENTS.md: 0 path references, 0 broken
+openai/codex codex-rs/tui/src/bottom_pane/AGENTS.md: 0 path references, 0 broken
+sindresorhus/ky AGENTS.md: 0 path references, 0 broken
+vercel/next.js .github/AGENTS.md: 1 path references, 1 broken: actions/checkout
+vercel/next.js AGENTS.md: 53 path references, 7 broken: packages/next/dist, turbopack/crates/README.md, vercel/next.js, .husky/post-checkout
+vercel/next.js apps/bundle-analyzer/AGENTS.md: 0 path references, 0 broken
+vercel/next.js evals/AGENTS.md: 0 path references, 0 broken
+vercel/next.js evals/next-upgrade/apps/member-dashboard/next-13/AGENTS.md: 0 path references, 0 broken
+vercel/next.js evals/next-upgrade/apps/member-dashboard/next-13/CLAUDE.md: 0 path references, 0 broken
+vercel/next.js evals/next-upgrade/apps/member-dashboard/next-15/AGENTS.md: 0 path references, 0 broken
+vercel/next.js evals/next-upgrade/apps/member-dashboard/next-15/CLAUDE.md: 0 path references, 0 broken
+vercel/next.js packages/next/AGENTS.md: 1 path references, 0 broken
+vercel/next.js test/AGENTS.md: 0 path references, 0 broken
+vercel/next.js turbopack/AGENTS.md: 1 path references, 0 broken
+vercel/ai AGENTS.md: 19 path references, 1 broken: src/stream-text/openai.ts
+vercel/ai apps/docs/AGENTS.md: 6 path references, 0 broken
+vercel/ai apps/docs/CLAUDE.md: 0 path references, 0 broken
+vercel/ai packages/ai/AGENTS.md: 0 path references, 0 broken
+facebook/react CLAUDE.md: 2 path references, 0 broken
+facebook/react compiler/CLAUDE.md: 15 path references, 0 broken
+microsoft/vscode AGENTS.md: 1 path references, 0 broken
+microsoft/vscode extensions/copilot/src/extension/chatSessions/copilotcli/AGENTS.md: 26 path references, 0 broken
+microsoft/vscode extensions/copilot/src/platform/authentication/common/AGENTS.md: 0 path references, 0 broken
+microsoft/vscode src/vs/platform/agentHost/AGENTS.md: 73 path references, 0 broken
+microsoft/vscode: error Command failed: git -C /home/user/HCS/bench/.work/drift/microsoft__vscode log -1 --format=%cs %h HEAD -- ../../../protoc
+microsoft/TypeScript: no AGENTS.md or CLAUDE.md
+microsoft/playwright AGENTS.md: 10 path references, 0 broken
+astral-sh/uv AGENTS.md: 1 path references, 0 broken
+astral-sh/ruff AGENTS.md: 10 path references, 0 broken
+astral-sh/ruff CLAUDE.md: 0 path references, 0 broken
+pydantic/pydantic: no AGENTS.md or CLAUDE.md
+fastapi/fastapi: no AGENTS.md or CLAUDE.md
+langchain-ai/langchain AGENTS.md: 27 path references, 0 broken
+huggingface/transformers .ai/AGENTS.md: 2 path references, 0 broken
+huggingface/transformers AGENTS.md: 0 path references, 0 broken
+huggingface/transformers CLAUDE.md: 0 path references, 0 broken
+denoland/deno CLAUDE.md: 22 path references, 0 broken
+oven-sh/bun .github/workflows/CLAUDE.md: 21 path references, 2 broken: src/deps, target/mordant/over-baseline.txt
+oven-sh/bun AGENTS.md: 0 path references, 0 broken
+oven-sh/bun CLAUDE.md: 52 path references, 2 broken: src/shell, src/bake
+oven-sh/bun scripts/build/CLAUDE.md: 27 path references, 4 broken: rust/plan.json, rust/shim, src/runtime/bake/generated.ts, rust-target/plan.json
+oven-sh/bun scripts/build/ci-images/CLAUDE.md: 10 path references, 0 broken
+oven-sh/bun scripts/verify-baseline-static/CLAUDE.md: 9 path references, 3 broken: vendor/boringssl/crypto/cpu_intel.c, vendor/zstd/lib/common/cpu.h, vendor/libdeflate/lib/x86/cpu_features.c
+oven-sh/bun src/AGENTS.md: 0 path references, 0 broken
+oven-sh/bun src/CLAUDE.md: 14 path references, 0 broken
+oven-sh/bun src/format/CLAUDE.md: 101 path references, 9 broken: oxc_formatter/src/options.rs, ast_nodes/generated/format.rs, formatter/trivia.rs, src/main/core.js
+oven-sh/bun src/js/AGENTS.md: 0 path references, 0 broken
+oven-sh/bun src/js/CLAUDE.md: 0 path references, 0 broken
+oven-sh/bun src/jsc/bindings/v8/AGENTS.md: 8 path references, 0 broken
+oven-sh/bun src/jsc/bindings/v8/CLAUDE.md: 8 path references, 0 broken
+oven-sh/bun src/lint/CLAUDE.md: 40 path references, 2 broken: json/jsonc, markdown/gfm
+oven-sh/bun test/AGENTS.md: 0 path references, 0 broken
+oven-sh/bun test/CLAUDE.md: 0 path references, 0 broken
+oven-sh/bun test/internal/source-lints/CLAUDE.md: 0 path references, 0 broken
+oven-sh/bun test/js/node/test/parallel/CLAUDE.md: 0 path references, 0 broken
+biomejs/biome AGENTS.md: 7 path references, 0 broken
+vitejs/vite: no AGENTS.md or CLAUDE.md
+sveltejs/svelte AGENTS.md: 1 path references, 0 broken
+withastro/astro AGENTS.md: 9 path references, 0 broken
+prisma/prisma AGENTS.md: 26 path references, 7 broken: .claude/skills, .agents/skills, docs/drive, skills/.pilot
+prisma/prisma CLAUDE.md: 0 path references, 0 broken
+supabase/supabase AGENTS.md: 29 path references, 1 broken: supabase/functions/common/database-types.ts
+supabase/supabase CLAUDE.md: 0 path references, 0 broken
+supabase/supabase apps/docs/AGENTS.md: 6 path references, 0 broken
+supabase/supabase apps/docs/CLAUDE.md: 0 path references, 0 broken
+supabase/supabase apps/kb/AGENTS.md: 11 path references, 2 broken: src/content/troubleshooting, supabase/troubleshooting
+supabase/supabase apps/kb/CLAUDE.md: 0 path references, 0 broken
+supabase/supabase apps/studio/AGENTS.md: 20 path references, 3 broken: lib/telemetry/track, hooks/misc/useCheckPermissions, data/sql/execute-sql-mutation
+supabase/supabase apps/studio/CLAUDE.md: 0 path references, 0 broken
+n8n-io/n8n .agents/skills/AGENTS.md: 2 path references, 0 broken
+n8n-io/n8n .github/CLAUDE.md: 1 path references, 0 broken
+n8n-io/n8n AGENTS.md: 33 path references, 1 broken: .agent-setup/summary.json
+n8n-io/n8n CLAUDE.md: 0 path references, 0 broken
+n8n-io/n8n packages/@n8n/agents/AGENTS.md: 4 path references, 1 broken: .agents/specs
+n8n-io/n8n packages/@n8n/ai-utilities/AGENTS.md: 0 path references, 0 broken
+n8n-io/n8n packages/@n8n/ai-workflow-builder.ee/AGENTS.md: 2 path references, 0 broken
+n8n-io/n8n packages/@n8n/ai-workflow-builder.ee/CLAUDE.md: 0 path references, 0 broken
+n8n-io/n8n packages/@n8n/db/AGENTS.md: 7 path references, 0 broken
+n8n-io/n8n packages/@n8n/engine/AGENTS.md: 5 path references, 0 broken
+n8n-io/n8n packages/@n8n/instance-ai/CLAUDE.md: 9 path references, 0 broken
+n8n-io/n8n packages/@n8n/node-cli/src/template/templates/shared/default/AGENTS.md: 7 path references, 0 broken
+n8n-io/n8n packages/@n8n/node-cli/src/template/templates/shared/default/CLAUDE.md: 0 path references, 0 broken
+n8n-io/n8n packages/@n8n/nodes-langchain/AGENTS.md: 1 path references, 0 broken
+n8n-io/n8n packages/cli/AGENTS.md: 2 path references, 0 broken
+n8n-io/n8n packages/cli/src/modules/agents/AGENTS.md: 7 path references, 0 broken
+n8n-io/n8n packages/cli/src/modules/instance-ai/AGENTS.md: 1 path references, 0 broken
+n8n-io/n8n packages/cli/src/modules/knowledge/AGENTS.md: 5 path references, 0 broken
+n8n-io/n8n packages/cli/src/modules/n8n-packages/CLAUDE.md: 8 path references, 0 broken
+n8n-io/n8n packages/cli/src/modules/skills/AGENTS.md: 3 path references, 0 broken
+getsentry/sentry AGENTS.md: 7 path references, 1 broken: .artifacts/dev.log
+getsentry/sentry CLAUDE.md: 0 path references, 0 broken
+getsentry/sentry src/AGENTS.md: 18 path references, 0 broken
+getsentry/sentry src/CLAUDE.md: 0 path references, 0 broken
+getsentry/sentry src/sentry/issues/action_log/AGENTS.md: 0 path references, 0 broken
+getsentry/sentry src/sentry/issues/derived/AGENTS.md: 0 path references, 0 broken
+getsentry/sentry static/AGENTS.md: 10 path references, 1 broken: static/app/images
+getsentry/sentry static/CLAUDE.md: 0 path references, 0 broken
+getsentry/sentry tests/AGENTS.md: 5 path references, 0 broken
+getsentry/sentry tests/CLAUDE.md: 0 path references, 0 broken
+apache/airflow AGENTS.md: 36 path references, 1 broken: tests/cli/test_cli_parser.py
+apache/airflow CLAUDE.md: 0 path references, 0 broken
+apache/airflow airflow-core/src/airflow/_shared/AGENTS.md: 1 path references, 0 broken
+apache/airflow airflow-core/src/airflow/api_fastapi/execution_api/AGENTS.md: 15 path references, 0 broken
+apache/airflow airflow-core/src/airflow/ui/AGENTS.md: 9 path references, 0 broken
+apache/airflow dev/AGENTS.md: 0 path references, 0 broken
+apache/airflow dev/ide_setup/AGENTS.md: 0 path references, 0 broken
+apache/airflow providers/AGENTS.md: 7 path references, 0 broken
+apache/airflow providers/common/ai/AGENTS.md: 5 path references, 0 broken
+apache/airflow providers/elasticsearch/AGENTS.md: 7 path references, 0 broken
+apache/airflow providers/opensearch/AGENTS.md: 7 path references, 0 broken
+apache/airflow registry/AGENTS.md: 15 path references, 1 broken: dev/registry/.inventory_cache
+apache/airflow registry/CLAUDE.md: 0 path references, 0 broken
+apache/airflow scripts/ci/prek/AGENTS.md: 1 path references, 0 broken
+apache/airflow task-sdk/src/airflow/sdk/_shared/AGENTS.md: 0 path references, 0 broken
+apache/airflow task-sdk/src/airflow/sdk/execution_time/schema/AGENTS.md: 2 path references, 0 broken
+home-assistant/core AGENTS.md: 3 path references, 0 broken
+home-assistant/core CLAUDE.md: 0 path references, 0 broken
+grafana/grafana AGENTS.md: 29 path references, 2 broken: conf/custom.ini, grafana-enterprise/AGENTS.md
+grafana/grafana CLAUDE.md: 0 path references, 0 broken
+grafana/grafana docs/AGENTS.md: 0 path references, 0 broken
+grafana/grafana e2e-playwright/alerting-suite/AGENTS.md: 2 path references, 0 broken
+grafana/grafana: error Command failed: git -C /home/user/HCS/bench/.work/drift/grafana__grafana log -1 --format=%cs %h HEAD -- ../helpers
+zed-industries/zed AGENTS.md: 0 path references, 0 broken
+zed-industries/zed CLAUDE.md: 0 path references, 0 broken
+zed-industries/zed: error Command failed: git -C /home/user/HCS/bench/.work/drift/zed-industries__zed log -1 --format=%cs %h HEAD -- ../telemetry.
+tauri-apps/tauri: no AGENTS.md or CLAUDE.md
+excalidraw/excalidraw AGENTS.md: 0 path references, 0 broken
+excalidraw/excalidraw CLAUDE.md: 1 path references, 0 broken
+calcom/cal.com .opencode/skill/vercel-react-best-practices/AGENTS.md: 1 path references, 0 broken
+calcom/cal.com AGENTS.md: 13 path references, 1 broken: packages/features/ee/workflows/lib/constants.ts
+calcom/cal.com CLAUDE.md: 0 path references, 0 broken
+calcom/cal.com agents/skills/vercel-react-best-practices/AGENTS.md: 1 path references, 0 broken
+calcom/cal.com specs/_templates/AGENTS.md: 0 path references, 0 broken
+calcom/cal.com specs/_templates/CLAUDE.md: 0 path references, 0 broken
+calcom/cal.com specs/cancellation-reason-requirement/CLAUDE.md: 0 path references, 0 broken
+nodejs/node AGENTS.md: 2 path references, 0 broken
+electron/electron CLAUDE.md: 15 path references, 0 broken
+electron/electron docs/CLAUDE.md: 4 path references, 0 broken
+electron/electron spec/CLAUDE.md: 1 path references, 0 broken
+modelcontextprotocol/servers AGENTS.md: 30 path references, 1 broken: .github/dependabot.yml
+modelcontextprotocol/servers src/everything/AGENTS.md: 15 path references, 0 broken
+modelcontextprotocol/typescript-sdk CLAUDE.md: 1 path references, 0 broken
+modelcontextprotocol/typescript-sdk test/e2e/CLAUDE.md: 2 path references, 0 broken
+google-gemini/gemini-cli: no AGENTS.md or CLAUDE.md
+BerriAI/litellm AGENTS.md: 13 path references, 0 broken
+BerriAI/litellm litellm-rust/AGENTS.md: 4 path references, 0 broken
+BerriAI/litellm litellm-rust/crates/cache-response/AGENTS.md: 0 path references, 0 broken
+BerriAI/litellm litellm-rust/crates/callbacks-legacy-python/AGENTS.md: 0 path references, 0 broken
+BerriAI/litellm litellm-rust/crates/coroutine/AGENTS.md: 1 path references, 0 broken
+BerriAI/litellm litellm-rust/crates/gateway-auth/AGENTS.md: 0 path references, 0 broken
+BerriAI/litellm litellm-rust/crates/gateway-inference/AGENTS.md: 0 path references, 0 broken
+BerriAI/litellm litellm-rust/crates/gateway-mcp/AGENTS.md: 0 path references, 0 broken
+BerriAI/litellm litellm-rust/crates/gateway/AGENTS.md: 0 path references, 0 broken
+BerriAI/litellm litellm-rust/crates/host-http/AGENTS.md: 0 path references, 0 broken
+BerriAI/litellm litellm-rust/crates/host-native/AGENTS.md: 0 path references, 0 broken
+BerriAI/litellm litellm-rust/crates/host-python/AGENTS.md: 5 path references, 0 broken
+BerriAI/litellm litellm-rust/crates/host/AGENTS.md: 1 path references, 0 broken
+BerriAI/litellm litellm-rust/crates/host/src/machine/AGENTS.md: 1 path references, 0 broken
+BerriAI/litellm litellm-rust/crates/http/AGENTS.md: 0 path references, 0 broken
+BerriAI/litellm litellm-rust/crates/inference-chat/AGENTS.md: 2 path references, 0 broken
+BerriAI/litellm litellm-rust/crates/inference-messages/AGENTS.md: 2 path references, 0 broken
+BerriAI/litellm litellm-rust/crates/inference-ocr/AGENTS.md: 4 path references, 0 broken
+BerriAI/litellm litellm-rust/crates/inference-responses/AGENTS.md: 5 path references, 0 broken
+BerriAI/litellm litellm-rust/crates/inference-transcription/AGENTS.md: 2 path references, 0 broken
+ollama/ollama AGENTS.md: 1 path references, 0 broken
+ollama/ollama CLAUDE.md: 0 path references, 0 broken
+open-webui/open-webui: no AGENTS.md or CLAUDE.md
+shadcn-ui/ui templates/next-app/AGENTS.md: 0 path references, 0 broken
+shadcn-ui/ui templates/next-app/CLAUDE.md: 0 path references, 0 broken
+shadcn-ui/ui templates/next-monorepo/AGENTS.md: 0 path references, 0 broken
+shadcn-ui/ui templates/next-monorepo/CLAUDE.md: 0 path references, 0 broken
+tailwindlabs/tailwindcss: no AGENTS.md or CLAUDE.md
+honojs/hono: no AGENTS.md or CLAUDE.md
+drizzle-team/drizzle-orm: no AGENTS.md or CLAUDE.md
+trpc/trpc: no AGENTS.md or CLAUDE.md
+anthropics/anthropic-sdk-python CLAUDE.md: 30 path references, 0 broken
+openai/openai-agents-python AGENTS.md: 34 path references, 0 broken
+openai/openai-agents-python CLAUDE.md: 0 path references, 0 broken
+pola-rs/polars: no AGENTS.md or CLAUDE.md
+duckdb/duckdb .github/patches/extensions/AGENTS.md: 2 path references, 0 broken
+duckdb/duckdb AGENTS.md: 36 path references, 0 broken
+duckdb/duckdb CLAUDE.md: 0 path references, 0 broken
+duckdb/duckdb scripts/lldb/AGENTS.md: 7 path references, 0 broken
+mastodon/mastodon: no AGENTS.md or CLAUDE.md
+microsoft/autogen: no AGENTS.md or CLAUDE.md
+exit 0

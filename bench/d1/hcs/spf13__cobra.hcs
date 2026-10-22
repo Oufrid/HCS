@@ -1,0 +1,396 @@
+HCS/0.2
+@title spf13__cobra
+@root ../../.work/d1/spf13__cobra
+@created 2026-10-22T09:21:52.339Z
+@updated 2026-10-22T09:21:57.934Z
+@generator hcs-cli compile (gemini:gemini-3.8-flash)
+@source-files 15
+@source-tokens 60748
+
+[claims]
+
+## Overview
+#c1[overview,i5] Cobra structures CLI applications around commands, arguments, and local or persistent flags, executing command trees through root-directed execution flows.
+  > README.md::Overview #311fca062beb
+  > README.md::Concepts #61be5fc556df
+  > README.md::Flags #ea2772b1c791
+  > command.go:1090-1092 #981fcf1b6cb5
+#c2[overview,i5] Execution traverses lifecycle hooks in order—PersistentPreRun, PreRun, Run, PostRun, and PersistentPostRun—and coordinates initialization and finalization callbacks across command invocations.
+  > cobra.go::OnInitialize #05702d363add
+  > cobra.go::OnFinalize #ca4ed14a041c
+  > command.go:124-125 #fdec43d9aee0
+  > command.go:117-122 #bb4c25112f98
+  > command.go:974-982 #db72d026d21b
+#c3[overview,i5] Cobra enforces argument validation via PositionalArgs functions like MinimumNArgs, MaximumNArgs, RangeArgs, and OnlyValidArgs, which can be composed sequentially using MatchAll.
+  > args.go::PositionalArgs #fa0108b484b9
+  > args.go::OnlyValidArgs #7e1a2b843717
+  > args.go::MinimumNArgs #143de7231849
+  > args.go::RangeArgs #bbb348206852
+  > args.go::MatchAll #37ef1bb57361
+#c4[overview,i5] Persistent flags inherit hierarchically through parent commands and merge into InheritedFlags, while flag groups enforce mutual exclusivity and co-requirement rules during parsing.
+  > README.md::Flags #ea2772b1c791
+  > command.go::InheritedFlags #8e35b5d2906b
+  > command.go::updateParentsPflags #b85cd4633d19
+  > flag_groups.go::const.MarkFlagsRequiredTogether #452856dc514c
+  > flag_groups.go::validateRequiredFlagGroups.len #77cd43dcc964
+#c5[overview,i5] Disabling flag parsing halts flag processing and bypasses flag group validation, required flag verification, and flag completion checks.
+  > command.go::ValidateRequiredFlags #7915543e8adc
+  > command.go::ParseFlags #04de7d6367a1
+  > completions.go::completeRequireFlags #16f93dd08f2e
+  > completions.go:658-662 #ff062a113020
+  > flag_groups.go::ValidateFlagGroups #5246e195d668
+#c6[overview,i5] Cobra automatically generates shell completion scripts for Bash, Zsh, Fish, and PowerShell by inspecting commands, arguments, and flag completion metadata.
+  > README.md::Overview #311fca062beb
+  > completions.go:785-787 #eae97131d05c
+  > completions.go:929 #8a90e43f70bf
+  > shell_completions.go:39 #3a0a61b69a62
+  > shell_completions.go:68 #8234f2e7bb85
+  > shell_completions.go:96-98 #b59420007f0f
+#c7[overview,i5] Dynamic shell completion evaluates candidate completions alongside integer directives that control error handling, candidate filtering, and file completion behavior.
+  > bash_completions.go:119-122 #875a2eb0782d
+  > bash_completionsV2.go:87-93 #d9ab13f68e7a
+  > bash_completionsV2.go:106-109 #b73fe8ca7683
+  > completions.go::initCompleteCmd.func #7150b68c87c9
+  > powershell_completions.go:206-213 #846f8602b8ca
+  > zsh_completions.go:177-180 #fb7f546222c6
+#c8[overview,i5] ActiveHelp displays contextual guidance marked by special prefixes in supported completion environments, while being suppressed by global or program-specific configurations and unsupported shells.
+  > active_help.go::AppendActiveHelp #ca388bfb8121
+  > active_help.go::GetActiveHelpConfig #971c4c5c059a
+  > bash_completionsV2.go:257-266 #544038599a20
+  > fish_completions.go:55-56 #88a10007ad4a
+  > powershell_completions.go:124-125 #78cffde7f271
+  > zsh_completions.go:219-225 #059e8eb5dbb6
+
+## (root)
+#c9[i5] Cobra is a Go library for creating modern CLI applications with subcommand-based interfaces similar to git and go tools.
+  > README.md::Overview #311fca062beb
+#c10[i4] Cobra applications are built around commands, arguments, and flags, following patterns like `APPNAME COMMAND ARG --FLAG`.
+  > README.md::Concepts #61be5fc556df
+#c11[i3] Cobra automatically generates shell autocomplete for bash, zsh, fish, and powershell.
+  > README.md::Overview #311fca062beb
+#c12[i3] Cobra supports persistent flags that cascade through to children commands, as well as flags local to a specific command.
+  > README.md::Flags #ea2772b1c791
+#c13[i3] The Cobra library is installed by executing `go get -u github.com/spf13/cobra@latest`.
+  > README.md::Installing #5bc0042d4cc1
+#c14[i3] The `cobra-cli` generator tool is installed via `go install github.com/spf13/cobra-cli@latest` to bootstrap application scaffolding.
+  > README.md::Usage #5b66dfef7bbf
+#c15[i2] Cobra is licensed under the Apache 2.0 license.
+  > README.md::License #5f620bbcdf49
+#c16[i4] AppendActiveHelp prefixes activeHelpStr with activeHelpMarker ('_activeHelp_ ') and appends it to compArray.
+  > active_help.go::AppendActiveHelp #ca388bfb8121
+#c17[i3] The activeHelpGlobalDisable constant is set to "0", and activeHelpEnvVarSuffix is "ACTIVE_HELP".
+  > active_help.go:26-29 #5583a0359ea0
+#c18[i5] GetActiveHelpConfig returns "0" if the global environment variable is set to activeHelpGlobalDisable ("0").
+  > active_help.go::GetActiveHelpConfig #971c4c5c059a
+#c19[i4] When the global active help environment variable is not disabled ("0"), GetActiveHelpConfig falls back to the program-specific environment variable for the root command name.
+  > active_help.go::GetActiveHelpConfig #971c4c5c059a
+#c20[i3] activeHelpEnvVar formats a program-specific environment variable using configEnvVar with the command name and activeHelpEnvVarSuffix.
+  > active_help.go::activeHelpEnvVar #077759b047b0
+#c21[i5] PositionalArgs is a function type accepting a pointer to Command and a slice of string arguments, returning an error.
+  > args.go::PositionalArgs #fa0108b484b9
+#c22[i4] OnlyValidArgs strips descriptions following tab characters from cmd.ValidArgs and returns an error if any arg is not present in the sanitized slice.
+  > args.go::OnlyValidArgs #7e1a2b843717
+#c23[i4] MinimumNArgs and MaximumNArgs return PositionalArgs validators that enforce lower and upper bounds, respectively, on argument slice length.
+  > args.go::MinimumNArgs #143de7231849
+#c24[i4] RangeArgs returns a PositionalArgs validator that returns an error if len(args) is strictly less than min or greater than max.
+  > args.go::RangeArgs #bbb348206852
+#c25[i5] MatchAll combines multiple PositionalArgs functions and returns the first error encountered during sequential execution.
+  > args.go::MatchAll #37ef1bb57361
+#c26[i2] ExactValidArgs is a deprecated validator that delegates directly to MatchAll(ExactArgs(n), OnlyValidArgs).
+  > args.go::ExactValidArgs #7ee6cfe98363
+#c27[i3] Cobra defines Bash completion annotation constants for filename extensions, custom handlers, single required flags, and directory subdirectories.
+  > bash_completions.go:29-34 #df6278a11299
+#c28[i2] The generated Bash helper __<name>_debug writes log lines to the file path specified in BASH_COMP_DEBUG_FILE when defined.
+  > bash_completions.go:41-43 #546532a528bb
+#c29[i4] __<name>_handle_go_custom_completion invokes the target program using eval while disabling ActiveHelp for bash completion v1.
+  > bash_completions.go:90-91 #346c91a8e775
+#c30[i3] If a custom Go completion returns ShellCompDirectiveError, the bash handler aborts completion without adding replies.
+  > bash_completions.go:119-122 #875a2eb0782d
+#c31[i3] In Bash, setting a flag in local_nonpersistent_flags empties the available commands list so subcommands are hidden.
+  > bash_completions.go:308-311 #385803101124
+#c32[i2] Associative flag value tracking in flaghash is skipped for Bash versions equal to or earlier than version 3.
+  > bash_completions.go:313-315 #373b4cdb395b
+#c33[i3] writeCommands skips subcommands that are not available unless the command is cmd.helpCommand.
+  > bash_completions.go::writeCommands.WriteStringAndCheck #b06e18370d6c
+#c34[i4] prepareCustomAnnotationsForFlags acquires flagCompletionMutex and points BashCompCustom annotations for registered flags to __<root>_handle_go_custom_completion.
+  > bash_completions.go::prepareCustomAnnotationsForFlags #d72f38e92919
+#c35[i3] writeRequiredFlag emits flags annotated with BashCompOneRequiredFlag into must_have_one_flag, appending '=' for non-boolean flags and adding shorthand versions if present.
+  > bash_completions.go::writeRequiredFlag #0043b32323c8
+#c36[i3] writeRequiredNouns strips tab-delimited descriptions from cmd.ValidArgs and marks has_completion_function=1 if cmd.ValidArgsFunction is not nil.
+  > bash_completions.go::writeRequiredNouns #ae366f107262
+#c37[i3] writeCmdAliases guards alias array and hash definitions with a Bash version check requiring BASH_VERSION unset or BASH_VERSINFO[0] greater than 3.
+  > bash_completions.go::writeCmdAliases.WriteStringAndCheck #a2541d68bb3a
+#c38[i4] gen recurses through available child commands or helpCommand, generating completion functions named with spaces replaced by underscores and colons by double underscores.
+  > bash_completions.go::gen.gen #751a7845cc5c
+#c39[i3] The completion function name uses the suffix _root_command for the root Command, whereas other commands use standard _<commandName>().
+  > bash_completions.go::gen #a55ed2a05cfb
+#c40[i4] nonCompletableFlag considers a flag non-completable if it is marked as Hidden or has a non-empty Deprecated string.
+  > bash_completions.go::nonCompletableFlag #423994695545
+#c41[i4] GenBashCompletionV2 writes Bash completion version 2 script content directly to the provided io.Writer.
+  > bash_completionsV2.go::GenBashCompletionV2 #483932c189df
+#c42[i3] The generated Bash script selects ShellCompRequestCmd when includeDesc is true, and ShellCompNoDescRequestCmd when false.
+  > bash_completionsV2.go:32-35 #7fb8690f7040
+#c43[i3] The Bash completion script extracts an integer directive after the last colon in the program output, defaulting to 0 if absent.
+  > bash_completionsV2.go:87-93 #d9ab13f68e7a
+#c44[i3] When the error directive bit is set in the directive, processing immediately returns without providing completions.
+  > bash_completionsV2.go:106-109 #b73fe8ca7683
+#c45[i4] ActiveHelp lines are identified by matching activeHelpMarker prefix and parsed separately from regular completion candidates.
+  > bash_completionsV2.go:257-266 #544038599a20
+#c46[i3] In standard completion, when exactly one completion candidate remains, its description is removed and its value is escaped.
+  > bash_completionsV2.go:358-361 #8fcf4b17aa1e
+#c47[i2] The keep-order directive (compopt -o nosort) requires Bash version 4.4 or higher.
+  > bash_completionsV2.go:121-127 #e72f172e7e40
+#c48[i3] EnablePrefixMatching defaults to false, controlling whether automatic prefix matching is enabled in CLI tools.
+  > cobra.go::EnablePrefixMatching #593894bc8e9e
+#c49[i3] EnableTraverseRunHooks defaults to false, meaning only the first discovered run hook executes unless set to true to traverse all parents.
+  > cobra.go::EnableTraverseRunHooks #04602cf9ef35
+#c50[i2] MousetrapHelpText defines a Windows splash screen when started from explorer.exe, and MousetrapDisplayDuration defaults to 5 seconds.
+  > cobra.go::MousetrapDisplayDuration #01399a8aa2c2
+#c51[i4] OnInitialize appends functions to run when each command's Execute method is called.
+  > cobra.go::OnInitialize #05702d363add
+#c52[i4] OnFinalize registers callback functions that are executed when each command's Execute method terminates.
+  > cobra.go::OnFinalize #ca4ed14a041c
+#c53[i3] Eq only supports comparing int and string kinds, and panics if called with array, chan, map, or slice types.
+  > cobra.go::Eq #337155dc8fde
+#c54[i4] CheckErr prints non-nil messages prefixed with 'Error:' to stderr and immediately terminates the process with exit code 1.
+  > cobra.go::CheckErr #c610b83d1ca2
+#c55[i3] WriteStringAndCheck writes a string into an io.StringWriter and delegates error handling directly to CheckErr.
+  > cobra.go::WriteStringAndCheck #247570f8e9b1
+#c56[i3] Cobra commands allow defining either a static ValidArgs completion list or a dynamic ValidArgsFunction, but not both on a single command.
+  > command.go:89 #fec78efc93a6
+#c57[i4] The *PreRun and *PostRun lifecycle hooks run only when the command's Run function has been declared.
+  > command.go:124-125 #fdec43d9aee0
+#c58[i4] Lifecycle run functions execute strictly in order: PersistentPreRun, PreRun, Run, PostRun, then PersistentPostRun, with child commands inheriting persistent variants.
+  > command.go:117-122 #bb4c25112f98
+#c59[i3] Executing a command with Execute or ExecuteC replaces a nil command context with context.Background.
+  > command.go:266-268 #ab6a4e8e3999
+#c60[i3] Default I/O streams fall back up the command parent hierarchy until reaching defaults: stdout defaults to os.Stdout, while stderr defaults to os.Stderr.
+  > command.go::getOut #95340933a26b
+#c61[i3] Default command usage is printed to OutOrStderr, whereas default command help is written to OutOrStdout.
+  > command.go::UsageFunc #baba10552b92
+#c62[i3] Setting a non-empty Version on a command automatically injects a boolean version flag and a shorthand v flag if they are not already defined.
+  > command.go:111-114 #fda5f1b5e552
+#c63[i3] Command templates and error prefixes inherit values recursively from parent commands if not explicitly set on the command.
+  > command.go::UsageTemplate #4e94d393f815
+#c64[i3] stripFlags strips recognized flag arguments and values from an argument slice, stopping immediately when reaching the '--' terminator.
+  > command.go:688-690 #47f69e4b9865
+#c65[i4] Calling ExecuteC on a child command redirects execution to its root command.
+  > command.go:1090-1092 #981fcf1b6cb5
+#c66[i4] When TraverseChildren is set, ExecuteC discovers commands via Traverse instead of Find.
+  > command.go:1120-1124 #b4fb2c852c8d
+#c67[i5] If execute returns flag.ErrHelp, ExecuteC invokes HelpFunc and returns a nil error.
+  > command.go:1152-1155 #701a0bd58f7c
+#c68[i4] If EnableTraverseRunHooks is enabled, persistent pre-run hooks run from root down to command, while persistent post-runs run up to root.
+  > command.go:974-982 #db72d026d21b
+#c69[i3] When DisableFlagParsing is true, ValidateRequiredFlags bypasses required flag verification and returns nil.
+  > command.go::ValidateRequiredFlags #7915543e8adc
+#c70[i4] Executing an unrunnable command causes execute to return flag.ErrHelp.
+  > command.go:955-957 #800abff8c129
+#c71[i3] Command.checkCommandGroups panics if any subcommand specifies a GroupID that does not exist in the parent command's groups.
+  > command.go::checkCommandGroups #d79b54e390c1
+#c72[i3] Command.InitDefaultVersionFlag does nothing if Version is empty, and avoids the 'v' shorthand if it is already taken.
+  > command.go::InitDefaultVersionFlag #ef8242085eac
+#c73[i4] Command.AddCommand propagates the parent's global normalization function to added subcommands and panics if a command is added to itself.
+  > command.go::AddCommand #194dc973d95b
+#c74[i3] DisplayName returns the CommandDisplayNameAnnotation value if present, falling back to Name().
+  > command.go::DisplayName #3cfc6e99751f
+#c75[i4] A command is considered Runnable if either Run or RunE is non-nil.
+  > command.go::Runnable #77610f9eb1c1
+#c76[i3] InheritedFlags merges persistent flags and includes flags from parentsPflags only if not shadowed by LocalFlags.
+  > command.go::InheritedFlags #8e35b5d2906b
+#c77[i4] ParseFlags returns immediately without parsing flags if DisableFlagParsing is true on the Command.
+  > command.go::ParseFlags #04de7d6367a1
+#c78[i3] ParseFlags outputs any warning messages written to flagErrorBuf during parsing if flag parsing succeeded without error.
+  > command.go::ParseFlags #04de7d6367a1
+#c79[i3] updateParentsPflags adds the Go standard library flag.CommandLine FlagSet to the root command's persistent flags.
+  > command.go::updateParentsPflags #b85cd4633d19
+#c80[i4] updateParentsPflags traverses all parent commands via VisitParents to accumulate their persistent flags into parentsPflags.
+  > command.go::updateParentsPflags #b85cd4633d19
+#c81[i3] In defaultHelpFunc, Long is prioritized over Short, and UsageString is only printed if the command is runnable or has subcommands.
+  > command.go::defaultHelpFunc #8b8f395fea0e
+#c82[i4] For non-Windows builds, package cobra declares a package-level variable preExecHookFn with type func(*Command).
+  > command_notwin.go:20 #870db992b024
+#c83[i3] On Windows builds, package cobra assigns the function preExecHook to the variable preExecHookFn.
+  > command_win.go::preExecHookFn #45d907c2d438
+#c84[i5] When MousetrapHelpText is set and mousetrap detects execution started by Windows Explorer, preExecHook prints MousetrapHelpText.
+  > command_win.go::preExecHookFn.preExecHook #73c43e7b2994
+#c85[i4] If MousetrapDisplayDuration exceeds zero, preExecHook sleeps for that duration; otherwise, it prompts for a return key press and scans input.
+  > command_win.go::preExecHookFn.preExecHook #73c43e7b2994
+#c86[i4] After displaying the mousetrap text and waiting, preExecHook terminates the process with exit code 1.
+  > command_win.go::preExecHookFn.preExecHook #73c43e7b2994
+#c87[i3] RegisterFlagCompletionFunc returns an error if the flag is missing or already has an entry in flagCompletionFunctions.
+  > completions.go::RegisterFlagCompletionFunc #ff269a4115d9
+#c88[i4] initCompleteCmd dynamically registers the __complete command but removes it if the incoming invocation does not target __complete.
+  > completions.go::initCompleteCmd #d8cb1d201927
+#c89[i4] Shell completion scripts parse the returned directive integer from the final output line following a single colon.
+  > completions.go::initCompleteCmd.func #7150b68c87c9
+#c90[i3] If Cobra's default --help or --version flags are present and changed, getCompletions returns no completions and ShellCompDirectiveNoFileComp.
+  > completions.go:393-397 #bd0327407f8e
+#c91[i4] If a command defines ValidArgs, getCompletions returns immediately without invoking ValidArgsFunction.
+  > completions.go:556-558 #68108b4d189a
+#c92[i3] getFlagNameCompletions returns descriptions for the flag's full name and shorthand if matching toComplete, omitting the '=' suffix even for flags requiring values.
+  > completions.go::getFlagNameCompletions #53ed97333023
+#c93[i4] completeRequireFlags inspects both inherited and non-inherited flags directly rather than calling Flags() to support commands where DisableFlagParsing prevented ParsedFlags() execution.
+  > completions.go::completeRequireFlags #16f93dd08f2e
+#c94[i4] checkIfFlagCompletion bypasses flag completion entirely and returns early if finalCmd.DisableFlagParsing is true.
+  > completions.go:658-662 #ff062a113020
+#c95[i3] When an unsupported flag is encountered, checkIfFlagCompletion returns a flagCompError with the command name and flag name along with original arguments.
+  > completions.go:725-728 #d09009ace5c9
+#c96[i4] InitDefaultCompletionCmd skips registering default completion if disabled, already present, or if no other subcommands exist and completion is not actively requested.
+  > completions.go:785-787 #eae97131d05c
+#c97[i3] InitDefaultCompletionCmd installs subcommands for bash, zsh, fish, and powershell shells under the completion command.
+  > completions.go:929 #8a90e43f70bf
+#c98[i3] CompDebug logs completion debug messages to the file path specified in BASH_COMP_DEBUG_FILE and never writes to stdout.
+  > completions.go::CompDebug #ca9b8e952c6d
+#c99[i4] getEnvConfig retrieves `<PROGRAM>_<SUFFIX>` from the root command name, falling back to `COBRA_<SUFFIX>` if unset or empty.
+  > completions.go::getEnvConfig #b7dfae473725
+#c100[i3] genFishComp sanitizes the command name for Fish variable usage by replacing all '-' and ':' characters with '_'.
+  > fish_completions.go:28-29 #b0c5a53682cf
+#c101[i3] ActiveHelp is explicitly disabled in the generated Fish completion script because it is not supported in Fish shell.
+  > fish_completions.go:55-56 #88a10007ad4a
+#c102[i3] Trailing empty lines produced after the directive line are stripped from completion results to avoid breaking completion.
+  > fish_completions.go:64-72 #0e9ec300094e
+#c103[i2] When completing a flag with an '=' delimiter, completions in Fish are prefixed with that flag prefix.
+  > fish_completions.go:79 #498ef35363fb
+#c104[i4] File extension and directory filtering directives are not supported in Fish shell, falling back to full file completion.
+  > fish_completions.go:190-194 #b786c6432969
+#c105[i4] MarkFlagsRequiredTogether, MarkFlagsOneRequired, and MarkFlagsMutuallyExclusive panic if any specified flag name is not found on the command.
+  > flag_groups.go::const.MarkFlagsRequiredTogether #452856dc514c
+#c106[i4] Flag group methods store group membership by appending a space-separated string of the flag names to specific flag annotations.
+  > flag_groups.go::const.MarkFlagsRequiredTogether #452856dc514c
+#c107[i3] ValidateFlagGroups and enforceFlagGroupsForCompletion immediately return early without error if Command.DisableFlagParsing is true.
+  > flag_groups.go::ValidateFlagGroups #5246e195d668
+#c108[i4] A flag group is ignored during validation and completion enforcement unless all flags in that group are defined on the FlagSet.
+  > flag_groups.go::processFlagForGroupAnnotation #b2634c9ef7eb
+#c109[i4] Required flag group validation fails only when some flags are set while others in the same group remain unset.
+  > flag_groups.go::validateRequiredFlagGroups.len #77cd43dcc964
+#c110[i4] During shell completion enforcement for mutually exclusive groups, other flags in the group are hidden, but the already-set flag is not hidden to accommodate slice or array flags.
+  > flag_groups.go::enforceFlagGroupsForCompletion #f21b06534d24
+#c111[i3] genPowerShellComp sanitizes command names for PowerShell variable identifiers by replacing both '-' and ':' characters with underscores.
+  > powershell_completions.go:31-32 #b0c5a53682cf
+#c112[i4] The generated PowerShell script disables ActiveHelp prior to invoking completion commands because ActiveHelp is unsupported in PowerShell.
+  > powershell_completions.go:124-125 #78cffde7f271
+#c113[i3] The completion script truncates $Command up to $CursorPosition if $Command.Length is greater than $CursorPosition.
+  > powershell_completions.go:70-72 #c081636358ce
+#c114[i3] When ShellCompDirectiveNoFileComp is set and no values remain, the completion script outputs an empty string to prevent the shell from completing paths.
+  > powershell_completions.go:206-213 #846f8602b8ca
+#c115[i4] Completion results are created as CompletionResult objects only in FullLanguage mode, falling back to outputting $CompletionText directly otherwise.
+  > powershell_completions.go:247-251 #d9e04b2d5cb1
+#c116[i4] MarkFlagRequired marks a flag on a FlagSet as required by setting the BashCompOneRequiredFlag annotation to ["true"].
+  > shell_completions.go:39 #3a0a61b69a62
+#c117[i3] Command.MarkFlagRequired and Command.MarkPersistentFlagRequired delegate to MarkFlagRequired on c.Flags() and c.PersistentFlags() respectively.
+  > shell_completions.go::MarkFlagRequired #d3cd7fa53b98
+#c118[i4] MarkFlagFilename configures shell completions for a flag to specific extensions by assigning the BashCompFilenameExt annotation.
+  > shell_completions.go:68 #8234f2e7bb85
+#c119[i3] Command.MarkFlagFilename and Command.MarkPersistentFlagFilename delegate to MarkFlagFilename using c.Flags() and c.PersistentFlags().
+  > shell_completions.go::MarkPersistentFlagFilename #f0729c2d9905
+#c120[i3] MarkFlagCustom sets the BashCompCustom annotation to call a specific bash function, which only functions in bash completion.
+  > shell_completions.go:77-79 #a821969e79fc
+#c121[i4] MarkFlagDirname limits flag completions to directory names by assigning the BashCompSubdirsInDir annotation with an empty string slice.
+  > shell_completions.go:96-98 #b59420007f0f
+#c122[i3] Command.MarkFlagDirname and Command.MarkPersistentFlagDirname delegate to MarkFlagDirname using c.Flags() and c.PersistentFlags().
+  > shell_completions.go::MarkPersistentFlagDirname #ab28fefebb70
+#c123[i4] GenZshCompletionFile and GenZshCompletion generate zsh completion scripts with descriptions, whereas GenZshCompletionFileNoDesc and GenZshCompletionNoDesc generate scripts without descriptions.
+  > zsh_completions.go::GenZshCompletion #c15939304774
+#c124[i3] MarkZshCompPositionalArgumentFile and MarkZshCompPositionalArgumentWords are deprecated no-op functions that always return nil.
+  > zsh_completions.go::MarkZshCompPositionalArgumentFile #2efe067e93a6
+#c125[i3] If includeDesc is false, genZshComp selects ShellCompNoDescRequestCmd instead of ShellCompRequestCmd for the completion request command.
+  > zsh_completions.go:88-91 #7fb8690f7040
+#c126[i2] The generated zsh debug function logs output to the file defined in the environment variable BASH_COMP_DEBUG_FILE when set.
+  > zsh_completions.go:99-102 #6368b91fe36c
+#c127[i4] The zsh completion script ignores completions and exits immediately if the directive indicates shellCompDirectiveError.
+  > zsh_completions.go:177-180 #fb7f546222c6
+#c128[i4] ActiveHelp lines matching activeHelpMarker are added using compadd -x, and a '--' delimiter is appended if completions follow or file completion remains enabled.
+  > zsh_completions.go:219-225 #059e8eb5dbb6
+
+[probes]
+?p1 Which four shells does Cobra automatically generate autocompletion for?
+  = bash, zsh, fish, and powershell.
+  > README.md::Overview #311fca062beb
+?p2 What prefix does AppendActiveHelp prepend to the activeHelpStr?
+  = "_activeHelp_ "
+  > active_help.go:23 #42373e96b248
+?p3 What delimiter separates an argument value from its description in Command.ValidArgs?
+  = A tab character ("\t").
+  > args.go::OnlyValidArgs.len #180a4ce0fe52
+?p4 What function is invoked in the bash script if both COMPREPLY is empty and __<name>_custom_func is not declared?
+  = __custom_func (if declared).
+  > bash_completions.go:259-262 #4e26bbaf11f1
+?p5 Under what condition is a flag considered non-completable?
+  = When it is Hidden or has a non-empty Deprecated field.
+  > bash_completions.go::nonCompletableFlag #423994695545
+?p6 What environment variable controls debug logging in the generated Bash completion script?
+  = BASH_COMP_DEBUG_FILE
+  > bash_completionsV2.go:41-43 #f43a2225aa3a
+?p7 What happens if MousetrapDisplayDuration is set to 0?
+  = It waits for the return key to be pressed.
+  > cobra.go:78 #bf8b386de0ff
+?p8 What is the destination writer used by default usage rendering versus default help rendering?
+  = Usage renders to OutOrStderr() while help renders to OutOrStdout().
+  > command.go::UsageFunc #baba10552b92
+?p9 What is the fallback error prefix returned by ErrPrefix when not defined on the command or its parents?
+  = "Error:"
+  > command.go::ErrPrefix #a2e3452839b6
+?p10 What annotation key and value are set on default help and version flags added by Cobra?
+  = The annotation key is FlagSetByCobraAnnotation and the value is []string{"true"}.
+  > command.go::InitDefaultHelpFlag #e3063132cb7e
+?p11 What global flag set is added to the root command's persistent flags inside updateParentsPflags?
+  = flag.CommandLine
+  > command.go::updateParentsPflags #b85cd4633d19
+?p12 What is the signature of preExecHookFn in command_notwin.go?
+  = func(*Command)
+  > command_notwin.go:20 #870db992b024
+?p13 What exit code is passed to os.Exit when Cobra detects execution by Windows Explorer with MousetrapHelpText configured?
+  = 1
+  > command_win.go::preExecHookFn.preExecHook #73c43e7b2994
+?p14 What format does completion output use to transmit the completion directive to the shell script?
+  = A line formatted as :<directive> where the directive integer immediately follows a single colon.
+  > completions.go::initCompleteCmd.func #7150b68c87c9
+?p15 Which environment variable specifies the debug log file for completion output?
+  = BASH_COMP_DEBUG_FILE
+  > completions.go::CompDebug #ca9b8e952c6d
+?p16 Which characters in command names does genFishComp replace with underscores?
+  = '-' and ':'
+  > fish_completions.go:28-29 #b0c5a53682cf
+?p17 What is the exact annotation key name used for flags marked as mutually exclusive?
+  = "cobra_annotation_mutually_exclusive"
+  > flag_groups.go::const #a09f9c7418b7
+?p18 What environment variable must be set for the generated PowerShell completion function to log debug output?
+  = $env:BASH_COMP_DEBUG_FILE
+  > powershell_completions.go:41-43 #85761cb1e51c
+?p19 Which annotation key does MarkFlagRequired apply to the flag set?
+  = BashCompOneRequiredFlag
+  > shell_completions.go:39 #3a0a61b69a62
+?p20 Which environment variable does the generated zsh script inspect to output debug logs?
+  = BASH_COMP_DEBUG_FILE
+  > zsh_completions.go:99 #3207677bd297
+?p21 What command installs the `cobra-cli` generator tool?
+  = go install github.com/spf13/cobra-cli@latest
+  > README.md::Usage #5b66dfef7bbf
+?p22 Under what condition does GetActiveHelpConfig return "0" without reading the command's specific environment variable?
+  = When the global environment variable (activeHelpGlobalEnvVar) equals "0".
+  > active_help.go::GetActiveHelpConfig #971c4c5c059a
+?p23 What replacement is recommended for the deprecated ExactValidArgs function?
+  = MatchAll(ExactArgs(n), OnlyValidArgs)
+  > args.go:141 #ebf27778bf31
+?p24 When does writeFlags emit flag_parsing_disabled=1 into the bash script?
+  = When cmd.DisableFlagParsing is true.
+  > bash_completions.go::writeFlags.prepareCustomAnnotationsForFlags #c9cb22d11903
+?p25 How are colons and spaces handled when transforming CommandPath() into commandName in gen?
+  = Spaces are replaced with '_' and colons are replaced with '__'.
+  > bash_completions.go::gen.gen #751a7845cc5c
+?p26 Which Bash compopt option flag disables file completion when shellCompDirectiveNoFileComp is set?
+  = +o default
+  > bash_completionsV2.go:134-135 #b5d0f82e6ef6
+?p27 What behavior does Eq exhibit when invoked on Array, Chan, Map, or Slice kinds?
+  = It panics with "Eq called on unsupported type".
+  > cobra.go::panic #a97971c148ff
+?p28 Which command in the hierarchy stores the completionCommandGroupID when SetCompletionCommandGroupID is called?
+  = The root command stores completionCommandGroupID.
+  > command.go::SetCompletionCommandGroupID #161b6b7a243a
+?p29 What default distance threshold is used for command suggestions when SuggestionsMinimumDistance is less than or equal to 0?
+  = 2
+  > command.go::findSuggestions #b48f467e5243
+?p30 How does Command determine its Name from Use?
+  = It takes the substring before the first space in Use, or the entire Use string if there is no space.
+  > command.go::Name #19d4a4439c4f

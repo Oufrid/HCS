@@ -1,0 +1,371 @@
+{
+ "repo": "dtolnay__anyhow",
+ "commit": "2cbb4e1bcbf8e7015f8d8b04a291c4c0597030b4",
+ "condition": "summary",
+ "answerer": "gemini:gemini-3.8-flash",
+ "judge": "groq:openai/gpt-oss-20b",
+ "budget": 2000,
+ "tokens": 1961,
+ "results": {
+  "q1": {
+   "id": "q1",
+   "question": "Which environment variable should you set if you only want errors (and not panics) to include backtraces?",
+   "expected": "RUST_LIB_BACKTRACE=1",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q2": {
+   "id": "q2",
+   "question": "What is Backtrace defined as when the \"std\" feature is not enabled?",
+   "expected": "An empty enum (enum Backtrace {})",
+   "answer": "Based on `README.md:1-179, src/backtrace.rs:1-48, src/chain.rs:1-102, src/context.rs:1-193`, on `no_std`, capturing backtraces evaluates to `None` or an empty enum. The exact definition of the `Backtrace` type itself is not specifically stated.",
+   "verdict": "incorrect",
+   "by": "judge",
+   "verdicts": [
+    "incorrect"
+   ],
+   "points": 0
+  },
+  "q3": {
+   "id": "q3",
+   "question": "What is the initial ChainState set by Chain::new?",
+   "expected": "ChainState::Linked { next: Some(head) }",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q4": {
+   "id": "q4",
+   "question": "Why does Context::context on Result use an explicit match rather than map_err?",
+   "expected": "To save 2 useless frames off the captured backtrace in ext_context.",
+   "answer": "It uses an explicit `match` instead of `map_err` to minimize stack frames (README.md:1-179, src/context.rs:1-193).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q5": {
+   "id": "q5",
+   "question": "What byte characters in an input string will cause Buf's write_str implementation to return an error?",
+   "expected": "b' ' or b'\\n'",
+   "answer": "`Buf` rejects strings containing spaces (`' '`) or newlines (`'\\n'`). Any input string containing these characters will cause its `write_str` implementation to return an error.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q6": {
+   "id": "q6",
+   "question": "Which traits are brought into scope when __fancy_ensure fails its comparison check?",
+   "expected": "BothDebug and NotBothDebug",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q7": {
+   "id": "q7",
+   "question": "Why is the repr C attribute applied to ErrorImpl?",
+   "expected": "To make sure that E stays in the final position.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q8": {
+   "id": "q8",
+   "question": "What is returned by ErrorImpl::debug when the formatter is in alternate mode?",
+   "expected": "Debug::fmt(error, f)",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q9": {
+   "id": "q9",
+   "question": "What trait bound must type E satisfy to implement TraitKind?",
+   "expected": "Into<Error>",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q10": {
+   "id": "q10",
+   "question": "Which environment variables must be configured if a developer wants backtraces enabled exclusively for errors, but not panics?",
+   "expected": "Set `RUST_LIB_BACKTRACE=1` (or specifically `RUST_LIB_BACKTRACE=1` for errors only).",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q11": {
+   "id": "q11",
+   "question": "What trait bounds are required for the context type C in Context::context?",
+   "expected": "Display + Send + Sync + 'static",
+   "answer": "Based on the provided context, the context type `C` must satisfy the trait bounds `Display + Send + Sync + 'static'`.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q12": {
+   "id": "q12",
+   "question": "Under `cfg(doc)`, what error message does the `ensure!` macro return when invoked with only a condition and no message arguments?",
+   "expected": "`Condition failed: `<condition>`` using stringify.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q13": {
+   "id": "q13",
+   "question": "Which unstable Rust feature is enabled when anyhow_build_probe is active?",
+   "expected": "error_generic_member_access",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q14": {
+   "id": "q14",
+   "question": "What purpose does the CastTo trait serve in this module?",
+   "expected": "It forces turbofish syntax on calls to `.cast::<U>()`.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q15": {
+   "id": "q15",
+   "question": "Which trait's `fmt` method is called inside `Debug::fmt` for `DisplayError<M>`?",
+   "expected": "Display",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q16": {
+   "id": "q16",
+   "question": "Which macro serves as shorthand for returning early with an anyhow! error?",
+   "expected": "bail!",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q17": {
+   "id": "q17",
+   "question": "Which function is invoked under cfg(error_generic_member_access) to check for an existing backtrace on an error?",
+   "expected": "$crate::nightly::request_ref_backtrace",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q18": {
+   "id": "q18",
+   "question": "What does Chain's state transition to when calling next_back on a Linked state?",
+   "expected": "Buffered { rest }",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q19": {
+   "id": "q19",
+   "question": "What name is given to the struct when ContextError formats its Debug representation?",
+   "expected": "Error",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q20": {
+   "id": "q20",
+   "question": "How many MaybeUninit<u8> bytes can the Buf buffer hold?",
+   "expected": "40",
+   "answer": "Based on `src/ensure.rs:1-600`, the `Buf` buffer is a fixed-size stack buffer of `[MaybeUninit<u8>; 40]`, meaning it can hold 40 `MaybeUninit<u8>` bytes.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q21": {
+   "id": "q21",
+   "question": "What macro is called when an unrecognized expression is encountered in __parse_ensure! during parsing?",
+   "expected": "$crate::__fallback_ensure!",
+   "answer": "When an unrecognized or ambiguous expression is encountered during parsing in `__parse_ensure!`, it drops through to call `$crate::__fallback_ensure!`.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q22": {
+   "id": "q22",
+   "question": "What layout assumption does the unsafe vtable function rely on when extracting the vtable from a NonNull pointer to ErrorImpl?",
+   "expected": "It assumes that ErrorVTable is the first field of ErrorImpl.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q23": {
+   "id": "q23",
+   "question": "How many causes does ErrorImpl::display skip before printing the chain when f.alternate() is true?",
+   "expected": "1",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q24": {
+   "id": "q24",
+   "question": "What specific type implements BoxedKind?",
+   "expected": "Box<dyn StdError + Send + Sync>",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q25": {
+   "id": "q25",
+   "question": "What formatting selector should be used to display an anyhow Error with a conventional struct-style Debug representation?",
+   "expected": "\"{:#?}\"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q26": {
+   "id": "q26",
+   "question": "What expression is the function Ok<T> equivalent to?",
+   "expected": "Ok::<_, anyhow::Error>(value)",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q27": {
+   "id": "q27",
+   "question": "Why is `__anyhow!` used instead of `anyhow!` in the implementations of other macros?",
+   "expected": "Because the `must_use` call is not needed since the value is known to be used.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q28": {
+   "id": "q28",
+   "question": "Which environment variable is read to be included in the sccache cache key under anyhow_build_probe?",
+   "expected": "RUSTC_BOOTSTRAP",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q29": {
+   "id": "q29",
+   "question": "How is an Own<T> converted back into a Box<T>?",
+   "expected": "Using Box::from_raw on the raw pointer from self.ptr.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q30": {
+   "id": "q30",
+   "question": "What trait bounds are placed on the inner type `M` for `DisplayError<M>` to implement `StdError`?",
+   "expected": "M: Display + 'static",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  }
+ }
+}

@@ -1,0 +1,362 @@
+HCS/0.2
+@title sirupsen__logrus
+@root ../../.work/d1/sirupsen__logrus
+@created 2026-10-22T16:31:52.449Z
+@updated 2026-10-22T16:31:59.147Z
+@generator hcs-cli compile (gemini:gemini-3.8-flash)
+@source-files 21
+@source-tokens 26759
+
+[claims]
+
+## Overview
+#c1[overview,i5] Logrus provides structured logging via an Entry-based workflow backed by a Logger instance, accessible either through a standard package-level logger or custom-instantiated loggers.
+  > doc.go:2 #c15b9a63b369
+  > doc.go:4 #a0b77d449162
+  > doc.go:13-18 #7acbe495a4bd
+  > exported.go::std #34e6e002c81c
+  > exported.go::StandardLogger #3aa8295fcb06
+  > logger.go::New #b9fc6b1129d8
+#c2[overview,i5] Entries encapsulate contextual fields and data, creating non-mutating clones when chaining field additions and borrowing pooled instances managed by an internal sync pool.
+  > entry.go:44-46 #36ec58c2b314
+  > entry.go::Dup #41f846b1d1af
+  > exported.go:67-70 #eb0e73a97c21
+  > logger.go::releaseEntry #10d1f8c1912d
+  > logger.go::WithField #57d11ca154a1
+#c3[overview,i5] Logging severity is controlled by seven granular levels, accessed via atomic level checks, case-insensitive string parsing, and optional function-evaluated logging methods.
+  > README.md::"Level logging" #6386bc0ba3b9
+  > exported.go::InfoFn #917b63dd546c
+  > logger.go::SetLevel #8cbddc44ce64
+  > logrus.go:100-119 #8d709a6f7fc7
+  > logrus.go::parseLevel #3deb048b78cd
+#c4[overview,i5] Dedicated panic and fatal methods execute hooks and writes before either raising a Go panic or invoking registered exit handlers sequentially prior to process termination.
+  > README.md::"Level logging" #6386bc0ba3b9
+  > README.md::"Fatal handlers" #c68021be4d42
+  > alt_exit.go::runHandler.func #6c6e495d0da9
+  > alt_exit.go::Exit #1a8eb5e92b99
+  > entry.go::log #ce98475925b3
+  > exported.go:123-124 #0e1b5e7fae81
+#c5[overview,i5] Synchronous hook dispatch routes entries to registered LevelHooks based on logging severity, aborting further hooks and logging errors to standard error if any hook fails.
+  > entry.go::fireHooks #a8201a48afd7
+  > hooks.go::Hook #be9fd4baf1d6
+  > hooks.go:4-7 #c55002dd251c
+  > hooks.go::Levels.Fire #ff97a3741d97
+  > hooks.go::LevelHooks.Add #8c8326ba2f5f
+#c6[overview,i5] Formatters such as TextFormatter and JSONFormatter serialize entries into byte buffers, resolving field name collisions and handling caller stack frame information.
+  > entry.go::log #ce98475925b3
+  > formatter.go::Formatter #6b4b82c71fea
+  > formatter.go::prefixFieldClashes #1e5a62318444
+  > json_formatter.go::Format #969daa51b43a
+  > text_formatter.go:23-24 #5d6d4b15839a
+#c7[overview,i5] Platform-specific terminal detection inspects output file descriptors using operating system ioctls or console modes to enable appropriate formatting features like ANSI colorization.
+  > terminal_check_appengine.go::checkIfTerminal #43c74b492760
+  > terminal_check_bsd.go::ioctlReadTermios.isTerminal #e15d123645d5
+  > terminal_check_no_terminal.go::checkIfTerminal #8fe980cf508d
+  > terminal_check_notappengine.go::checkIfTerminal #00a787a6a88d
+  > terminal_check_solaris.go::isTerminal #3fbb6a40948c
+  > terminal_check_unix.go::ioctlReadTermios.isTerminal #e15d123645d5
+#c8[overview,i5] Buffer pooling optimizes output formatting allocations, while pipe-based writer adapters allow standard io.Writer streams to be ingested as leveled log messages.
+  > README.md::"Logger as an `io.Writer`" #43c8882c77fb
+  > buffer_pool.go::BufferPool #8bcb5a628386
+  > buffer_pool.go:8-14 #bc12a126a85e
+  > buffer_pool.go::SetBufferPool #b12b7257c166
+  > writer.go::Writer #1ea46664fce1
+  > writer.go::writerScanner #bd177246b1ed
+
+## (root)
+#c9[i5] Logrus is in maintenance mode, focusing only on security, bug fixes, performance improvements, and interoperability changes such as Go's log/slog.
+  > README.md:6-9 #a2e51bd5d0ab
+#c10[i4] Logrus provides seven distinct logging levels: Trace, Debug, Info, Warning, Error, Fatal, and Panic.
+  > README.md::"Level logging" #6386bc0ba3b9
+#c11[i3] Logging with Fatal invokes os.Exit(1), whereas Panic calls panic() after logging.
+  > README.md::"Level logging" #6386bc0ba3b9
+#c12[i3] Enabling method caller reporting via logrus.SetReportCaller(true) adds the caller as 'method' with a 20 to 40% performance overhead in Go 1.6 and 1.7.
+  > README.md::"Logging Method Name" #8f0cdd7719fd
+#c13[i3] Registered exit handlers via RegisterExitHandler execute before Logrus invokes os.Exit(1) on fatal-level logs.
+  > README.md::"Fatal handlers" #c68021be4d42
+#c14[i3] Transforming a Logrus logger into an io.Writer using logger.Writer() outputs each written line at the info level.
+  > README.md::"Logger as an `io.Writer`" #43c8882c77fb
+#c15[i3] Logger concurrency locking can be disabled with logger.SetNoLock() if hooks and logger.Out writes are already thread-safe.
+  > README.md::"Thread safety" #00944f061c80
+#c16[i2] Log rotation is deliberately not provided within Logrus and should instead be handled by external programs like logrotate(8).
+  > README.md::Rotation #3e30e434ee20
+#c17[i4] runHandler catches panics from an exit handler and prints an error message to os.Stderr.
+  > alt_exit.go::runHandler.func #6c6e495d0da9
+#c18[i5] Exit executes all registered handlers sequentially via runHandlers and then calls os.Exit with the given code.
+  > alt_exit.go::Exit #1a8eb5e92b99
+#c19[i4] RegisterExitHandler appends an exit handler function to the internal handlers list.
+  > alt_exit.go::RegisterExitHandler #21710e085157
+#c20[i4] DeferExitHandler prepends an exit handler function to the front of the handlers list.
+  > alt_exit.go::DeferExitHandler #ad6fd8ee9de6
+#c21[i5] The BufferPool interface defines Put(*bytes.Buffer) and Get() *bytes.Buffer methods for managing buffer reuse.
+  > buffer_pool.go::BufferPool #8bcb5a628386
+#c22[i4] The default buffer pool implementation wraps a sync.Pool whose New function allocates and returns a new bytes.Buffer.
+  > buffer_pool.go:8-14 #bc12a126a85e
+#c23[i4] SetBufferPool replaces the package-level default logrus buffer pool with a custom BufferPool implementation.
+  > buffer_pool.go::SetBufferPool #b12b7257c166
+#c24[i3] defaultPool.Get retrieves an item from its sync.Pool and type-asserts it to *bytes.Buffer.
+  > buffer_pool.go::Get #f4f79ce665e5
+#c25[i3] defaultPool.Put delegates returning a bytes.Buffer directly to the underlying sync.Pool.
+  > buffer_pool.go:25-27 #e37fad26665d
+#c26[i5] Logrus is a structured logger for Go that is completely API-compatible with the standard library logger.
+  > doc.go:2 #c15b9a63b369
+#c27[i3] The simplest usage of Logrus relies on its package-level exported logger.
+  > doc.go:4 #a0b77d449162
+#c28[i4] Logrus supports structured logging via log.WithFields using log.Fields key-value pairs before calling log level methods like Info.
+  > doc.go:13-18 #7acbe495a4bd
+#c29[i4] An Entry requires a non-nil Logger reference, and logging methods panic if the entry has a nil Logger.
+  > entry.go:44-46 #36ec58c2b314
+#c30[i4] Derived Entry methods like WithField, WithFields, WithContext, and Dup create copies of the Entry and clone Data to prevent in-place mutation.
+  > entry.go::Dup #41f846b1d1af
+#c31[i3] Adding non-error function or pointer-to-function values to Entry.Data is rejected and records an internal error message instead.
+  > entry.go::addField #f676bd1af7e1
+#c32[i3] When Logger.ReportCaller is enabled and Caller is not already set, logrus scans runtime call stack frames to resolve the first non-logrus caller.
+  > entry.go::log #ce98475925b3
+#c33[i3] During hook dispatch, if any hook's Fire method returns an error, the error is printed to os.Stderr and subsequent hooks are aborted.
+  > entry.go::fireHooks #a8201a48afd7
+#c34[i4] Generic Log, Logf, and Logln calls with PanicLevel or FatalLevel do not trigger a panic or call Logger.Exit.
+  > entry.go:398-400 #8ee92ce49c7c
+#c35[i3] Panic logging methods invoke panic passing the fully populated Entry pointer after hooks and output writes have executed.
+  > entry.go::log #ce98475925b3
+#c36[i5] The package initializes and maintains std as the default package-level Logger instance.
+  > exported.go::std #34e6e002c81c
+#c37[i4] StandardLogger exposes the package-level Logger instance backing all top-level logging operations.
+  > exported.go::StandardLogger #3aa8295fcb06
+#c38[i4] Top-level configuration functions configure the standard logger's output, formatter, report caller option, level, and hooks.
+  > exported.go::SetReportCaller #38e498f7210a
+#c39[i3] WithError creates an Entry on the standard logger using the key defined in ErrorKey.
+  > exported.go::WithError #234211801a1b
+#c40[i3] WithField adds a single field to a standard logger Entry, whereas WithFields should be preferred over chaining WithField calls for multiple fields.
+  > exported.go:67-70 #eb0e73a97c21
+#c41[i3] WithTime creates a new Entry from the standard logger with an overridden timestamp for generated logs.
+  > exported.go::WithTime #2e20fa869c33
+#c42[i3] The standard logger provides functional logging methods (TraceFn, DebugFn, InfoFn, WarnFn, WarningFn, ErrorFn, PanicFn, FatalFn) accepting LogFunction.
+  > exported.go::InfoFn #917b63dd546c
+#c43[i4] Fatal logging functions (Fatal, FatalFn, Fatalf, Fatalln) log at FatalLevel and terminate the process with exit status 1.
+  > exported.go:123-124 #0e1b5e7fae81
+#c44[i3] The default timestamp format layout in logrus is time.RFC3339.
+  > formatter.go:9 #fab9ff01542d
+#c45[i2] The defaultFields constant specifies 3 fields (msg, level, time) as a capacity hint for intermediate collections during formatting.
+  > formatter.go:16 #f34e2bf44297
+#c46[i4] Logrus defines default field key constants: FieldKeyMsg, FieldKeyLevel, FieldKeyTime, FieldKeyLogrusError, FieldKeyFunc, and FieldKeyFile.
+  > formatter.go:20-27 #6bac653b281d
+#c47[i5] The Formatter interface requires a Format method taking an *Entry and returning a formatted byte slice along with an error.
+  > formatter.go::Formatter #6b4b82c71fea
+#c48[i4] prefixFieldClashes renames conflicting entry Data keys for time, msg, level, and logrus_error by prepending 'fields.' and deleting the originals.
+  > formatter.go::prefixFieldClashes #1e5a62318444
+#c49[i4] prefixFieldClashes only checks and prefixes func and file keys if reportCaller is true.
+  > formatter.go::prefixFieldClashes #1e5a62318444
+#c50[i5] The Hook interface requires implementing Levels() []Level and Fire(*Entry) error.
+  > hooks.go::Hook #be9fd4baf1d6
+#c51[i4] Hooks are not executed in a goroutine or worker channel, so non-blocking behavior must be managed manually by the implementation to avoid blocking logging calls.
+  > hooks.go:4-7 #c55002dd251c
+#c52[i3] LevelHooks is an internal map type mapping Level values to slices of Hook instances.
+  > hooks.go::Levels.Fire #ff97a3741d97
+#c53[i4] LevelHooks.Add registers a hook across each logging level returned by the hook's Levels() method.
+  > hooks.go::LevelHooks.Add #8c8326ba2f5f
+#c54[i4] JSONFormatter converts error values in Entry.Data into their error strings using v.Error() so encoding/json does not ignore them.
+  > json_formatter.go::Format #969daa51b43a
+#c55[i4] When DataKey is set and Entry.Data is non-empty, JSONFormatter nests the entry fields under that key in the formatted data map.
+  > json_formatter.go::Format #969daa51b43a
+#c56[i3] If CallerPrettyfier returns an empty string for either function or file, JSONFormatter removes that key from the output fields.
+  > json_formatter.go::JSONFormatter #c43224ca54fe
+#c57[i3] Without CallerPrettyfier, JSONFormatter formats the caller's file field as caller.File concatenated with ':' and the line number.
+  > json_formatter.go::Format #969daa51b43a
+#c58[i3] JSONFormatter configures JSON HTML escaping based on the inverted value of DisableHTMLEscape.
+  > json_formatter.go::Format #969daa51b43a
+#c59[i2] When PrettyPrint is enabled, JSONFormatter indents JSON output with two spaces.
+  > json_formatter.go::Format #969daa51b43a
+#c60[i2] If Entry.Buffer is nil, JSONFormatter allocates a new bytes.Buffer to encode the JSON into.
+  > json_formatter.go::Format #969daa51b43a
+#c61[i3] The colorize function wraps a string in ANSI escape codes based on the log Level, defaulting to ansiCyan and resetting with ansiReset.
+  > level.go::colorize #6ef6d9526c2e
+#c62[i3] levelPrefix falls back to the unknown prefix when level is not found in the cached prefix map.
+  > level.go::levelPrefix #3c1a33956f7f
+#c63[i3] levelPrefix selects between padded, truncated, or full representations in order of priority: pad first, then !disableTrunc, falling back to full.
+  > level.go::levelPrefix #3c1a33956f7f
+#c64[i5] New constructs a Logger initialized with os.Stderr output, TextFormatter, InfoLevel, os.Exit, ReportCaller set to false, and empty LevelHooks.
+  > logger.go::New #b9fc6b1129d8
+#c65[i4] Logger.Exit runs exit handlers before invoking ExitFunc (defaulting to os.Exit if unset) with the provided exit code.
+  > logger.go::Exit #2c9db71e4282
+#c66[i4] Using Log, Logf, or Logln with PanicLevel or FatalLevel does not trigger an application panic or exit.
+  > logger.go:218-220 #c279fb6445b8
+#c67[i3] Logger reads and writes its Level field using atomic operations cast to uint32 without acquiring the internal mutex.
+  > logger.go::SetLevel #8cbddc44ce64
+#c68[i3] Logger.SetNoLock disables mutex synchronization for scenarios where append writes to the destination file are already safe for concurrent execution.
+  > logger.go::SetNoLock #9e10524a39c1
+#c69[i3] Releasing an Entry resets its Data field to an empty map before putting it back into entryPool.
+  > logger.go::releaseEntry #10d1f8c1912d
+#c70[i4] Methods WithField, WithFields, WithError, WithContext, and WithTime borrow an entry from the pool and immediately schedule it for release via defer.
+  > logger.go::WithField #57d11ca154a1
+#c71[i3] Modifying Logger Formatter, Out, ReportCaller, Hooks, and BufferPool requires holding the internal mutex mu.
+  > logger.go::SetFormatter #bb63b5978956
+#c72[i5] Logrus defines Level as a uint32 with constants from PanicLevel (0) down to TraceLevel (6).
+  > logrus.go:100-119 #8d709a6f7fc7
+#c73[i3] WarnLevel's String method returns "warning", whereas unknown levels return "unknown".
+  > logrus.go::Fields.Level.String #9b565281e7cc
+#c74[i4] ParseLevel recognizes level strings case-insensitively, accepting both "warn" and "warning" for WarnLevel, and returns an error for invalid values.
+  > logrus.go::parseLevel #3deb048b78cd
+#c75[i3] Level implements encoding.TextUnmarshaler via UnmarshalText and formats valid levels via MarshalText, returning an error for invalid level integers.
+  > logrus.go::MarshalText #da0fa00d9314
+#c76[i2] AllLevels lists all defined logging levels in descending severity from PanicLevel to TraceLevel.
+  > logrus.go::AllLevels #de1edcc21c2e
+#c77[i4] Ext1FieldLogger combines FieldLogger and TraceLogger, extending FieldLogger with Trace-level logging methods.
+  > logrus.go::Ext1FieldLogger #7bb2f5d739ef
+#c78[i4] Under the appengine build tag, checkIfTerminal takes any argument and unconditionally returns true.
+  > terminal_check_appengine.go::checkIfTerminal #43c74b492760
+#c79[i4] terminal_check_bsd.go applies to darwin, dragonfly, freebsd, netbsd, openbsd, and hurd build targets excluding tinygo.
+  > terminal_check_bsd.go:1 #a32f14d6b091
+#c80[i3] The ioctlReadTermios constant is set to unix.TIOCGETA.
+  > terminal_check_bsd.go::ioctlReadTermios #e407c9f0d2d7
+#c81[i5] isTerminal determines if a file descriptor is a terminal by checking whether unix.IoctlGetTermios returns no error.
+  > terminal_check_bsd.go::ioctlReadTermios.isTerminal #e15d123645d5
+#c82[i5] For js, nacl, plan9, wasi, wasip1, or tinygo build targets, checkIfTerminal accepts any parameter and unconditionally returns false.
+  > terminal_check_no_terminal.go::checkIfTerminal #8fe980cf508d
+#c83[i4] The terminal_check_no_terminal.go file is constrained by a build tag targeting js, nacl, plan9, wasi, wasip1, or tinygo.
+  > terminal_check_no_terminal.go:1 #d2c60c738e8e
+#c84[i3] The file terminal_check_notappengine.go applies build constraints excluding appengine, js, windows, nacl, plan9, wasi, wasip1, and tinygo.
+  > terminal_check_notappengine.go:1 #3de0c3ffb6e3
+#c85[i4] checkIfTerminal returns false for any io.Writer that is not a concrete *os.File.
+  > terminal_check_notappengine.go::checkIfTerminal #00a787a6a88d
+#c86[i5] When checking an *os.File, checkIfTerminal returns false if the file descriptor fd exceeds uintptr(^uint(0)>>1).
+  > terminal_check_notappengine.go::checkIfTerminal.uintptr #12adf19606d8
+#c87[i5] For valid *os.File descriptors within the allowed range, checkIfTerminal delegates the check to isTerminal(int(fd)).
+  > terminal_check_notappengine.go::checkIfTerminal #00a787a6a88d
+#c88[i3] terminal_check_solaris.go targets solaris builds excluding tinygo via a build constraint directive.
+  > terminal_check_solaris.go:1 #416e20aa7ba9
+#c89[i5] In package logrus, isTerminal checks whether a given file descriptor is a terminal by calling unix.IoctlGetTermio with unix.TCGETA.
+  > terminal_check_solaris.go::isTerminal #3fbb6a40948c
+#c90[i4] The isTerminal function returns true if unix.IoctlGetTermio encounters no error for the provided file descriptor.
+  > terminal_check_solaris.go::isTerminal #3fbb6a40948c
+#c91[i4] terminal_check_unix.go compiles only when targeting (linux, aix, or zos) and not tinygo.
+  > terminal_check_unix.go:1 #628c786e2353
+#c92[i3] The ioctlReadTermios constant is set to unix.TCGETS.
+  > terminal_check_unix.go::ioctlReadTermios #3f462d01e27f
+#c93[i5] The isTerminal function determines if a file descriptor is a terminal by calling unix.IoctlGetTermios and returning whether err is nil.
+  > terminal_check_unix.go::ioctlReadTermios.isTerminal #e15d123645d5
+#c94[i3] The terminal check file is guarded by the build constraint `windows && !appengine`.
+  > terminal_check_windows.go:1 #abd7d025fb5e
+#c95[i4] `checkIfTerminal` checks if an io.Writer is an *os.File and returns false for all other writer types.
+  > terminal_check_windows.go::checkIfTerminal #4f5ad65419b6
+#c96[i4] If `windows.GetConsoleMode` fails for the file's handle, `checkIfTerminal` returns false.
+  > terminal_check_windows.go::checkIfTerminal #4f5ad65419b6
+#c97[i5] `checkIfTerminal` modifies console mode by setting `windows.ENABLE_VIRTUAL_TERMINAL_PROCESSING` on the file handle.
+  > terminal_check_windows.go::checkIfTerminal #4f5ad65419b6
+#c98[i4] `checkIfTerminal` returns true only if setting the modified console mode with `windows.SetConsoleMode` succeeds.
+  > terminal_check_windows.go::checkIfTerminal #4f5ad65419b6
+#c99[i4] TextFormatter outputs logfmt-style key=value pairs, writing field keys unquoted/unescaped while prefixing conflicting entry data keys with 'fields.'.
+  > text_formatter.go:23-24 #5d6d4b15839a
+#c100[i3] ForceQuote overrides DisableQuote; if both flags are true, quotes are forced on all values.
+  > text_formatter.go::TextFormatter #350993b731bd
+#c101[i3] CallerPrettyfier allows custom function and file string generation from runtime.Frame; returning an empty string removes that key.
+  > text_formatter.go::TextFormatter #350993b731bd
+#c102[i3] TextFormatter uses sync.Once to check and cache whether the logger output is a terminal, bypassing initialization if entry or Logger is nil.
+  > text_formatter.go::isTerminal #e58d3fcefa6d
+#c103[i4] Under default sorting, printPlain only sorts data keys and leaves fixed standard keys intact, whereas a custom SortingFunc sorts all keys together.
+  > text_formatter.go::printPlain #34870fa8b591
+#c104[i2] In colored output, TextFormatter trims a single trailing newline from entry.Message to match standard library log behavior.
+  > text_formatter.go::printColored #9e62b83afbfc
+#c105[i4] If an error or fmt.Stringer panics during formatting, recoverValue formats nil pointer receivers as '<nil>' and other panics as panic descriptions.
+  > text_formatter.go::recoverValue #e4d9f26e3d11
+#c106[i3] Logger.Writer and Entry.Writer return an *io.PipeWriter configured to log messages at InfoLevel.
+  > writer.go::Writer #1ea46664fce1
+#c107[i3] Logger.WriterLevel delegates by wrapping the logger in a new Entry and calling Entry.WriterLevel.
+  > writer.go::WriterLevel #0d5334b31086
+#c108[i3] runtime.SetFinalizer is attached to the returned PipeWriter to close it upon garbage collection via writerFinalizer.
+  > writer.go:58 #cfa4591162bc
+#c109[i4] writerScanner configures the scanner buffer and split size to bufio.MaxScanTokenSize, chunking data into up to 64KB blocks if longer than line boundaries.
+  > writer.go::writerScanner #bd177246b1ed
+#c110[i4] writerScanner trims trailing carriage return and newline characters from scanned text before passing it to printFunc.
+  > writer.go::writerScanner #bd177246b1ed
+
+[probes]
+?p1 Which function disables the mutex used for concurrent writes in Logrus?
+  = logger.SetNoLock()
+  > README.md::"Thread safety" #00944f061c80
+?p2 What happens if a registered exit handler panics during execution?
+  = The panic is recovered and an error message is printed to os.Stderr.
+  > alt_exit.go::runHandler.func #6c6e495d0da9
+?p3 What function allows replacing the default logrus buffer pool?
+  = SetBufferPool
+  > buffer_pool.go::SetBufferPool #b12b7257c166
+?p4 What standard library component is Logrus completely API-compatible with?
+  = The standard library logger.
+  > doc.go:2 #c15b9a63b369
+?p5 What is the default map key used when adding errors via WithError?
+  = "error"
+  > entry.go::ErrorKey #3e1b7509de3c
+?p6 What process exit status code is used when Fatal, FatalFn, Fatalf, or Fatalln is invoked?
+  = 1
+  > exported.go:124 #ac3db11079b4
+?p7 What is the signature of the Formatter interface method?
+  = Format(*Entry) ([]byte, error)
+  > formatter.go::Formatter #6b4b82c71fea
+?p8 What happens when a hook's Fire method returns an error during LevelHooks.Fire execution?
+  = LevelHooks.Fire immediately returns that error without firing subsequent hooks.
+  > hooks.go::Fire #c5a7be0ad5c7
+?p9 What indent string does JSONFormatter use when PrettyPrint is true?
+  = Two spaces (" ")
+  > json_formatter.go::Format #969daa51b43a
+?p10 Which ANSI color escape code is used for TraceLevel in colorize?
+  = ansiDimWhite (\x1b[2;37m)
+  > level.go::colorize #6ef6d9526c2e
+?p11 What is the default ExitFunc used by New?
+  = os.Exit
+  > logger.go::New #b9fc6b1129d8
+?p12 What string does Level.String() return when called on WarnLevel?
+  = "warning"
+  > logrus.go::Fields.Level.String #9b565281e7cc
+?p13 What does checkIfTerminal return in terminal_check_appengine.go?
+  = true
+  > terminal_check_appengine.go::checkIfTerminal #43c74b492760
+?p14 What unix constant is ioctlReadTermios defined as in terminal_check_bsd.go?
+  = unix.TIOCGETA
+  > terminal_check_bsd.go::ioctlReadTermios #e407c9f0d2d7
+?p15 What does checkIfTerminal return in terminal_check_no_terminal.go?
+  = false
+  > terminal_check_no_terminal.go::checkIfTerminal #8fe980cf508d
+?p16 What condition on fd causes checkIfTerminal to immediately return false for an *os.File?
+  = When fd exceeds uintptr(^uint(0)>>1).
+  > terminal_check_notappengine.go::checkIfTerminal.uintptr #12adf19606d8
+?p17 Which ioctl request constant does isTerminal use in unix.IoctlGetTermio on Solaris?
+  = unix.TCGETA
+  > terminal_check_solaris.go::isTerminal #3fbb6a40948c
+?p18 Which build tags constrain the compilation of terminal_check_unix.go?
+  = (linux || aix || zos) && !tinygo
+  > terminal_check_unix.go:1 #628c786e2353
+?p19 What console flag does checkIfTerminal attempt to enable on the Windows console handle?
+  = windows.ENABLE_VIRTUAL_TERMINAL_PROCESSING
+  > terminal_check_windows.go::checkIfTerminal #4f5ad65419b6
+?p20 When EnvironmentOverrideColors is enabled, under what condition does CLICOLOR disable colors?
+  = When the CLICOLOR environment variable equals "0".
+  > text_formatter.go::isColored #bca25665adeb
+?p21 What chunk size and buffer limit does writerScanner use to split input data?
+  = bufio.MaxScanTokenSize (64KB).
+  > writer.go::writerScanner #bd177246b1ed
+?p22 What logging level is assigned to lines written through logger.Writer()?
+  = info
+  > README.md::"Logger as an `io.Writer`" #43c8882c77fb
+?p23 How does DeferExitHandler order a newly added handler relative to existing handlers?
+  = It prepends the handler to the list.
+  > alt_exit.go::DeferExitHandler #ad6fd8ee9de6
+?p24 What type does the sync.Pool New function in defaultPool return?
+  = new(bytes.Buffer)
+  > buffer_pool.go::func #20cc811f5343
+?p25 What is the simplest way to use Logrus?
+  = The package-level exported logger.
+  > doc.go:4 #a0b77d449162
+?p26 What exit code is passed to Logger.Exit when Entry.Fatal is called?
+  = 1
+  > entry.go::Fatal #ee120caa93cb
+?p27 Which top-level function returns the package-level Logger pointer?
+  = StandardLogger()
+  > exported.go::StandardLogger #3aa8295fcb06
+?p28 How are colliding user-provided keys modified by prefixFieldClashes in data?
+  = They are prefixed with "fields." and deleted from their original key names.
+  > formatter.go::prefixFieldClashes #1e5a62318444
+?p29 Are hooks fired asynchronously in separate goroutines by default?
+  = No, they are not fired in a goroutine or worker channel.
+  > hooks.go:4-5 #5116b2da078d
+?p30 How does JSONFormatter represent error values from Entry.Data?
+  = By calling v.Error() to store the error's string message.
+  > json_formatter.go::Format #969daa51b43a
