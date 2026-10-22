@@ -1,0 +1,373 @@
+{
+ "repo": "pallets__itsdangerous",
+ "commit": "672971d66a2ef9f85151e53283113f33d642dabd",
+ "condition": "hcs-compact+expand",
+ "answerer": "gemini:gemini-3.8-flash",
+ "judge": "groq:openai/gpt-oss-20b",
+ "budget": 2000,
+ "tokens": 1921,
+ "results": {
+  "q1": {
+   "id": "q1",
+   "question": "Why is data cryptographically signed in ItsDangerous?",
+   "expected": "To ensure that a token has not been tampered with",
+   "answer": "Data is cryptographically signed to ensure that tokens or data sent to untrusted environments have not been tampered with and to detect any modifications upon return (c7, c30). While receivers can view the data, they cannot modify it without knowing the secret signing key (c31).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q2": {
+   "id": "q2",
+   "question": "What binary or command is assigned to SPHINXBUILD by default?",
+   "expected": "sphinx-build",
+   "answer": "By default, `SPHINXBUILD` is set to `sphinx-build` (c11, c36).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q3": {
+   "id": "q3",
+   "question": "Which file is included under the Changes section in docs/changes.rst?",
+   "expected": "../CHANGES.rst",
+   "answer": "According to claim c15, `docs/changes.rst` includes content from the file `../CHANGES.rst` using the include directive.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q4": {
+   "id": "q4",
+   "question": "What basic system does ItsDangerous provide that signs a given bytes value?",
+   "expected": "The signer",
+   "answer": "ItsDangerous provides the `Signer` class to sign bytes values (c1, c16, c42). It attaches a cryptographic signature to the value, separated by a separator such as a dot (c1, c46).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q5": {
+   "id": "q5",
+   "question": "What is the configured default role in Sphinx?",
+   "expected": "\"code\"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q6": {
+   "id": "q6",
+   "question": "Which module is documented for encoding utilities?",
+   "expected": "itsdangerous.encoding",
+   "answer": "The `itsdangerous.encoding` module is documented for encoding utilities (c28).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q7": {
+   "id": "q7",
+   "question": "What module is documented in docs/exceptions.rst?",
+   "expected": "itsdangerous.exc",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q8": {
+   "id": "q8",
+   "question": "What pip command is used to install and update itsdangerous?",
+   "expected": "pip install -U itsdangerous",
+   "answer": "The pip command used to install and update ItsDangerous is `pip install -U itsdangerous` (c32).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q9": {
+   "id": "q9",
+   "question": "Which license does this document specify in its top header?",
+   "expected": "BSD-3-Clause License",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q10": {
+   "id": "q10",
+   "question": "What default command is assigned to SPHINXBUILD if the variable is empty?",
+   "expected": "sphinx-build",
+   "answer": "If not previously defined or by default, the `SPHINXBUILD` variable is set to `sphinx-build` (c11, c36).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q11": {
+   "id": "q11",
+   "question": "What module is used by default to serialize data to JSON in Serializer?",
+   "expected": "built-in json module",
+   "answer": "By default, `Serializer` serializes data to JSON using Python's built-in `json` module (c43).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q12": {
+   "id": "q12",
+   "question": "What character separates the string from its appended signature?",
+   "expected": "A dot",
+   "answer": "The string and its appended signature are separated by a dot (c46).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q13": {
+   "id": "q13",
+   "question": "Which class should be used to expire signatures by adding and signing timestamp information?",
+   "expected": "TimestampSigner",
+   "answer": "The `TimestampSigner` class should be used to expire signatures by appending timestamp information and signing it (c51).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q14": {
+   "id": "q14",
+   "question": "Which class is imported from `itsdangerous.url_safe` in the code example to create a basic URL-safe serializer?",
+   "expected": "URLSafeSerializer",
+   "answer": "The class imported from `itsdangerous.url_safe` is `URLSafeSerializer` (c55).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q15": {
+   "id": "q15",
+   "question": "Which module in the package provides the BadTimeSignature exception?",
+   "expected": ".exc",
+   "answer": "The `BadTimeSignature` exception is provided by the `itsdangerous.exc` module (claims c29, c58).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q16": {
+   "id": "q16",
+   "question": "What is the primary purpose of the _CompactJSON class?",
+   "expected": "It is a wrapper around the json module that strips whitespace.",
+   "answer": "The primary purpose of the `_CompactJSON` class is to wrap Python's `json` module to strip whitespace when serializing JSON data (c62). It achieves this by defaulting `ensure_ascii` to `False` and `separators` to `(',', ':')` when delegating to `json.dumps` (c64).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q17": {
+   "id": "q17",
+   "question": "What exception does base64_decode raise when base64 decoding fails due to a TypeError or ValueError?",
+   "expected": "BadData",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q18": {
+   "id": "q18",
+   "question": "What is the base exception class for all exceptions defined by ItsDangerous?",
+   "expected": "BadData",
+   "answer": "The base exception class for all exceptions defined in ItsDangerous is `BadData`, which inherits directly from `Exception` (c68).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q19": {
+   "id": "q19",
+   "question": "Which key in the secret_keys list is returned by the secret_key property?",
+   "expected": "The newest (last) entry in the secret_keys list.",
+   "answer": "The `secret_key` property returns the newest, last item in the `secret_keys` list (c74).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q20": {
+   "id": "q20",
+   "question": "What check does SigningAlgorithm.verify_signature perform to determine if the given signature matches the expected signature?",
+   "expected": "hmac.compare_digest(sig, self.get_signature(key, value))",
+   "answer": "`SigningAlgorithm.verify_signature` uses `hmac.compare_digest` to safely compare the candidate signature against `get_signature` (c78).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q21": {
+   "id": "q21",
+   "question": "In what timezone is the datetime object returned by TimestampSigner.timestamp_to_datetime?",
+   "expected": "UTC",
+   "answer": "The datetime object returned by `TimestampSigner.timestamp_to_datetime` is in the UTC timezone (c85).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q22": {
+   "id": "q22",
+   "question": "What is the default serializer used by URLSafeSerializerMixin?",
+   "expected": "_CompactJSON",
+   "answer": "The default serializer used by `URLSafeSerializerMixin` is `_CompactJSON`.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q23": {
+   "id": "q23",
+   "question": "Which serializer class is imported in the simple example for generating tokens?",
+   "expected": "URLSafeSerializer",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q24": {
+   "id": "q24",
+   "question": "What is the default directory configured for BUILDDIR?",
+   "expected": "_build",
+   "answer": "The default directory configured for BUILDDIR is `_build` (c11).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q25": {
+   "id": "q25",
+   "question": "When passing a list of keys for key rotation, in what order should the keys be ordered?",
+   "expected": "oldest to newest",
+   "answer": "Secret keys should be ordered from oldest to newest (c20). ItsDangerous signs with the newest key at the end of the list and validates across keys from newest to oldest (c20, c81).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q26": {
+   "id": "q26",
+   "question": "Which HTML theme is configured for the documentation?",
+   "expected": "\"flask\"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q27": {
+   "id": "q27",
+   "question": "Which autofunction directive is used for decoding base64 data?",
+   "expected": "base64_decode",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q28": {
+   "id": "q28",
+   "question": "Which base exception is documented first in the exceptions documentation file?",
+   "expected": "BadData",
+   "answer": "The base exception documented first in the exceptions documentation file is `BadData`.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q29": {
+   "id": "q29",
+   "question": "What must be done to data to safely send it to untrusted environments and detect changes when received back?",
+   "expected": "The data must be signed",
+   "answer": "Data sent to untrusted environments must be cryptographically signed using a secret key (c7, c30, c31). This allows changes to be detected upon return, ensuring the data has not been tampered with (c7, c30).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q30": {
+   "id": "q30",
+   "question": "Which file is included via the literalinclude directive?",
+   "expected": "../LICENSE.txt",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  }
+ },
+ "reads": 6,
+ "asked": 30
+}

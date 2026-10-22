@@ -432,3 +432,50 @@ What this shows:
 Conclusion for the project: what HCS demonstrably adds is not better compression but verifiability (every claim
 cites hashed source), drift detection in CI, and precise retrieval through anchors. Answer quality is about the
 same as a naive summary of the same size, and far better than hand-written README or AGENTS.md files.
+
+### 2026-10-22: the render was the handicap: compact profile
+
+Diagnosis of the run above (no model calls, `node dist/src/cli.js stats bench/d1/hcs/<repo>.hcs`): in the 2,000-token
+`full` render, anchors took 31% to 39% of the tokens, and selection by importance then document order left whole
+files without a claim (cobra: 8 of 15 files covered at 2,000 tokens, 1 of 15 at 500). Real token counts by Gemini
+also showed that the estimate overcounts prose: the naive summaries were 1,272 to 1,714 real tokens against about
+1,900 for the HCS render, so the earlier comparison did not handicap HCS on size. The fix is the `compact` render
+profile (SPEC 6.2): claims as `id: text`, then one claim per source file in turn.
+
+All conditions were re-scored together with the final decoder instructions (results tagged `v2`, in
+`bench/d1/results/*/*--independent--v2/`; no-context results reused, since that prompt does not use the decoder;
+analysis output `bench/d1/analysis-v2.txt`; 1,215 Gemini requests, 2,485,528 input tokens). 144 independent probes,
+103 of them unknown without context:
+
+| Condition | Fidelity [95% CI] | On unknown probes |
+|---|---|---|
+| **HCS, compact profile** | **43.8% [36.1-52.1]** | **39.8% [31.1-49.5]** |
+| HCS, full profile | 32.6% [25.0-40.3] | 28.2% [20.4-36.9] |
+| Naive summary, same budget | 24.7% [18.1-31.3] | 24.3% [16.5-33.0] |
+| No context | 27.4% [20.8-34.7] | 0.0% |
+| README, cut to the budget | 10.4% [5.6-15.3] | 4.9% [1.0-9.7] |
+| **HCS compact + read claims' source** | **58.3% [50.0-66.0]** | **56.3% [46.6-65.0]** |
+| HCS full + read claims' source | 50.7% [43.1-59.0] | 49.5% [39.8-58.3] |
+| Summary + open files | 48.6% [41.0-56.3] | 43.7% [34.0-53.4] |
+
+| Paired difference (points) | All probes | Unknown probes |
+|---|---|---|
+| Compact minus full | **+11.1 [+4.9, +18.1]** | **+11.7 [+3.9, +20.4]** |
+| Compact minus naive summary | **+19.1 [+10.4, +28.1]** | **+15.5 [+5.8, +26.2]** |
+| Compact minus no context | **+16.3 [+5.9, +26.7]** | **+39.8 [+31.1, +49.5]** |
+| Compact minus README | **+33.3 [+25.0, +41.7]** | **+35.0 [+25.2, +45.6]** |
+| Compact + source minus summary + files | +9.7 [-0.7, +20.1] | +12.6 [0.0, +24.3] |
+
+Per repository, compact versus naive summary: kilo 50.0 vs 25.0, itsdangerous 66.7 vs 43.3, anyhow 43.3 vs 16.7,
+cobra 33.3 vs 18.3, ky 26.7 vs 20.0. With one round of reading, compact + source read more source on 45 of 144
+questions against 77 for summary + files.
+
+What this shows: with the compact profile, the HCS context clearly beats a naive summary of the same budget, no
+context and the README, on probes written apart from the claims; the earlier "no better than a summary" came
+mostly from the render. In the agentic setting it is ahead with fewer reads, but the interval still touches zero.
+
+Limits, to be read with the numbers: the compact profile was designed after looking at these five repositories
+(its rules are generic, anchors and coverage, but it has not yet been confirmed on fresh repositories); one
+answering model (gemini-3.8-flash), which also compiled the files and wrote the independent probes; one judge
+(gpt-oss-20b); 144 probes. Next: the same comparison with a second answering family and on repositories not used to
+design the profile.

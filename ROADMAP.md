@@ -187,6 +187,11 @@ readme / agents / summary on the same probes, and a report with paired bootstrap
 are in `bench/d1/README.md`. On free tiers this is about five days of one Groq model's daily tokens per answering
 model; a daily scheduled run advances it.
 
+Update 2026-10-22: with independent probes and the compact render profile (SPEC 6.2), HCS beats a naive summary of
+the same budget by +19.1 points [+10.4, +28.1] and the README by +33.3 (`bench/REPORT.md`, D1). Remaining for
+"done": a second answering family and a confirmation on repositories not used to design the profile; README
+numbers must link to the report.
+
 ### D2. Spec 1.0 and governance `[~]`
 - `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, issue and PR templates.
 - A lightweight RFC process (`rfcs/`) for spec changes.

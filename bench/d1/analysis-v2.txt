@@ -1,0 +1,23 @@
+probes 144 unknown without context 103
+hcs                 32.6% [25.0, 40.3] | unknown 28.2% [20.4, 36.9]
+hcs-compact         43.8% [36.1, 52.1] | unknown 39.8% [31.1, 49.5]
+summary             24.7% [18.1, 31.3] | unknown 24.3% [16.5, 33.0]
+readme              10.4% [5.6, 15.3] | unknown 4.9% [1.0, 9.7]
+none                27.4% [20.8, 34.7] | unknown 0.0% [0.0, 0.0]
+hcs+expand          50.7% [43.1, 59.0] | unknown 49.5% [39.8, 58.3]
+hcs-compact+expand  58.3% [50.0, 66.0] | unknown 56.3% [46.6, 65.0]
+summary+open        48.6% [41.0, 56.3] | unknown 43.7% [34.0, 53.4]
+hcs-compact - hcs:                       11.1 [4.9, 18.1] | unknown 11.7 [3.9, 20.4]
+hcs-compact - summary:                   19.1 [10.4, 28.1] | unknown 15.5 [5.8, 26.2]
+hcs - summary:                           8.0 [0.3, 15.6] | unknown 3.9 [-4.9, 12.6]
+hcs-compact - readme:                    33.3 [25.0, 41.7] | unknown 35.0 [25.2, 45.6]
+hcs-compact - none:                      16.3 [5.9, 26.7] | unknown 39.8 [31.1, 49.5]
+hcs-compact+expand - summary+open:       9.7 [-0.7, 20.1] | unknown 12.6 [0.0, 24.3]
+hcs-compact+expand - hcs+expand:         7.6 [0.0, 14.6] | unknown 6.8 [-1.9, 15.5]
+hcs+expand - summary+open:               2.1 [-8.3, 12.5] | unknown 5.8 [-5.8, 17.5]
+reads {"hcs+expand":[55,144],"hcs-compact+expand":[45,144],"summary+open":[77,144]}
+antirez__kilo          hcs=50.0 hcs-compact=50.0 summary=25.0 readme=25.0 none=41.7 hcs+expand=75.0 hcs-compact+expand=70.8 summary+open=41.7
+dtolnay__anyhow        hcs=16.7 hcs-compact=43.3 summary=16.7 readme=10.0 none=8.3 hcs+expand=40.0 hcs-compact+expand=60.0 summary+open=40.0
+pallets__itsdangerous  hcs=50.0 hcs-compact=66.7 summary=43.3 readme=10.0 none=28.3 hcs+expand=53.3 hcs-compact+expand=73.3 summary+open=83.3
+sindresorhus__ky       hcs=20.0 hcs-compact=26.7 summary=20.0 readme=3.3 none=20.0 hcs+expand=53.3 hcs-compact+expand=53.3 summary+open=26.7
+spf13__cobra           hcs=30.0 hcs-compact=33.3 summary=18.3 readme=6.7 none=41.7 hcs+expand=36.7 hcs-compact+expand=36.7 summary+open=50.0
