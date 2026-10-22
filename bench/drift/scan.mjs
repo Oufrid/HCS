@@ -13,16 +13,21 @@ const here = dirname(fileURLToPath(import.meta.url));
 const work = join(here, "..", ".work", "drift");
 mkdirSync(work, { recursive: true });
 const git = (dir, ...a) => execFileSync("git", ["-C", dir, ...a], { encoding: "utf8", maxBuffer: 1 << 28, stdio: ["ignore", "pipe", "ignore"] });
-const CONTEXT = /^(AGENTS|CLAUDE)\.md$/i;
+const CONTEXT = /^(AGENTS|CLAUDE)\.md$/;
 
 /** Path-like tokens in Markdown: inline code and link targets that look like repository paths. */
 function references(text) {
   const out = new Map();
   const add = (raw, line) => {
-    let p = raw.trim().replace(/^<|>$/g, "").replace(/[#?].*$/, "").replace(/:\d+(-\d+)?$/, "").replace(/^\.\//, "").replace(/\/$/, "");
+    let p = raw.trim().replace(/^<|>$/g, "").replace(/[#?].*$/, "").replace(/:\d+(-\d+)?$/, "").replace(/:[A-Za-z_]\w*$/, "").replace(/^\.\//, "").replace(/\/$/, "");
+    try {
+      p = decodeURIComponent(p);
+    } catch {}
+    if (/^(node_modules|\.git)\//.test(p)) return;
     if (!p || /\s|^https?:|^[@~$]|[*{}<>|`'"]|^\.\.?$|^-|^\//.test(p)) return;
-    const looksLikePath = p.includes("/") || /\.[a-z0-9]{1,6}$/i.test(p);
-    if (!looksLikePath || /^\d+(\.\d+)+$/.test(p) || /^[a-z]+\.[a-z]+\(/i.test(p)) return;
+    // Conservative: only slashed paths count (bare names like `Bun.serve` or `.d.ts` are too ambiguous), and no
+    // placeholders (`src/foo/bar.py`, `vYYYY_MM_DD.py`, `packages/x/src/...`).
+    if (!p.includes("/") || /\.\.\.|\bfoo\b|\bbar\b|YYYY|NNNN|example|\bxxx?\b|<|>/i.test(p) || /^\d+(\.\d+)+$/.test(p)) return;
     if (!out.has(p)) out.set(p, line);
   };
   text.split("\n").forEach((l, i) => {
@@ -57,6 +62,12 @@ for (const slug of process.argv.slice(2)) {
       for (const [p, line] of refs) {
         const candidates = [p, base ? posix.join(base, p) : p];
         if (candidates.some((c) => files.has(c) || dirs.has(c))) continue;
+        // Monorepos: paths are often relative to a package; accept any file or directory that ends with the path.
+        if (tree.some((f) => f.endsWith(`/${p}`) || f.includes(`/${p}/`))) continue;
+        // Without a file extension, a slashed token is a path only if its first segment is a real top-level entry
+        // (or one next to the context file); otherwise it is an action, package or URL fragment (actions/checkout).
+        const top = p.split("/")[0];
+        if (!/\.[a-z0-9]{1,6}$/i.test(p) && !(files.has(top) || dirs.has(top) || (base && dirs.has(posix.join(base, top))))) continue;
         // A bare file name (no slash) may be a generic mention; count it only if it exists nowhere in the tree.
         if (!p.includes("/") && tree.some((f) => posix.basename(f) === p)) continue;
         // When did the path disappear? The last commit in the shallow history that touched it.
