@@ -1,0 +1,167 @@
+{
+ "repo": "expressjs__express",
+ "commit": "0dee2c52c7c873498f8ed7d8ee4ddd0a04d3ada8",
+ "condition": "hcs-compact",
+ "answerer": "groq:openai/gpt-oss-20b",
+ "judge": "gemini:gemini-3.8-flash",
+ "budget": 2000,
+ "tokens": 1417,
+ "results": {
+  "q1": {
+   "id": "q1",
+   "question": "What is the minimum required version of Node.js for installing Express?",
+   "expected": "Node.js 18 or higher",
+   "answer": "Express requires Node.js version 18 or higher before installation.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q2": {
+   "id": "q2",
+   "question": "Which file path is required and exported by this module?",
+   "expected": "./lib/express",
+   "answer": "The module’s entry point `index.js` re‑exports the module located at `./lib/express`.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q3": {
+   "id": "q3",
+   "question": "What is the default value set for 'subdomain offset' in defaultConfiguration?",
+   "expected": "2",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q4": {
+   "id": "q4",
+   "question": "What event does `app.listen` attach the wrapped callback to on the server instance?",
+   "expected": "'error'",
+   "answer": "app.listen attaches the wrapped callback as an **error** event listener on the server instance.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q5": {
+   "id": "q5",
+   "question": "What module is used to mix prototypes into the express app instance?",
+   "expected": "merge-descriptors",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q6": {
+   "id": "q6",
+   "question": "What error is thrown by req.get when the name argument is omitted?",
+   "expected": "TypeError with the message 'name argument is required to req.get'",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q7": {
+   "id": "q7",
+   "question": "What error type is thrown by res.status if the provided code is not an integer?",
+   "expected": "TypeError",
+   "answer": "TypeError.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q8": {
+   "id": "q8",
+   "question": "What error is thrown if a developer attempts to set the Content-Type header to an array using res.set?",
+   "expected": "A TypeError with the message 'Content-Type cannot be set to an Array'",
+   "answer": "Setting a Content-Type header with an Array value throws a **TypeError**.",
+   "verdict": "partial",
+   "by": "judge",
+   "verdicts": [
+    "partial"
+   ],
+   "points": 0.5
+  },
+  "q9": {
+   "id": "q9",
+   "question": "What default MIME type does normalizeType use if type does not contain a slash and mime.lookup returns falsy?",
+   "expected": "'application/octet-stream'",
+   "answer": "The default MIME type is **`application/octet-stream`**.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q10": {
+   "id": "q10",
+   "question": "What error is thrown when neither a default engine nor an extension is provided to View?",
+   "expected": "No default engine was specified and no extension was provided.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q11": {
+   "id": "q11",
+   "question": "Which package enables support for over 14 template engines in Express?",
+   "expected": "@ladjs/consolidate",
+   "answer": "The package that enables support for over 14 template engines in Express is **@ladjs/consolidate**.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q12": {
+   "id": "q12",
+   "question": "Under what license is this code released?",
+   "expected": "MIT Licensed",
+   "answer": "The code is released under the MIT license.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q13": {
+   "id": "q13",
+   "question": "Which header is added to the response in app.handle when 'x-powered-by' is enabled?",
+   "expected": "'X-Powered-By' with the value 'Express'",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  }
+ }
+}

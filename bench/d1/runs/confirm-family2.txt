@@ -1,0 +1,5 @@
+expressjs__express summary: fidelity 45.0% on 30 probes (groq:openai/gpt-oss-20b, judge gemini:gemini-3.8-flash)
+expressjs__express hcs-compact: stopped by the quota, 13/30 saved: rate limit or quota exhausted at https://api.groq.com/openai/v1/chat/completions (server asks to wait 281s; Rate limit reached for model `openai/gpt-oss-20b` in organization `org_01kq6dek8kf3ptkrbhwjhgsk0f` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199063, Requested 1586. Please try again in 4m40.368s. Need more tokens?). Try later, lower --rpm, or use another model.
+usage groq:openai/gpt-oss-20b: 43 requests, 73911 input + 2399 output tokens (as reported by the provider)
+usage gemini:gemini-3.8-flash: 11 requests, 1683 input + 104 output tokens (as reported by the provider)
+exit 0
