@@ -120,6 +120,11 @@ hcs render project.hcs --decoder --budget 2000 | pbcopy     # paste into any cha
 
 Or connect it through MCP (next section) so the model can also open the sources behind each claim.
 
+Two render profiles exist (SPEC 6.2). `full`, the default of `hcs render`, writes each claim with its sources, for
+people. `compact`, used by `score`, `curve`, `compare` and the MCP server, writes `id: text` only and, under a budget,
+takes one claim per source file in turn, so that the budget covers the whole project. On the D1 benchmark, sources
+took about a third of a 2,000-token `full` render. Certificates record the profile they were scored on.
+
 ### 4. Keep it true
 
 ```bash

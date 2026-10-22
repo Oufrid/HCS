@@ -1,0 +1,3 @@
+{
+  "text": "<hcs-context title=\"t\">\n[Overview]\nc1: The system has three parts.\n[docs]\nc3: First fact from the readme.\n[src]\nc6: The retry limit is 2.\nc9: Never log secrets.\n</hcs-context>"
+}

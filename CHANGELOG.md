@@ -15,6 +15,13 @@ Experimental. Not published yet: publication happens when the maintainer pushes 
 - The `@parser` header naming the symbol locator; the `recorded` tag for claims written by agents.
 - Readers keep accepting 0.1 and 0.2; writers emit the oldest version that fits.
 
+### Render profiles
+- `compact` (SPEC 6.2): `id: text` without anchors and, under a budget, hand-written claims first then one claim
+  per source file in turn. Default for `score`, `curve`, `compare`, `refine` and the MCP context; `hcs render`
+  keeps `full`. Certificates record `render=compact`; `check` verifies each certificate in its own profile.
+  Measured on D1: anchors took 31% to 39% of a 2,000-token `full` render, and `full` left up to half of a
+  repository's files without a single claim.
+
 ### CLI
 - Runs on real free tiers (Gemini, Groq) and local models (Ollama): proxy support, `--rpm`, `--reasoning-effort`,
   quota errors that name the limit, and resume after a quota stop for `compile`, `score`, `curve` and `refine`.

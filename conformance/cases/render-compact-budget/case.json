@@ -1,0 +1,9 @@
+{
+  "op": "render",
+  "description": "Compact profile under a budget: hand-written claims first, then one claim per file in turn (overview claims as one group).",
+  "args": {
+    "profile": "compact",
+    "budget": 70,
+    "seal_against": "src"
+  }
+}

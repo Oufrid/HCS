@@ -1,0 +1,8 @@
+{
+  "op": "render",
+  "description": "Compact profile without a budget: every fresh claim, no anchors.",
+  "args": {
+    "profile": "compact",
+    "seal_against": "src"
+  }
+}

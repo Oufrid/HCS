@@ -18,6 +18,8 @@ from hcs.sign import check_signature, document_keys, parse_trusted_keys  # noqa:
 from hcs import (  # noqa: E402
     HcsSyntaxError,
     SourceCache,
+    certificate_is_current,
+    certificate_render,
     check_document,
     current_hash,
     hash_for_certificate,
@@ -101,7 +103,12 @@ def run_case(d):
         status = _claim_status(check_document(doc, cache))
         return {
             "text": render_context(
-                doc, status, keep_stale=bool(args.get("keepStale")), anchors=args.get("anchors", True) is not False, budget=args.get("budget")
+                doc,
+                status,
+                keep_stale=bool(args.get("keepStale")),
+                anchors=args.get("anchors", True) is not False,
+                budget=args.get("budget"),
+                profile=args.get("profile", "full"),
             )
         }
     if op == "digest":
@@ -109,9 +116,9 @@ def run_case(d):
         status = _claim_status(check_document(doc, cache))
         out = []
         for c in doc["certificates"]:
-            budget = int(c["fields"]["budget"]) if c["fields"].get("budget") else None
-            digest = hash_for_certificate(doc, status, budget)
-            out.append({"digest": digest, "current": digest == c["fields"].get("digest")})
+            r = certificate_render(c["fields"])
+            digest = hash_for_certificate(doc, status, r[0], r[1]) if r else None
+            out.append({"digest": digest, "current": certificate_is_current(doc, status, c["fields"])})
         return {"certificates": out}
     raise ValueError("unknown op " + op)
 

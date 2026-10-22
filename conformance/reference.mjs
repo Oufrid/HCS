@@ -8,7 +8,7 @@ import { checkDocument, currentHash, normalizeLines, rootDir, seal, SourceCache 
 import { dependencies, depsHash } from "../dist/src/deps.js";
 import { HcsSyntaxError, parse, parseAnchor, serialize } from "../dist/src/format.js";
 import { renderContext } from "../dist/src/render.js";
-import { hashForCertificate } from "../dist/src/score.js";
+import { certificateIsCurrent, certificateRender, hashForCertificate } from "../dist/src/score.js";
 import { findSymbol, listSymbols } from "../dist/src/symbols.js";
 import { checkSignature, documentKeys, parseTrustedKeys } from "../dist/src/sign.js";
 
@@ -95,16 +95,15 @@ export function runCase(dir) {
     case "render": {
       const { doc, cache } = docAndCache();
       const status = claimStatus(checkDocument(doc, cache));
-      return { text: renderContext(doc, { status, keepStale: args.keepStale, anchors: args.anchors, budget: args.budget }) };
+      return { text: renderContext(doc, { status, keepStale: args.keepStale, anchors: args.anchors, budget: args.budget, profile: args.profile }) };
     }
     case "digest": {
       const { doc, cache } = docAndCache();
       const status = claimStatus(checkDocument(doc, cache));
       return {
         certificates: doc.certificates.map((c) => {
-          const budget = c.fields.budget ? Number(c.fields.budget) : undefined;
-          const digest = hashForCertificate(doc, status, budget);
-          return { digest, current: digest === c.fields.digest };
+          const r = certificateRender(c.fields);
+          return { digest: r ? hashForCertificate(doc, status, r.budget, r.profile) : null, current: certificateIsCurrent(doc, status, c.fields) };
         }),
       };
     }

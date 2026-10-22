@@ -2,12 +2,13 @@
 """Differential check of the Python implementation against the TypeScript reference, beyond the fixed cases:
 
 1. symbols of every source file of this repository;
-2. statuses, renders (full and at a budget), certificate digests and serialization of real .hcs files;
+2. statuses, renders (full and at a budget, in both profiles), certificate digests and serialization of real .hcs files;
 3. parse results and serialization of randomly mutated .hcs files (fixed seed).
 
 Needs Node.js and `npm run build`. Run from the repository root:  python3 conformance/cross_check.py
 """
 
+import glob
 import json
 import os
 import random
@@ -25,6 +26,7 @@ from hcs import (  # noqa: E402
     list_symbols,
     normalize_lines,
     parse,
+    certificate_render,
     render_context,
     root_dir,
     serialize,
@@ -36,7 +38,7 @@ NODE = r"""
 import { checkDocument, normalizeLines, rootDir, SourceCache } from "./dist/src/anchors.js";
 import { HcsSyntaxError, parse, serialize } from "./dist/src/format.js";
 import { renderContext } from "./dist/src/render.js";
-import { hashForCertificate } from "./dist/src/score.js";
+import { certificateRender, hashForCertificate } from "./dist/src/score.js";
 import { collectSources } from "./dist/src/sources.js";
 import { listSymbols } from "./dist/src/symbols.js";
 import { dependencies, depsHash, supportsDeps } from "./dist/src/deps.js";
@@ -57,7 +59,12 @@ for (const f of job.documents) {
     statuses: reports.map((r) => [r.id, r.status]),
     render: renderContext(doc, { status: st }),
     budget: renderContext(doc, { status: st, budget: 1000 }),
-    digests: doc.certificates.map((c) => hashForCertificate(doc, st, c.fields.budget ? Number(c.fields.budget) : undefined)),
+    compact: renderContext(doc, { status: st, budget: 1000, profile: "compact" }),
+    compactAll: renderContext(doc, { status: st, profile: "compact" }),
+    digests: doc.certificates.map((c) => {
+      const r = certificateRender(c.fields);
+      return r ? hashForCertificate(doc, st, r.budget, r.profile) : null;
+    }),
     serialized: serialize(doc),
   };
 }
@@ -103,7 +110,7 @@ def read(path):
 
 def main():
     os.chdir(ROOT)
-    documents = [f for f in ["project.hcs", "bench/a1/gemini.hcs", "bench/a1/groq.hcs"] if os.path.exists(f)]
+    documents = [f for f in ["project.hcs", "bench/a1/gemini.hcs", "bench/a1/groq.hcs"] + sorted(glob.glob("bench/d1/hcs/*.hcs")) if os.path.exists(f)]
     seeds = [read(f) for f in documents]
     cases = os.path.join("conformance", "cases")
     seeds += [read(os.path.join(cases, c, "input.hcs")) for c in sorted(os.listdir(cases)) if os.path.exists(os.path.join(cases, c, "input.hcs"))]
@@ -140,7 +147,9 @@ def main():
             "statuses": [[r["id"], r["status"]] for r in reports],
             "render": render_context(doc, st),
             "budget": render_context(doc, st, budget=1000),
-            "digests": [hash_for_certificate(doc, st, int(c["fields"]["budget"]) if c["fields"].get("budget") else None) for c in doc["certificates"]],
+            "compact": render_context(doc, st, budget=1000, profile="compact"),
+            "compactAll": render_context(doc, st, profile="compact"),
+            "digests": [(lambda r: hash_for_certificate(doc, st, r[0], r[1]) if r else None)(certificate_render(c["fields"])) for c in doc["certificates"]],
             "serialized": serialize(doc),
         }
         for k, v in mine.items():

@@ -22,7 +22,19 @@ from .anchors import (
 )
 from .format import FORMAT_VERSION, MAGIC, SUPPORTED_VERSIONS, HcsSyntaxError, format_anchor, parse, parse_anchor, serialize
 from .guard import injection_findings, is_high_risk
-from .render import DECODER_PROMPT, context_digest, estimate_tokens, hash_for_certificate, importance, render_context, select_claims
+from .render import (  # noqa: F401
+    DECODER_PROMPT,
+    RENDER_PROFILES,
+    certificate_is_current,
+    certificate_render,
+    compact_order,
+    context_digest,
+    estimate_tokens,
+    hash_for_certificate,
+    importance,
+    render_context,
+    select_claims,
+)
 from .deps import dependencies, deps_hash, supports_deps
 from .symbols import code_lines, enclosing_symbol, find_symbol, language_of, list_symbols
 

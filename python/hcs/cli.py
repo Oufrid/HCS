@@ -12,7 +12,7 @@ import sys
 from .anchors import SourceCache, check_document, root_dir, seal
 from .format import HcsSyntaxError, format_anchor, parse, serialize
 from .guard import injection_findings
-from .render import DECODER_PROMPT, hash_for_certificate, render_context
+from .render import DECODER_PROMPT, RENDER_PROFILES, certificate_is_current, render_context
 from .sign import check_signature, document_keys, parse_trusted_keys
 
 
@@ -48,12 +48,10 @@ def _check(args):
             with open(path, encoding="utf-8") as f:
                 trusted.update(parse_trusted_keys(f.read()))
     declared = document_keys(doc)
-    certificates = []
-    for c in doc["certificates"]:
-        budget = int(c["fields"]["budget"]) if c["fields"].get("budget") else None
-        certificates.append(
-            {"fields": c["fields"], "current": hash_for_certificate(doc, status, budget) == c["fields"].get("digest"), "signature": check_signature(c, trusted, declared)}
-        )
+    certificates = [
+        {"fields": c["fields"], "current": certificate_is_current(doc, status, c["fields"]), "signature": check_signature(c, trusted, declared)}
+        for c in doc["certificates"]
+    ]
     tampered = sum(1 for c in certificates if c["signature"]["status"] == "invalid")
     if args.json:
         items = [{"kind": r["kind"], "id": r["id"], "status": r["status"]} for r in reports]
@@ -104,7 +102,7 @@ def _render(args):
     doc = _load(args.file)
     reports = check_document(doc, SourceCache(root_dir(doc, args.file)))
     status = {r["id"]: r["status"] for r in reports if r["kind"] == "claim"}
-    text = render_context(doc, status, keep_stale=args.keep_stale, anchors=not args.no_anchors, budget=args.budget)
+    text = render_context(doc, status, keep_stale=args.keep_stale, anchors=not args.no_anchors, budget=args.budget, profile=args.profile)
     print(DECODER_PROMPT + "\n\n" + text if args.decoder else text)
     return 0
 
@@ -138,6 +136,7 @@ def main(argv=None):
     p.add_argument("--decoder", action="store_true")
     p.add_argument("--no-anchors", action="store_true")
     p.add_argument("--keep-stale", action="store_true")
+    p.add_argument("--profile", choices=RENDER_PROFILES, default="full", help="full (with anchors) or compact (SPEC 6.2)")
     p.set_defaults(run=_render)
     args = parser.parse_args(argv)
     try:

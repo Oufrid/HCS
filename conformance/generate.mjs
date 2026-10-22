@@ -20,7 +20,8 @@ const only = process.argv.slice(2);
 
 /**
  * `#HASH_<name>` marks an anchor sealed against the `seal_against` directory (the sources as they were when the
- * claim was written). `DIGEST_FULL` and `DIGEST_B<n>` become certificate digests at no budget or budget n.
+ * claim was written). `DIGEST_FULL` and `DIGEST_B<n>` become certificate digests at no budget or budget n; `DIGEST_C<n>` the same
+ * with the compact render profile.
  */
 function buildInput(dir) {
   const template = join(dir, "input.template.hcs");
@@ -47,7 +48,9 @@ function buildInput(dir) {
     const doc = parse(text.replace(/DIGEST_\w+/g, "000000000000"));
     const cache = new SourceCache(join(dir, "src"));
     const status = new Map(checkDocument(doc, cache).filter((r) => r.kind === "claim").map((r) => [r.id, r.status]));
-    text = text.replace(/DIGEST_(FULL|B(\d+))/g, (_, __, b) => hashForCertificate(doc, status, b ? Number(b) : undefined));
+    text = text.replace(/DIGEST_(FULL|B(\d+)|C(\d+))/g, (_, __, b, c) =>
+      c ? hashForCertificate(doc, status, Number(c), "compact") : hashForCertificate(doc, status, b ? Number(b) : undefined),
+    );
   }
   writeFileSync(join(dir, "input.hcs"), text);
 }

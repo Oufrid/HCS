@@ -16,6 +16,7 @@
 //   agents   its AGENTS.md or CLAUDE.md, when it has one (cut the same way)
 //   summary  a naive summary of the same sources by the compiling model, cut to the same budget
 //   hcs+expand    the HCS context, and the model may ask once for the exact source of up to 3 claims
+//   hcs-compact, hcs-compact+expand   the same with the compact render profile (SPEC 6.2)
 //   summary+open  the summary, and the model may ask once to open up to 2 files (same reading budget)
 
 import { execFileSync, spawnSync } from "node:child_process";
@@ -55,6 +56,8 @@ const { values: o, positionals } = parseArgs({
     // "compiled" (the probes of the compiled file) or "independent" (bench/d1/probes/, written apart from the claims).
     "probe-set": { type: "string" },
     conditions: { type: "string" },
+    // Appended to the results directory, to keep runs made with different instructions apart.
+    tag: { type: "string" },
   },
 });
 const step = positionals[0];
@@ -352,6 +355,9 @@ function conditions(r, doc) {
   const summary = readJSON(join(here, "summaries", `${r.name}.json`), null);
   if (summary?.text) out.summary = summary.text;
   out["hcs+expand"] = out.hcs;
+  // SPEC 6.2 compact profile: no anchors, hand-written claims first, then one claim per source file in turn.
+  out["hcs-compact"] = renderContext(doc, { status, budget: config.budget, profile: "compact" });
+  out["hcs-compact+expand"] = out["hcs-compact"];
   if (summary?.text) out["summary+open"] = summary.text;
   return out;
 }
@@ -379,13 +385,13 @@ async function score() {
     const probes = independent ? usableProbes(r, parse(readFileSync(probeFile(r), "utf8"))) : usableProbes(r, doc);
     const wanted = o.conditions ? new Set(o.conditions.split(",")) : new Set(["hcs", "none", "readme", "agents", "summary"]);
     for (const [name, context] of Object.entries(conditions(r, doc)).filter(([n]) => wanted.has(n))) {
-      const file = join(here, "results", r.name, `${safe(answerer.id)}--${safe(judge.id)}${independent ? "--independent" : ""}`, `${name}.json`);
+      const file = join(here, "results", r.name, `${safe(answerer.id)}--${safe(judge.id)}${independent ? "--independent" : ""}${o.tag ? `--${safe(o.tag)}` : ""}`, `${name}.json`);
       const full = name === "readme" ? estimateTokens(readFileSync(join(rootOf(r), r.readme), "utf8")) : undefined;
       const saved = readJSON(file, { repo: r.name, commit: r.commit, condition: name, answerer: answerer.id, judge: judge.id, budget: config.budget, tokens: context === null ? 0 : estimateTokens(context), ...(full ? { fullTokens: full } : {}), results: {} });
       if (probes.every((p) => saved.results[p.id])) continue;
       const cache = { get: (id) => saved.results[id], put: (res) => ((saved.results[res.id] = res), writeJSON(file, saved)) };
       const stats = { questions: 0, reads: 0 };
-      const who = name === "hcs+expand" ? agentic(answerer, "expand", r, doc, stats) : name === "summary+open" ? agentic(answerer, "open", r, doc, stats) : answerer;
+      const who = name === "hcs+expand" || name === "hcs-compact+expand" ? agentic(answerer, "expand", r, doc, stats) : name === "summary+open" ? agentic(answerer, "open", r, doc, stats) : answerer;
       try {
         const s = await scoreContext(context, probes, { answerer: who, judge, concurrency: 1, cache });
         if (stats.questions) {
@@ -423,13 +429,13 @@ function report() {
     const compiledProbes = usableProbes(r, parse(readFileSync(hcsFile(r), "utf8"))).map((p) => p.id);
     const independentProbes = existsSync(probeFile(r)) ? usableProbes(r, parse(readFileSync(probeFile(r), "utf8"))).map((p) => p.id) : [];
     for (const run of execFileSync("ls", [dir], { encoding: "utf8" }).trim().split("\n").filter(Boolean)) {
-      const probes = run.endsWith("--independent") ? independentProbes : compiledProbes;
+      const probes = /--independent(--|$)/.test(run) ? independentProbes : compiledProbes;
       if (!probes.length) continue;
       const load = (c) => readJSON(join(dir, run, `${c}.json`), null);
       const hcs = load("hcs");
       const complete = (x) => x && probes.every((id) => x.results[id]);
       if (!complete(hcs)) continue;
-      for (const c of ["hcs", "none", "readme", "agents", "summary", "hcs+expand", "summary+open"]) {
+      for (const c of ["hcs", "hcs-compact", "none", "readme", "agents", "summary", "hcs+expand", "hcs-compact+expand", "summary+open"]) {
         const x = load(c);
         if (!complete(x)) continue;
         const pts = probes.map((id) => x.results[id].points);
@@ -442,8 +448,8 @@ function report() {
           const [dl, dh] = bootstrapCI(d);
           diff = `${(d.reduce((a, b) => a + b, 0) / d.length * 100).toFixed(1)} [${(dl * 100).toFixed(1)}, ${(dh * 100).toFixed(1)}]`;
         }
-        lines.push(`| ${r.name} (${r.language}) | ${x.answerer} (${x.judge})${run.endsWith("--independent") ? ", independent probes" : ""} | ${probes.length} | ${c} | ${x.tokens} | ${pct(fid)} [${pct(lo)}-${pct(hi)}] | ${pct(misled)} | ${diff} |`);
-        rows.push({ repo: r.name, commit: r.commit, answerer: x.answerer, judge: x.judge, probeSet: run.endsWith("--independent") ? "independent" : "compiled", condition: c, tokens: x.tokens, probes: probes.length, fidelity: fid, ci95: [lo, hi], misled });
+        lines.push(`| ${r.name} (${r.language}) | ${x.answerer} (${x.judge})${/--independent(--|$)/.test(run) ? `, independent probes${run.includes("--independent--") ? ` (${run.split("--independent--")[1]})` : ""}` : ""} | ${probes.length} | ${c} | ${x.tokens} | ${pct(fid)} [${pct(lo)}-${pct(hi)}] | ${pct(misled)} | ${diff} |`);
+        rows.push({ repo: r.name, commit: r.commit, answerer: x.answerer, judge: x.judge, probeSet: /--independent(--|$)/.test(run) ? "independent" : "compiled", run, condition: c, tokens: x.tokens, probes: probes.length, fidelity: fid, ci95: [lo, hi], misled });
       }
     }
   }

@@ -1,0 +1,7 @@
+{
+  "op": "digest",
+  "description": "A certificate's render field selects the profile its digest is computed on; absent means full; an unknown profile is never current.",
+  "args": {
+    "seal_against": "src"
+  }
+}

@@ -2,7 +2,7 @@
 
 import type { Certificate, HcsDocument, Probe } from "./format.js";
 import { extractJSON, mapLimit, type LLM } from "./llm.js";
-import { contextDigest, DECODER_PROMPT, estimateTokens, renderContext, selectClaims } from "./render.js";
+import { contextDigest, DECODER_PROMPT, estimateTokens, RENDER_PROFILES, renderContext, selectClaims, type RenderProfile } from "./render.js";
 import type { AnchorStatus } from "./anchors.js";
 
 export type Verdict = "correct" | "partial" | "incorrect" | "unknown";
@@ -305,7 +305,7 @@ export interface DocumentScore {
 export async function scoreDocument(
   doc: HcsDocument,
   status: Map<string, AnchorStatus>,
-  opts: ScoreOptions & { budget?: number; baseline?: boolean; baselineCache?: ScoreCache; baselineResult?: ScoreSummary },
+  opts: ScoreOptions & { budget?: number; profile?: RenderProfile; baseline?: boolean; baselineCache?: ScoreCache; baselineResult?: ScoreSummary },
 ): Promise<DocumentScore> {
   const usable = doc.probes.filter((p) => {
     const s = status.get(`probe:${p.id}`);
@@ -313,7 +313,8 @@ export async function scoreDocument(
   });
   if (!usable.length) throw new Error("no verified probes to score with (run `hcs check`; stale probes are skipped)");
   const claimStatus = new Map([...status].filter(([k]) => k.startsWith("claim:")).map(([k, v]) => [k.slice(6), v]));
-  const context = renderContext(doc, { status: claimStatus, budget: opts.budget });
+  const profile = opts.profile ?? "full";
+  const context = renderContext(doc, { status: claimStatus, budget: opts.budget, profile });
   const withContext = await scoreContext(context, usable, opts);
   const baseline =
     opts.baselineResult ?? (opts.baseline ? await scoreContext(null, usable, { ...opts, onProgress: undefined, cache: opts.baselineCache }) : undefined);
@@ -362,7 +363,8 @@ export async function scoreDocument(
   fields.tokens = String(contextTokens);
   if (counter) fields.tokenizer = opts.tokenizer!.id;
   if (opts.budget !== undefined) fields.budget = String(opts.budget);
-  fields.digest = hashForCertificate(doc, claimStatus, opts.budget);
+  if (profile !== "full") fields.render = profile;
+  fields.digest = hashForCertificate(doc, claimStatus, opts.budget, profile);
   fields.date = new Date().toISOString();
 
   return {
@@ -382,9 +384,9 @@ export async function scoreDocument(
  * A certificate is valid only for the exact context that was scored. Stale claims are excluded from that
  * context, so the digest is computed the same way `hcs check` recomputes it.
  */
-export function hashForCertificate(doc: HcsDocument, claimStatus: Map<string, AnchorStatus>, budget?: number): string {
+export function hashForCertificate(doc: HcsDocument, claimStatus: Map<string, AnchorStatus>, budget?: number, profile: RenderProfile = "full"): string {
   const allFresh = [...claimStatus.values()].every((s) => s === "ok" || s === "moved" || s === "review");
-  if (allFresh) return contextDigest(doc, budget);
+  if (allFresh) return contextDigest(doc, budget, profile);
   const filtered: HcsDocument = {
     ...doc,
     claims: doc.claims.filter((c) => {
@@ -392,7 +394,23 @@ export function hashForCertificate(doc: HcsDocument, claimStatus: Map<string, An
       return s !== "stale" && s !== "missing";
     }),
   };
-  return contextDigest(filtered, budget);
+  return contextDigest(filtered, budget, profile);
+}
+
+/**
+ * The render a certificate was scored on, from its fields: `budget`, and `render` (since 0.3; absent means "full").
+ * Undefined for a profile this tool does not know, which a verifier reports as not current.
+ */
+export function certificateRender(fields: Record<string, string>): { budget?: number; profile: RenderProfile } | undefined {
+  const profile = (fields.render ?? "full") as RenderProfile;
+  if (!RENDER_PROFILES.includes(profile)) return undefined;
+  return { budget: fields.budget ? Number(fields.budget) : undefined, profile };
+}
+
+/** Whether a certificate's digest matches the current file and sources (what `hcs check` reports as current). */
+export function certificateIsCurrent(doc: HcsDocument, claimStatus: Map<string, AnchorStatus>, fields: Record<string, string>): boolean {
+  const r = certificateRender(fields);
+  return !!r && hashForCertificate(doc, claimStatus, r.budget, r.profile) === fields.digest;
 }
 
 export interface CurvePoint {
@@ -436,7 +454,7 @@ export async function scoreCurve(
   doc: HcsDocument,
   status: Map<string, AnchorStatus>,
   budgets: number[],
-  opts: ScoreOptions & { baseline?: boolean; cacheFor?: (budget: number) => { context?: ScoreCache; baseline?: ScoreCache } },
+  opts: ScoreOptions & { profile?: RenderProfile; baseline?: boolean; cacheFor?: (budget: number) => { context?: ScoreCache; baseline?: ScoreCache } },
 ): Promise<Curve> {
   const claimStatus = new Map([...status].filter(([k]) => k.startsWith("claim:")).map(([k, v]) => [k.slice(6), v]));
   const curveId = new Date().toISOString();
@@ -444,9 +462,9 @@ export async function scoreCurve(
   const points: CurvePoint[] = [];
   let baseline: ScoreSummary | undefined;
   for (const budget of [...new Set(budgets)].sort((a, b) => a - b)) {
-    const context = renderContext(doc, { status: claimStatus, budget });
-    const digest = hashForCertificate(doc, claimStatus, budget);
-    const claims = selectClaims(doc, { status: claimStatus, budget }).length;
+    const context = renderContext(doc, { status: claimStatus, budget, profile: opts.profile });
+    const digest = hashForCertificate(doc, claimStatus, budget, opts.profile);
+    const claims = selectClaims(doc, { status: claimStatus, budget, profile: opts.profile }).length;
     const earlier = byDigest.get(digest);
     if (earlier) {
       const certificate = { fields: { ...earlier.score.certificate.fields, budget: String(budget) } };

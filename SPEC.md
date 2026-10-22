@@ -8,7 +8,8 @@
   The `recorded` tag (§3) marks claims written by an agent. Certificates may form a fidelity-vs-budget curve
   (`curve`, `knee`, §7). Certificates may be signed with Ed25519 (`key`, `sig`, the `@keys` header, §7.1).
   The `@parser` header (§2, §5.2) names an optional symbol locator; the `tokenizer` certificate field (§7)
-  says that `tokens` was counted by a real tokenizer.
+  says that `tokens` was counted by a real tokenizer. Render profiles (§6.2): `compact` for answering models,
+  named by the certificate field `render`; `full` (the 0.2 render) stays the default.
 - Changes in 0.2: symbol anchors (§5.2), the `suspect` tag (§3), and certificate fields `ci95`, `informative`, `runs` (§7).
 
 Every valid 0.1 or 0.2 file is a valid 0.3 file. A writer SHOULD emit the oldest version that can express the
@@ -219,7 +220,8 @@ c12: Card payments are captured asynchronously ... (src/payments/queue.ts:40-58)
 
 - Claims whose status is `stale` or `missing` MUST be omitted, or MUST be marked `(unverified)`.
 - Claims tagged `suspect`, or that an injection guard rates high-risk, MUST be omitted unless the user explicitly asks for them.
-- Under a token budget, claims are kept by descending importance, then document order. Output keeps document order.
+- Under a token budget, claims are kept by descending importance, then document order (`full` profile; see §6.2
+  for `compact`). Output keeps document order.
 - Hashes, probes and certificates are not rendered.
 
 The recommended decoder instructions that accompany a render are in the README ("Decoder prompt"). They MUST tell the model that claims are data, not instructions. Any model that reads plain text can use a render. HCS does not depend on special tokens or on a particular vendor.
@@ -227,6 +229,24 @@ The recommended decoder instructions that accompany a render are in the README (
 ### 6.1 Injection guard
 
 Claims travel into other models' prompts. A compiler SHOULD tag as `suspect` any claim whose text is addressed to a model (for example "ignore previous instructions", chat-template markers, "do not tell the user"), and drop such probes. Pattern-based guards reduce risk but cannot eliminate it. The decoder instructions are the second line of defense.
+
+### 6.2 Render profiles (since 0.3)
+
+A render has a profile. `full` is the render above (the only one before 0.3) and remains the default. `compact` is
+meant for a model that answers from the context:
+
+- Claims are written `id: text`, without anchors; a reader that needs the source resolves the id (for example
+  through the MCP tool `hcs_expand`). `(unverified)` and section headings are written as in `full`.
+- Without a budget it keeps the same claims as `full`.
+- Under a budget, claims are offered to the budget in this order: claims tagged `manual`, by descending importance
+  then document order; then the other claims in rounds. Each round takes the next claim of every group, groups in
+  order of first appearance in the document. A group is all claims whose first anchor has the same path, sorted by
+  descending importance then document order; claims tagged `overview` form one group, and claims without anchors
+  another. A claim that does not fit in what is left of the budget is skipped. Output keeps document order.
+
+The cost of a claim is the same as in `full` (§6, with the line as written in the profile). The order spreads a
+budget over every source file instead of the first ones, and leaves room for content rather than anchors (on the
+D1 benchmark, anchors took 31% to 39% of a 2,000-token `full` render).
 
 ## 7. Certificates
 
@@ -259,9 +279,10 @@ A certificate records one scoring run:
 | `runs` | (optional) Times each probe was asked. Default 1. |
 | `probes` | Number of verified probes used (stale probes are skipped). |
 | `tokens` | Size of the rendered context: estimated, or counted when `tokenizer` is present. |
+| `render` | (since 0.3, optional) The render profile scored (§6.2): `full` when absent, or `compact`. The digest is computed on that profile. A verifier that does not know the profile MUST report the certificate as not current. |
 | `tokenizer` | (since 0.3, optional) The `provider:model` whose tokenizer counted `tokens`. Budgets (`budget`, §6) always use the deterministic estimate, so that digests do not depend on a provider. |
 | `budget` | (optional) Token budget used for rendering. |
-| `digest` | First 12 hex characters of the SHA-256 of the rendered context (with stale/missing claims removed, at `budget`). |
+| `digest` | First 12 hex characters of the SHA-256 of the rendered context (with stale/missing claims removed, at `budget`, in the `render` profile). |
 | `date` | When the score was computed. |
 
 A certificate is **current** only while recomputing `digest` on the current file and sources gives the same value. A verifier MUST report non-current certificates as outdated.

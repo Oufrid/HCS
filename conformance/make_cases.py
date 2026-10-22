@@ -375,9 +375,51 @@ for name, desc, args in [
 ]:
     case(name, "render", desc, {"input.hcs": RENDER_DOC, "src/x.txt": "first\nsecond\n"}, {**args, "seal_against": "src"})
 
+# compact profile (SPEC 6.2): no anchors, hand-written first, then one claim per source file in turn
+COMPACT_DOC = """HCS/0.3
+@title t
+@root src
+[claims]
+## Overview
+#c1[overview,i5] The system has three parts.
+  > a.md:1 #HASH_A1
+  > b.ts:1 #HASH_B1
+#c2[overview,i5] Requests flow from b to c.
+  > b.ts:2 #HASH_B2
+## docs
+#c3[i5] First fact from the readme.
+  > a.md:2 #HASH_A2
+#c4[i5] Second fact from the readme.
+  > a.md:3 #HASH_A3
+#c5[i5] Third fact from the readme.
+  > a.md:4 #HASH_A4
+## src
+#c6[i4] The retry limit is 2.
+  > b.ts:3 #HASH_B3
+#c7[i3] Timeouts default to 10 seconds.
+  > b.ts:4 #HASH_B4
+#c8[i3] Tokens are signed with HMAC.
+  > c.py:1 #HASH_C1
+#c9[manual] Never log secrets.
+  > c.py:2 #HASH_C2
+#c10[i5] Stale fact.
+  > c.py:2 #000000000000
+"""
+COMPACT_SRC = {"src/a.md": "t\none\ntwo\nthree\n", "src/b.ts": "a\nb\nc\nd\n", "src/c.py": "x\ny\n"}
+for name, desc, args in [
+    ("render-compact", "Compact profile without a budget: every fresh claim, no anchors.", {"profile": "compact"}),
+    ("render-compact-budget", "Compact profile under a budget: hand-written claims first, then one claim per file in turn (overview claims as one group).", {"profile": "compact", "budget": 70}),
+    ("render-full-budget-files", "The full profile on the same document and budget, for comparison: importance then document order.", {"budget": 70}),
+]:
+    case(name, "render", desc, {"input.hcs": COMPACT_DOC, **COMPACT_SRC}, {**args, "seal_against": "src"})
+
 # ---------- digest ----------
 case("digest-certificates", "digest", "Certificate digests: computed on the render without stale or missing claims, at the certificate's budget; current or outdated.",
      {"input.hcs": RENDER_DOC.replace("#c8 Fact without anchors.\n", "#c8 Fact without anchors.\n[certificates]\n!score model=m fidelity=0.5 digest=DIGEST_FULL\n!score model=m fidelity=0.5 budget=40 digest=DIGEST_B40\n!score model=m fidelity=0.5 digest=000000000000\n"),
       "src/x.txt": "first\nsecond\n"},
+     {"seal_against": "src"})
+case("digest-render-profiles", "digest", "A certificate's render field selects the profile its digest is computed on; absent means full; an unknown profile is never current.",
+     {"input.hcs": COMPACT_DOC + "[certificates]\n!score model=m fidelity=0.5 budget=70 render=compact digest=DIGEST_C70\n!score model=m fidelity=0.5 budget=70 digest=DIGEST_C70\n!score model=m fidelity=0.5 budget=70 digest=DIGEST_B70\n!score model=m fidelity=0.5 budget=70 render=fancy digest=DIGEST_C70\n",
+      **COMPACT_SRC},
      {"seal_against": "src"})
 print("cases written:", len(os.listdir(ROOT)))
