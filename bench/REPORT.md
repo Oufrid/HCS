@@ -358,3 +358,54 @@ With 9 to 11 held-out probes the intervals are very wide, so a small real effect
 excluded, but there is no evidence of a gain. `refine` stays available as an experiment; the README says it did not
 generalize. Ideas not tried: asking the writer for claims about the whole cited symbol rather than the question,
 and ranking added claims by ablation over many probes.
+
+### 2026-10-22: independent probes and an agentic mode
+
+Two weaknesses of the run above were addressed. **Independent probes**: 144 new probes (`bench/d1/probes/`), written
+by gemini-3.8-flash from each source chunk alone in calls that never saw the compiled claims, each kept only when its
+quote is found in the source (`node bench/d1/d1.mjs probes`). **Agentic conditions**: the model may ask once for
+more source before answering, with the same reading budget (3,000 tokens) on both sides: `hcs+expand` reads the
+exact source behind up to 3 claims (what the MCP tool `hcs_expand` returns), `summary+open` opens up to 2 files
+named in the naive summary. Same answerer (gemini-3.8-flash) and judge (gpt-oss-20b). Raw results:
+`bench/d1/results/*/*--independent/`; table: `bench/d1/results.md`.
+
+Pooled over 144 independent probes (paired bootstrap, 95% CI); "unknown" are the 103 probes the model could not
+answer without context:
+
+| Condition | Fidelity | On unknown probes |
+|---|---|---|
+| HCS context (2,000 tokens) | 31.9% [24.3-39.6] | 27.2% [19.4-35.9] |
+| Naive summary (2,000 tokens) | 25.7% [18.8-32.6] | 26.2% [18.4-35.0] |
+| README (cut to 2,000 tokens) | 10.8% [5.9-16.0] | 5.3% [1.5-9.7] |
+| No context | 27.4% [20.8-34.7] | 0.0% |
+| HCS + read claims' source | 51.4% [43.1-59.7] | 50.5% [40.8-60.2] |
+| Summary + open files | 48.6% [41.0-56.3] | 43.2% [34.0-52.4] |
+
+| Difference (points) | All probes | Unknown probes |
+|---|---|---|
+| HCS minus naive summary | +6.3 [-1.4, +13.9] | +1.0 [-7.8, +9.7] |
+| HCS minus README | **+21.2 [+13.9, +28.8]** | **+21.8 [+13.1, +31.1]** |
+| HCS + source minus summary + files | +2.8 [-7.3, +12.5] | +7.3 [-3.9, +18.0] |
+| HCS + source minus HCS alone | **+19.4 [+13.2, +25.7]** | **+23.3 [+15.5, +32.0]** |
+| Summary + files minus summary alone | **+22.9 [+16.3, +30.2]** | **+17.0 [+10.2, +24.3]** |
+
+The model asked for more source on 49 of 144 questions with HCS (exact claim sources) and on 75 of 144 with the
+summary (whole files). Per repository the agentic comparison goes both ways: HCS + source ahead on kilo (75.0% vs
+41.7%) and ky (53.3% vs 26.7%), behind on itsdangerous (53.3% vs 80.0%), cobra (40.0% vs 48.3%) and anyhow (40.0% vs
+45.0%).
+
+What this shows:
+
+- With probes written apart from the claims, **the HCS context is not measurably better than a naive summary of
+  the same size**, in either setting (static or agentic). The +9.8 points on unknown probes measured earlier with
+  the compiler's own probes came from that bias; it is +1.0 here.
+- **HCS clearly beats the repositories' own README and AGENTS.md** (+21 points), with any probe set.
+- **Reading source matters far more than the form of the summary**: one round of retrieval adds about 20 points
+  to either context. HCS gets there with fewer reads (its anchors point to the exact code), but not to a
+  significantly higher score.
+- Limits: one answering model, one judge, 144 probes; the independent probes come from the same model family as
+  the compiler; one retrieval round only.
+
+Conclusion for the project: what HCS demonstrably adds is not better compression but verifiability (every claim
+cites hashed source), drift detection in CI, and precise retrieval through anchors. Answer quality is about the
+same as a naive summary of the same size, and far better than hand-written README or AGENTS.md files.

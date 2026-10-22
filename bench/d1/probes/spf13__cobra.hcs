@@ -1,0 +1,99 @@
+HCS/0.2
+@title spf13__cobra (independent probes)
+@root ../../.work/d1/spf13__cobra
+@created 2026-10-22T12:04:44.332Z
+@generator bench/d1 probes (gemini:gemini-3.8-flash)
+
+[claims]
+
+[probes]
+?q1 Which shells does Cobra support for automatically generated shell autocomplete?
+  = bash, zsh, fish, powershell
+  > README.md::Overview #311fca062beb
+?q2 What string prefix does AppendActiveHelp prepend to each active help string?
+  = "_activeHelp_ "
+  > active_help.go:23 #42373e96b248
+?q3 In OnlyValidArgs, what character precedes a description that must be stripped from an entry in ValidArgs?
+  = a tab character
+  > args.go::OnlyValidArgs.len #180a4ce0fe52
+?q4 Which environment variable can be set to write bash completion debug output to a file?
+  = BASH_COMP_DEBUG_FILE
+  > bash_completions.go:41 #a554e088359c
+?q5 Under what conditions does nonCompletableFlag consider a flag non-completable?
+  = When the flag is hidden or its Deprecated field is not empty
+  > bash_completions.go::nonCompletableFlag #423994695545
+?q6 Which environment variable does the bash completion debug function check to determine the destination file for debug output?
+  = BASH_COMP_DEBUG_FILE
+  > bash_completionsV2.go:41 #0d6b639b0cd4
+?q7 What is the default duration for displaying the MousetrapHelpText on Windows?
+  = 5 * time.Second
+  > cobra.go::MousetrapDisplayDuration #01399a8aa2c2
+?q8 Under what condition will the *PreRun and *PostRun functions be executed for a command?
+  = Only if the current command's Run function has been declared.
+  > command.go:124-125 #fdec43d9aee0
+?q9 What default string does ErrPrefix return when neither the command nor any parent defines an errPrefix?
+  = "Error:"
+  > command.go::ErrPrefix #a2e3452839b6
+?q10 What happens if checkCommandGroups finds a subcommand assigned to a GroupID that does not exist in the command?
+  = It panics with a message identifying the undefined group ID and the subcommand path.
+  > command.go::checkCommandGroups #d79b54e390c1
+?q11 What does ParseFlags return if DisableFlagParsing is set to true on the Command?
+  = nil
+  > command.go::ParseFlags #04de7d6367a1
+?q12 What is the build constraint tag specified for this file?
+  = !windows
+  > command_notwin.go:15 #e7e0f97e7ab2
+?q13 What function is used to determine if the command was started by Windows Explorer?
+  = mousetrap.StartedByExplorer()
+  > command_win.go::preExecHookFn.preExecHook #73c43e7b2994
+?q14 What is the integer value of the ShellCompDirectiveDefault constant?
+  = 0
+  > completions.go:95 #322bfac92db2
+?q15 What value does checkIfFlagCompletion return when finalCmd has DisableFlagParsing set to true?
+  = nil, args, lastArg, nil
+  > completions.go:658-661 #7da681874105
+?q16 Which characters are replaced with underscores when constructing nameForVar in genFishComp?
+  = The '-' and ':' characters.
+  > fish_completions.go:26 #91f4667140ad
+?q17 What is the string value of the mutuallyExclusiveAnnotation constant?
+  = "cobra_annotation_mutually_exclusive"
+  > flag_groups.go::const #a09f9c7418b7
+?q18 Which characters in the command name are replaced with underscores to construct the variable name?
+  = The '-' and ':' characters.
+  > powershell_completions.go:29 #91f4667140ad
+?q19 What annotation key is set on a flag when MarkFlagRequired is invoked?
+  = BashCompOneRequiredFlag
+  > shell_completions.go:39 #3a0a61b69a62
+?q20 Which environment variable specifies the destination file for zsh debug logs?
+  = BASH_COMP_DEBUG_FILE
+  > zsh_completions.go:99 #3207677bd297
+?q21 What command line program is used to scaffold and generate Cobra applications and command files?
+  = cobra-cli
+  > README.md::Usage #5b66dfef7bbf
+?q22 What value will GetActiveHelpConfig always return if COBRA_ACTIVE_HELP is set to "0"?
+  = "0"
+  > active_help.go:45-46 #6c44079e63a4
+?q23 Which function allows multiple PositionalArgs validations to be combined and evaluated together?
+  = MatchAll
+  > args.go:126 #cb8b159b4d36
+?q24 What fallback completion handler is added when the BashCompCustom annotation has an empty value slice?
+  = :
+  > bash_completions.go::writeFlagHandler.WriteStringAndCheck.WriteStringAndCheck.len #b8e629a1dd13
+?q25 What character is appended to the format string in writeRequiredFlag when the flag value type is not "bool"?
+  = An equals sign ("=")
+  > bash_completions.go::writeRequiredFlag #0043b32323c8
+?q26 Which compopt option is activated to disable sorting when bash version 4.4 or higher is present?
+  = nosort
+  > bash_completionsV2.go:126 #bfe158f70c95
+?q27 What error code is passed to os.Exit by CheckErr when a non-nil message is provided?
+  = 1
+  > cobra.go::CheckErr #c610b83d1ca2
+?q28 Which stream does SetOut default to if newOut is nil?
+  = os.Stdout
+  > command.go:295 #1cd5847af33b
+?q29 What default value does findSuggestions assign to SuggestionsMinimumDistance if it is less than or equal to 0?
+  = 2
+  > command.go::findSuggestions #b48f467e5243
+?q30 What condition must be met for AddCommand to panic?
+  = When a command is added as a child of itself.
+  > command.go::AddCommand #194dc973d95b

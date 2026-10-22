@@ -1,0 +1,99 @@
+HCS/0.2
+@title dtolnay__anyhow (independent probes)
+@root ../../.work/d1/dtolnay__anyhow
+@created 2026-10-22T12:02:14.249Z
+@generator bench/d1 probes (gemini:gemini-3.8-flash)
+
+[claims]
+
+[probes]
+?q1 Which environment variable should you set if you only want errors (and not panics) to include backtraces?
+  = RUST_LIB_BACKTRACE=1
+  > README.md:85 #e2e2fa1521f8
+?q2 What is Backtrace defined as when the "std" feature is not enabled?
+  = An empty enum (enum Backtrace {})
+  > src/backtrace.rs::Backtrace #a2a5bc9272ef
+?q3 What is the initial ChainState set by Chain::new?
+  = ChainState::Linked { next: Some(head) }
+  > src/chain.rs::new #87c2ee6783ff
+?q4 Why does Context::context on Result use an explicit match rather than map_err?
+  = To save 2 useless frames off the captured backtrace in ext_context.
+  > src/context.rs::context #f36af7f6ccb8
+?q5 What byte characters in an input string will cause Buf's write_str implementation to return an error?
+  = b' ' or b'\n'
+  > src/ensure.rs::Write.write_str #bd9dd04c4ac4
+?q6 Which traits are brought into scope when __fancy_ensure fails its comparison check?
+  = BothDebug and NotBothDebug
+  > src/ensure.rs:891-893 #ec0f5f672391
+?q7 Why is the repr C attribute applied to ErrorImpl?
+  = To make sure that E stays in the final position.
+  > src/error.rs::Some #bf9085671ef1
+?q8 What is returned by ErrorImpl::debug when the formatter is in alternate mode?
+  = Debug::fmt(error, f)
+  > src/fmt.rs::ErrorImpl.debug #dfe9d90dac0b
+?q9 What trait bound must type E satisfy to implement TraitKind?
+  = Into<Error>
+  > src/kind.rs:87 #7ecb203553be
+?q10 Which environment variables must be configured if a developer wants backtraces enabled exclusively for errors, but not panics?
+  = Set `RUST_LIB_BACKTRACE=1` (or specifically `RUST_LIB_BACKTRACE=1` for errors only).
+  > src/lib.rs:138 #9c76a51677a1
+?q11 What trait bounds are required for the context type C in Context::context?
+  = Display + Send + Sync + 'static
+  > src/lib.rs::Context.context #345f4a40e0bd
+?q12 Under `cfg(doc)`, what error message does the `ensure!` macro return when invoked with only a condition and no message arguments?
+  = `Condition failed: `<condition>`` using stringify.
+  > src/macros.rs:133 #6ee8fb82b087
+?q13 Which unstable Rust feature is enabled when anyhow_build_probe is active?
+  = error_generic_member_access
+  > src/nightly.rs:5 #768689ae1608
+?q14 What purpose does the CastTo trait serve in this module?
+  = It forces turbofish syntax on calls to `.cast::<U>()`.
+  > src/ptr.rs:180 #f11aa20cb978
+?q15 Which trait's `fmt` method is called inside `Debug::fmt` for `DisplayError<M>`?
+  = Display
+  > src/wrapper.rs:27 #00d202c92b7f
+?q16 Which macro serves as shorthand for returning early with an anyhow! error?
+  = bail!
+  > README.md:118 #073e154e0a19
+?q17 Which function is invoked under cfg(error_generic_member_access) to check for an existing backtrace on an error?
+  = $crate::nightly::request_ref_backtrace
+  > src/backtrace.rs:24 #d53b93d0d758
+?q18 What does Chain's state transition to when calling next_back on a Linked state?
+  = Buffered { rest }
+  > src/chain.rs::DoubleEndedIterator.next_back #95c585d2e85c
+?q19 What name is given to the struct when ContextError formats its Debug representation?
+  = Error
+  > src/context.rs::fmt #72ff97c1a9b3
+?q20 How many MaybeUninit<u8> bytes can the Buf buffer hold?
+  = 40
+  > src/ensure.rs::Buf #4a5b381c47a4
+?q21 What macro is called when an unrecognized expression is encountered in __parse_ensure! during parsing?
+  = $crate::__fallback_ensure!
+  > src/ensure.rs:664 #1f4bc1f09b2e
+?q22 What layout assumption does the unsafe vtable function rely on when extracting the vtable from a NonNull pointer to ErrorImpl?
+  = It assumes that ErrorVTable is the first field of ErrorImpl.
+  > src/error.rs::vtable #2a024b6ce718
+?q23 How many causes does ErrorImpl::display skip before printing the chain when f.alternate() is true?
+  = 1
+  > src/fmt.rs::ErrorImpl.display #7137505ce0e0
+?q24 What specific type implements BoxedKind?
+  = Box<dyn StdError + Send + Sync>
+  > src/kind.rs:112 #fadad3285958
+?q25 What formatting selector should be used to display an anyhow Error with a conventional struct-style Debug representation?
+  = "{:#?}"
+  > src/lib.rs:354 #6ccbc6ba8d4a
+?q26 What expression is the function Ok<T> equivalent to?
+  = Ok::<_, anyhow::Error>(value)
+  > src/lib.rs:630 #d6a68b88717e
+?q27 Why is `__anyhow!` used instead of `anyhow!` in the implementations of other macros?
+  = Because the `must_use` call is not needed since the value is known to be used.
+  > src/macros.rs:226-227 #44a44cf43c1e
+?q28 Which environment variable is read to be included in the sccache cache key under anyhow_build_probe?
+  = RUSTC_BOOTSTRAP
+  > src/nightly.rs:39 #e60976088c11
+?q29 How is an Own<T> converted back into a Box<T>?
+  = Using Box::from_raw on the raw pointer from self.ptr.
+  > src/ptr.rs::boxed #a70527f251c9
+?q30 What trait bounds are placed on the inner type `M` for `DisplayError<M>` to implement `StdError`?
+  = M: Display + 'static
+  > src/wrapper.rs:54 #d77596ebcead

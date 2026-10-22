@@ -1,0 +1,99 @@
+HCS/0.2
+@title pallets__itsdangerous (independent probes)
+@root ../../.work/d1/pallets__itsdangerous
+@created 2026-10-22T12:00:14.165Z
+@generator bench/d1 probes (gemini:gemini-3.8-flash)
+
+[claims]
+
+[probes]
+?q1 Why is data cryptographically signed in ItsDangerous?
+  = To ensure that a token has not been tampered with
+  > README.md::ItsDangerous #9862506eae8f
+?q2 What binary or command is assigned to SPHINXBUILD by default?
+  = sphinx-build
+  > docs/Makefile:6 #71840e656fa4
+?q3 Which file is included under the Changes section in docs/changes.rst?
+  = ../CHANGES.rst
+  > docs/changes.rst:4 #b0937da7f837
+?q4 What basic system does ItsDangerous provide that signs a given bytes value?
+  = The signer
+  > docs/concepts.rst:8-10 #c14b1849bf75
+?q5 What is the configured default role in Sphinx?
+  = "code"
+  > docs/conf.py:13 #669b9a53e8d6
+?q6 Which module is documented for encoding utilities?
+  = itsdangerous.encoding
+  > docs/encoding.rst:1 #40b196ac3da0
+?q7 What module is documented in docs/exceptions.rst?
+  = itsdangerous.exc
+  > docs/exceptions.rst:1 #825f5c9d309a
+?q8 What pip command is used to install and update itsdangerous?
+  = pip install -U itsdangerous
+  > docs/index.rst:30 #77ecf647ba56
+?q9 Which license does this document specify in its top header?
+  = BSD-3-Clause License
+  > docs/license.rst:1 #9d684d32ff82
+?q10 What default command is assigned to SPHINXBUILD if the variable is empty?
+  = sphinx-build
+  > docs/make.bat:8 #4421a73770e4
+?q11 What module is used by default to serialize data to JSON in Serializer?
+  = built-in json module
+  > docs/serializer.rst:28-29 #61d44463d6d8
+?q12 What character separates the string from its appended signature?
+  = A dot
+  > docs/signer.rst:16-17 #57acdb8db8ef
+?q13 Which class should be used to expire signatures by adding and signing timestamp information?
+  = TimestampSigner
+  > docs/timed.rst:6-8 #7742c3101efb
+?q14 Which class is imported from `itsdangerous.url_safe` in the code example to create a basic URL-safe serializer?
+  = URLSafeSerializer
+  > docs/url_safe.rst:12 #f1c40a2fe73b
+?q15 Which module in the package provides the BadTimeSignature exception?
+  = .exc
+  > src/itsdangerous/__init__.py:8 #f1fce4a681a3
+?q16 What is the primary purpose of the _CompactJSON class?
+  = It is a wrapper around the json module that strips whitespace.
+  > src/itsdangerous/_json.py::_CompactJSON #9510131aae41
+?q17 What exception does base64_decode raise when base64 decoding fails due to a TypeError or ValueError?
+  = BadData
+  > src/itsdangerous/encoding.py::base64_decode #1fbcb5935c76
+?q18 What is the base exception class for all exceptions defined by ItsDangerous?
+  = BadData
+  > src/itsdangerous/exc.py::BadData #dd4e1e9667a0
+?q19 Which key in the secret_keys list is returned by the secret_key property?
+  = The newest (last) entry in the secret_keys list.
+  > src/itsdangerous/serializer.py::Serializer.secret_key #6abcd753e9e1
+?q20 What check does SigningAlgorithm.verify_signature perform to determine if the given signature matches the expected signature?
+  = hmac.compare_digest(sig, self.get_signature(key, value))
+  > src/itsdangerous/signer.py::SigningAlgorithm.verify_signature #b4c5b21d12cf
+?q21 In what timezone is the datetime object returned by TimestampSigner.timestamp_to_datetime?
+  = UTC
+  > src/itsdangerous/timed.py::TimestampSigner.timestamp_to_datetime #2241fa332731
+?q22 What is the default serializer used by URLSafeSerializerMixin?
+  = _CompactJSON
+  > src/itsdangerous/url_safe.py::URLSafeSerializerMixin #1b2723627ade
+?q23 Which serializer class is imported in the simple example for generating tokens?
+  = URLSafeSerializer
+  > README.md::"A Simple Example" #b1a9b67142d2
+?q24 What is the default directory configured for BUILDDIR?
+  = _build
+  > docs/Makefile:8 #de3ab7db9ef7
+?q25 When passing a list of keys for key rotation, in what order should the keys be ordered?
+  = oldest to newest
+  > docs/concepts.rst:116-117 #335d2884c9bf
+?q26 Which HTML theme is configured for the documentation?
+  = "flask"
+  > docs/conf.py:35 #51a7eaa9a87a
+?q27 Which autofunction directive is used for decoding base64 data?
+  = base64_decode
+  > docs/encoding.rst:8 #03e3d750d25e
+?q28 Which base exception is documented first in the exceptions documentation file?
+  = BadData
+  > docs/exceptions.rst:6 #0f18ab291846
+?q29 What must be done to data to safely send it to untrusted environments and detect changes when received back?
+  = The data must be signed
+  > docs/index.rst:11-12 #e8afec3a3971
+?q30 Which file is included via the literalinclude directive?
+  = ../LICENSE.txt
+  > docs/license.rst:4 #3dbfb9101b84

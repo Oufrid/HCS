@@ -1,0 +1,34 @@
+antirez__kilo none: fidelity 41.7% on 24 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+antirez__kilo readme: fidelity 25.0% on 24 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+antirez__kilo summary: fidelity 20.8% on 24 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+antirez__kilo summary+open: fidelity 41.7% on 24 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b), read more source on 18/24
+pallets__itsdangerous hcs: fidelity 50.0% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+pallets__itsdangerous none: fidelity 28.3% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+pallets__itsdangerous readme: fidelity 10.0% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+pallets__itsdangerous summary: fidelity 46.7% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+pallets__itsdangerous hcs+expand: fidelity 53.3% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b), read more source on 9/30
+pallets__itsdangerous summary+open: fidelity 80.0% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b), read more source on 15/30
+dtolnay__anyhow hcs: fidelity 16.7% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+dtolnay__anyhow none: fidelity 8.3% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+dtolnay__anyhow readme: fidelity 10.0% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+dtolnay__anyhow summary: fidelity 20.0% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+dtolnay__anyhow hcs+expand: fidelity 40.0% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b), read more source on 12/30
+dtolnay__anyhow summary+open: fidelity 45.0% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b), read more source on 11/30
+spf13__cobra hcs: fidelity 30.0% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+spf13__cobra none: fidelity 41.7% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+spf13__cobra readme: fidelity 6.7% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+spf13__cobra summary: fidelity 20.0% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+spf13__cobra hcs+expand: fidelity 40.0% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b), read more source on 7/30
+spf13__cobra summary+open: fidelity 48.3% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b), read more source on 18/30
+sindresorhus__ky hcs: fidelity 20.0% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+sindresorhus__ky none: fidelity 20.0% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+sindresorhus__ky readme: fidelity 5.0% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+sindresorhus__ky agents: fidelity 0.0% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+--- restart 2026-10-22T13:57:39Z after the 2 h background limit
+sindresorhus__ky summary: fidelity 20.0% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+sindresorhus__ky hcs+expand: fidelity 53.3% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b), read more source on 14/30
+sindresorhus__ky summary+open: fidelity 26.7% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b), read more source on 13/30
+usage gemini:gemini-3.8-flash: 99 requests, 255778 input + 1121 output tokens (as reported by the provider)
+usage groq:openai/gpt-oss-20b: 8 requests, 1929 input + 700 output tokens (as reported by the provider)
+exit 0
+INDEP-DONE

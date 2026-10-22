@@ -1,0 +1,7 @@
+antirez__kilo: probes exist
+pallets__itsdangerous: 30 independent probes (63 verified of 64 proposed) by gemini:gemini-3.8-flash
+dtolnay__anyhow: 30 independent probes (43 verified of 48 proposed) by gemini:gemini-3.8-flash
+spf13__cobra: 30 independent probes (58 verified of 59 proposed) by gemini:gemini-3.8-flash
+sindresorhus__ky: 30 independent probes (73 verified of 74 proposed) by gemini:gemini-3.8-flash
+usage gemini:gemini-3.8-flash: 95 requests, 306319 input + 19320 output tokens (as reported by the provider)
+exit 0

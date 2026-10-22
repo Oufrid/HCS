@@ -1,0 +1,373 @@
+{
+ "repo": "sindresorhus__ky",
+ "commit": "3541888878c4d303a8bc2ad61815f4e048f55a5d",
+ "condition": "hcs+expand",
+ "answerer": "gemini:gemini-3.8-flash",
+ "judge": "groq:openai/gpt-oss-20b",
+ "budget": 2000,
+ "tokens": 1960,
+ "results": {
+  "q1": {
+   "id": "q1",
+   "question": "What is the per-attempt timeout default in milliseconds?",
+   "expected": "10000",
+   "answer": "The per-attempt timeout default is 10,000 milliseconds.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q2": {
+   "id": "q2",
+   "question": "What error type is thrown if a custom `fetch` implementation does not resolve with a `Response`?",
+   "expected": "TypeError",
+   "answer": "A `TypeError` is thrown if a custom `fetch` option passed to Ky does not resolve with a `Response` instance (c19).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q3": {
+   "id": "q3",
+   "question": "What error does Ky throw instead of HTTPError if maxResponseSize is exceeded while populating error.data?",
+   "expected": "ResponseSizeError",
+   "answer": "Ky throws `ResponseSizeError` instead of `HTTPError` if `maxResponseSize` is exceeded while populating `error.data` (readme.md:1312-1355; source/errors/HTTPError.ts:9).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q4": {
+   "id": "q4",
+   "question": "What value does a request resolve with if a beforeRetry hook returns ky.stop?",
+   "expected": "undefined",
+   "answer": "If a `beforeRetry` hook returns `ky.stop`, Ky aborts the retry and the request resolves with `undefined`.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q5": {
+   "id": "q5",
+   "question": "What error is thrown when the `prefixUrl` option is passed in `options`?",
+   "expected": "The `prefixUrl` option has been renamed `prefix` in v2 and enhanced to allow slashes in input. See also the new `baseUrl` option for improved flexibility with standard URL resolution: https://github.com/sindresorhus/ky#baseurl",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q6": {
+   "id": "q6",
+   "question": "When options.timeout is explicitly set to false, what fallback millisecond value is used by #getErrorDataTimeout?",
+   "expected": "10_000",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q7": {
+   "id": "q7",
+   "question": "What error is thrown if an unrecognized key is returned in the options object of a beforeRetry hook?",
+   "expected": "A TypeError indicating that the option cannot be changed from a beforeRetry hook.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q8": {
+   "id": "q8",
+   "question": "Which keys are read afresh by Ky on every attempt so that a `beforeRetry` hook can mutate them directly?",
+   "expected": "'onUploadProgress', 'onDownloadProgress', 'timeout', 'fetch', and 'throwHttpErrors'",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q9": {
+   "id": "q9",
+   "question": "What is the minimum numeric value required for a reset header to be interpreted as an epoch timestamp rather than delay seconds?",
+   "expected": "1_000_000_000",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q10": {
+   "id": "q10",
+   "question": "What type guard allows observing ForceRetryError in beforeRetry and beforeError hooks?",
+   "expected": "isForceRetryError()",
+   "answer": "The `isForceRetryError()` type guard allows observing `ForceRetryError` in `beforeRetry` and `beforeError` hooks.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q11": {
+   "id": "q11",
+   "question": "What error does Ky throw if totalTimeout expires while error.data is being populated?",
+   "expected": "TimeoutError",
+   "answer": "Ky throws a `TimeoutError` if timeout limits are exceeded during response handling (c6).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q12": {
+   "id": "q12",
+   "question": "Which specific error is intentionally excluded from being considered a Ky error?",
+   "expected": "SchemaValidationError",
+   "answer": "`SchemaValidationError` is excluded from extending `KyError`, extending `Error` separately instead (c8, c25).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q13": {
+   "id": "q13",
+   "question": "Through which standard property can the original error be accessed in a NetworkError?",
+   "expected": "cause",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q14": {
+   "id": "q14",
+   "question": "What is the initial default message assigned in the NonError constructor?",
+   "expected": "'Non-error value was thrown'",
+   "answer": "The initial default message assigned in the `NonError` constructor is `'Non-error value was thrown'`.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q15": {
+   "id": "q15",
+   "question": "What message template does ResponseSizeError pass to its superclass constructor?",
+   "expected": "`Response body exceeded ${maxResponseSize} bytes: ${request.method} ${request.url}`",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q16": {
+   "id": "q16",
+   "question": "What message is passed to the superclass constructor when instantiating SchemaValidationError?",
+   "expected": "'Response schema validation failed'",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q17": {
+   "id": "q17",
+   "question": "What class does TimeoutError extend?",
+   "expected": "KyError",
+   "answer": "`TimeoutError` extends `KyError` (c25, c96).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q18": {
+   "id": "q18",
+   "question": "Why are request setup errors rejected via a promise instead of throwing synchronously in createRequest?",
+   "expected": "So that callers only have one error channel to handle, matching how fetch() reports them.",
+   "answer": "Request setup errors reject the returned promise instead of throwing synchronously to match how `fetch()` reports them, ensuring callers have only a single error channel to handle.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q19": {
+   "id": "q19",
+   "question": "What error is thrown when validation fails while validating the JSON response against a Standard Schema?",
+   "expected": "SchemaValidationError",
+   "answer": "`SchemaValidationError` is thrown when Standard Schema validation fails during a `.json(schema)` call (c112). It extends `Error` separately rather than `KyError` and contains an `issues` property detailing the failures (c8, c112).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q20": {
+   "id": "q20",
+   "question": "Which ESLint rule is disabled on line 1 for the Primitive type definition?",
+   "expected": "@typescript-eslint/no-restricted-types",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q21": {
+   "id": "q21",
+   "question": "What happens if a beforeRequest hook returns a Response object?",
+   "expected": "It completely avoids making an HTTP request, and remaining beforeRequest hooks are skipped.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q22": {
+   "id": "q22",
+   "question": "What happens if a body method like .json() or .text() is called when ky.stop is returned by a beforeRetry hook?",
+   "expected": "Calling the body method throws a TypeError explaining that there is no response to parse.",
+   "answer": "Calling a body method like `.json()` or `.text()` throws a `TypeError` explaining that it is not supported because there is no response to parse (c5). Returning `ky.stop` causes Ky to abort and return an `undefined` response (c5).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q23": {
+   "id": "q23",
+   "question": "What error is thrown if the `totalTimeout` option is set to a value greater than 2147483647?",
+   "expected": "A RangeError",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q24": {
+   "id": "q24",
+   "question": "What is the default type parameter for KyRequest if none is specified?",
+   "expected": "unknown",
+   "answer": "The default type parameter for `KyRequest` is `unknown`.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q25": {
+   "id": "q25",
+   "question": "What is the default type parameter for KyResponse?",
+   "expected": "unknown",
+   "answer": "The default type parameter for `KyResponse` is `unknown` (as defined in `KyResponse<T = unknown>`).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q26": {
+   "id": "q26",
+   "question": "What is the starting value of `retryCount` in `ShouldRetryState` on the first retry?",
+   "expected": "1",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q27": {
+   "id": "q27",
+   "question": "What literal value must the 'version' property have on a StandardSchemaV1 object's '~standard' property?",
+   "expected": "1",
+   "answer": "Based on claim c161, the `version` property under `'~standard'` must have the literal value `1`.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q28": {
+   "id": "q28",
+   "question": "Which HTTP status codes are defined in nullBodyStatuses?",
+   "expected": "101, 103, 204, 205, and 304",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q29": {
+   "id": "q29",
+   "question": "What method is called on the signal before attaching the 'abort' event listener?",
+   "expected": "signal.throwIfAborted()",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q30": {
+   "id": "q30",
+   "question": "What property name must an error have in order to be considered a valid raw network error by isRawNetworkError?",
+   "expected": "TypeError",
+   "answer": "To be considered a valid raw network error by `isRawNetworkError`, the error must have the `name` property equal to `'TypeError'` and have a `message` property that is a string (c176).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  }
+ },
+ "reads": 14,
+ "asked": 30
+}
