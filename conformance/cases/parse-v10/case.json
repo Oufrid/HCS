@@ -1,0 +1,4 @@
+{
+  "op": "parse",
+  "description": "HCS/1.0 is accepted and means the same as 0.3 (SPEC 9)."
+}

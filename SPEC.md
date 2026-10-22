@@ -1,7 +1,10 @@
-# HCS Specification: version 0.3
+# HCS Specification: version 1.0
 
-**Status:** draft. Feedback is welcome through issues.
+**Status:** stable (2026-10-22). Changes follow the RFC process in `rfcs/` and the policy in §9. Feedback is welcome
+through issues.
 
+- Changes in 1.0: none to the format. 1.0 freezes 0.3 as the stable version: a file whose magic line is `HCS/1.0`
+  means exactly what the same file means as `HCS/0.3`. The guarantees of §9 apply from this version on.
 - Changes in 0.3: probe tags and the `known` tag (§4), the `@known-filter` header (§4), two judges and the
   certificate fields `novel`, `novel-probes`, `judge-agreement`, `judge-kappa`, `judged` (§7).
   Compilers may ignore Markdown markup when verifying quotes, and may write an `@incomplete` header (§8).
@@ -12,8 +15,9 @@
   named by the certificate field `render`; `full` (the 0.2 render) stays the default.
 - Changes in 0.2: symbol anchors (§5.2), the `suspect` tag (§3), and certificate fields `ci95`, `informative`, `runs` (§7).
 
-Every valid 0.1 or 0.2 file is a valid 0.3 file. A writer SHOULD emit the oldest version that can express the
-document (for example `HCS/0.2` when no probe has tags), so that older readers keep working.
+Every valid 0.1 or 0.2 file is a valid 0.3 file, and every valid 0.3 file is a valid 1.0 file. A writer SHOULD emit the
+oldest version that can express the document (for example `HCS/0.2` when no probe has tags), so that older readers
+keep working; since 1.0 adds nothing to 0.3, writers keep emitting `HCS/0.3` or older.
 
 HCS (Holographic Context Standard) defines a plain-text file, conventionally `*.hcs`, that carries a compressed view of some source material (a codebase, a document set, a conversation) for a language model. It has three properties that summaries and hand-written context files lack:
 
@@ -47,7 +51,7 @@ HCS/0.2                      <- magic line (first non-blank line)
 - Blank lines are ignored everywhere.
 - Lines whose first non-blank characters are `//` are comments and ignored.
 - The blocks `[claims]`, `[probes]` and `[certificates]` are optional. Each MAY appear once, in this order.
-- A reader MUST reject a file whose magic line names a version it does not support. A 0.3 reader MUST accept `HCS/0.1` and `HCS/0.2`.
+- A reader MUST reject a file whose magic line names a version it does not support. A 1.0 reader MUST accept `HCS/0.1`, `HCS/0.2`, `HCS/0.3` and `HCS/1.0`.
 
 ## 2. Headers
 
@@ -335,7 +339,19 @@ A conforming compiler SHOULD:
 
 ## 9. Versioning
 
-Minor versions (0.x) may add headers, tags, fields, statuses and anchor forms. Readers SHOULD ignore unknown certificate fields and tags. Any change to hashing or anchor syntax requires a new version string.
+Before 1.0, minor versions (0.x) added headers, tags, fields, statuses and anchor forms. From 1.0 on:
+
+- **Frozen in 1.x:** the anchor syntax (§5), hashing and its normalization (§5.1, §5.5), the default symbol locator
+  as fixed by the conformance cases (§5.2), the verification statuses and how a verifier decides them (§5.3), and
+  how certificate digests and signatures are computed (§6.2, §7, §7.1). A valid file keeps the same hashes,
+  statuses and digests under every 1.x version.
+- **Minor versions (1.1, 1.2, ...)** MAY add headers, tags, certificate fields, render profiles and anchor forms,
+  each with a new magic line (`HCS/1.1`) that a writer emits only when the document uses an addition. Readers
+  SHOULD ignore unknown certificate fields and tags, and MUST preserve unknown headers.
+- **A major version (2.0)** is needed for any change that alters the meaning, hash, status or digest of something a
+  valid 1.x file already contains. It MUST come with a migration path, and 2.x readers SHOULD keep reading 1.x files.
+- Every change to what this document makes normative goes through an RFC (`rfcs/README.md`) and lands with
+  conformance cases.
 
 ## 10. Conformance
 

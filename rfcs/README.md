@@ -30,15 +30,18 @@ for behavior the spec already defines, and bug fixes that make an implementation
 An RFC that only clarifies an ambiguity, without changing what any existing valid file means, can be accepted after
 the 7 days without a version bump.
 
-## Versioning policy (current, pre-1.0)
+## Versioning policy (since 1.0)
 
-- The magic line names the version (`HCS/0.3`). Readers MUST accept every older version; writers SHOULD emit the
+SPEC 1.0 (2026-10-22) froze 0.3 once the conformance suite passed in two implementations (roadmap B2) and the public
+benchmark was published (roadmap D1). The normative policy is `SPEC.md` §9; in short:
+
+- The magic line names the version (`HCS/1.0`). Readers MUST accept every older version; writers SHOULD emit the
   oldest version that can express the document.
-- A minor version (`0.3` to `0.4`) may add headers, tags, anchor forms and certificate fields. It must not change
-  the meaning or the hash of anything an older file already contains.
-- SPEC 1.0 will freeze the anchor syntax and hashing. It waits until the conformance suite passes in two
-  implementations (done, roadmap B2) and a public benchmark is published (roadmap D1). After 1.0, a change that
-  breaks existing files needs a major version and a migration path.
+- Frozen across 1.x: anchor syntax, hashing, the default symbol locator as fixed by the conformance cases,
+  verification statuses, and how digests and signatures are computed.
+- A minor version (`1.0` to `1.1`) may add headers, tags, certificate fields, render profiles and anchor forms. It
+  must not change the meaning, hash, status or digest of anything an older file already contains.
+- A change that would break existing files needs a major version (2.0) and a migration path.
 
 ## Index
 

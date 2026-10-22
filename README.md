@@ -30,7 +30,7 @@ FAIL: 1 item(s) no longer match their sources. ...
 ```
 *(Example output.)*
 
-> **Status: v0.3, experimental.** The format, the deterministic engine (`check`, `seal`, `render`, `audit`, `impact`) and the MCP server are complete and tested, and a second implementation of the deterministic core in Python passes the same [conformance suite](conformance/) in CI. **Measured** ([bench/REPORT.md](bench/REPORT.md), D1): on eight public repositories, with test questions written apart from the context, an HCS context of 2,000 tokens in the compact profile answered 43.8% of questions on the five design repositories and 46.7% on three new ones (pre-registered), against 24.7% and 27.8% for a naive summary of the same budget, and 10% for the repositories' own README. A second, smaller answering model from another family (ministral-14b) shows the same gap: +18.8 and +16.1 points over the summary. `hcs refine` did not help (same report, C2). Every number here links to its raw results.
+> **Status: format SPEC 1.0 (stable); CLI v0.3, experimental.** The format, the deterministic engine (`check`, `seal`, `render`, `audit`, `impact`) and the MCP server are complete and tested, and a second implementation of the deterministic core in Python passes the same [conformance suite](conformance/) in CI. **Measured** ([bench/REPORT.md](bench/REPORT.md), D1): on eight public repositories, with test questions written apart from the context, an HCS context of 2,000 tokens in the compact profile answered 43.8% of questions on the five design repositories and 46.7% on three new ones (pre-registered), against 24.7% and 27.8% for a naive summary of the same budget, and 10% for the repositories' own README. A second, smaller answering model from another family (ministral-14b) shows the same gap: +18.8 and +16.1 points over the summary. `hcs refine` did not help (same report, C2). Every number here links to its raw results.
 
 ---
 
@@ -392,7 +392,7 @@ See [PRIOR_ART.md](PRIOR_ART.md). In short: drift checkers, prompt compressors, 
 ## Repository layout
 
 ```
-SPEC.md         the format, normative (v0.3)
+SPEC.md         the format, normative (v1.0, stable)
 src/            CLI, MCP server and library (TypeScript, no runtime dependencies)
 python/         second implementation of the deterministic core (Python >= 3.9, no dependencies)
 conformance/    language-agnostic test cases both implementations pass in CI

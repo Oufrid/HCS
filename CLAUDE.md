@@ -5,7 +5,7 @@ Guidance for AI agents (and humans) working on this repository.
 ## What this is
 
 HCS (Holographic Context Standard): a plain-text format (`*.hcs`) whose claims cite hashed sources, plus a
-zero-dependency TypeScript CLI and MCP server. Read `README.md` for the pitch, `SPEC.md` (v0.3) for the
+zero-dependency TypeScript CLI and MCP server. Read `README.md` for the pitch, `SPEC.md` (v1.0, stable) for the
 normative format, `PRIOR_ART.md` for positioning and known limitations. `project.hcs` describes this repo in
 HCS itself and is checked in CI: run `node dist/src/cli.js render project.hcs` for a quick overview.
 
@@ -41,7 +41,7 @@ node dist/src/cli.js help
 
 ## Current status and next steps
 
-Phase A, B1–B3, C1, C3–C5 and D3 are done; C2 was measured with a negative result; D1 is done (compact profile beats a naive summary of the same budget by 16 to 19 points with two answering families, Gemini and Mistral's ministral-14b, on five design and three pre-registered repositories; see `bench/REPORT.md`); D2 only lacks the SPEC 1.0 tag, which needs the maintainer's approval. **The full plan is in
+Phase A, B1–B3, C1, C3–C5 and D3 are done; C2 was measured with a negative result; D1 is done (compact profile beats a naive summary of the same budget by 16 to 19 points with two answering families, Gemini and Mistral's ministral-14b, on five design and three pre-registered repositories; see `bench/REPORT.md`); D2 is done (SPEC 1.0, tag `spec-v1.0`); B4 publication is postponed by the maintainer. **The full plan is in
 `ROADMAP.md`**: phases A–D, each item's status, its "Done when" criterion, and the working rules (order, commits,
 honesty, what needs the maintainer's approval). Continue with the first unfinished item in the order it gives, and
 update `ROADMAP.md` in the same commit that changes an item's status.

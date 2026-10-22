@@ -197,7 +197,7 @@ second answering family (mistral:ministral-14b-latest, Gemini judging) gave +18.
 repositories and +16.1 [+3.9, +27.8] on the confirmation ones; README numbers link to `bench/REPORT.md`. Limits
 (one compiling and probe-writing model, generated probes, one budget) are listed there.
 
-### D2. Spec 1.0 and governance `[~]`
+### D2. Spec 1.0 and governance `[x]`
 - `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, issue and PR templates.
 - A lightweight RFC process (`rfcs/`) for spec changes.
 - Freeze SPEC 1.0 once B2 passes in two implementations and D1 is published: stable anchor syntax and hashing,
@@ -206,8 +206,9 @@ repositories and +16.1 [+3.9, +27.8] on the confirmation ones; README numbers li
 
 Done: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), issue templates (bug, spec change,
 benchmark result, private security link), a pull-request template, and `rfcs/` (process, template, and the
-pre-1.0 versioning policy). Remaining: SPEC 1.0 is **not** tagged. Its conditions (B2 in two implementations, D1
-published) are met since 2026-10-22; tagging is a release, which needs the maintainer's approval.
+versioning policy). SPEC 1.0 (2026-10-22, tag `spec-v1.0`, approved by the maintainer) freezes 0.3 without changing
+the format: `HCS/1.0` is accepted by both implementations (conformance case `parse-v10`), and `SPEC.md` §9 states
+what 1.x keeps stable. The CLI stays at 0.3.0; publishing it (B4) is a separate decision.
 
 ### D3. Documentation and examples `[x]`
 - `examples/`: a small project in several languages with its `.hcs` file, a conversation snapshot, an audited

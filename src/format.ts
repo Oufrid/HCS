@@ -4,10 +4,10 @@ export const FORMAT_VERSION = "0.3";
 export const MAGIC = `HCS/${FORMAT_VERSION}`;
 /**
  * Versions this reader accepts. 0.2 added `path::Symbol` anchors, 0.3 added probe tags (`?id[known] ...`),
- * dependency hashes and the `@parser` header.
+ * dependency hashes and the `@parser` header. 1.0 freezes 0.3 without changing it: `HCS/1.0` means the same.
  * Older files are valid newer files. The writer emits the oldest version that can express the document.
  */
-export const SUPPORTED_VERSIONS = ["0.1", "0.2", "0.3"];
+export const SUPPORTED_VERSIONS = ["0.1", "0.2", "0.3", "1.0"];
 
 export interface Anchor {
   path: string;

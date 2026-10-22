@@ -85,9 +85,9 @@ package registry yet: install from a clone.
 
 ## Is the format stable?
 
-Not yet: the spec is at 0.3. Readers accept every older version and writers emit the oldest one that fits, so files
-keep working. SPEC 1.0, which will freeze anchors and hashing, waits for a public benchmark. Format changes go
-through an RFC ([rfcs/](../rfcs/README.md)).
+The format is: SPEC 1.0 (2026-10-22) freezes anchor syntax, hashing, verification statuses and digests across 1.x,
+and readers accept every older version (0.1 to 0.3), so files keep working. Format changes go through an RFC
+([rfcs/](../rfcs/README.md)). The CLI itself is still 0.3.0 and experimental.
 
 ## How does this compare to AGENTS.md, llms.txt, RAG or a summary?
 

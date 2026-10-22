@@ -9,7 +9,8 @@ import re
 
 FORMAT_VERSION = "0.3"
 MAGIC = "HCS/" + FORMAT_VERSION
-SUPPORTED_VERSIONS = ["0.1", "0.2", "0.3"]
+# 1.0 freezes 0.3 without changing it: HCS/1.0 means the same.
+SUPPORTED_VERSIONS = ["0.1", "0.2", "0.3", "1.0"]
 
 # JavaScript's \w and \d are ASCII-only; spell them out so both implementations agree.
 _W = "[A-Za-z0-9_]"

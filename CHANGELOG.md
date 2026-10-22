@@ -3,6 +3,11 @@
 All notable changes to the HCS CLI (`hcs-cli` on npm), the Python package (`hcs-format`) and the format (`SPEC.md`).
 Versions of the CLI and of the format are separate: the CLI reads and writes every format version it lists.
 
+## SPEC 1.0 (2026-10-22)
+
+- The format is frozen as 1.0: no change from 0.3. `HCS/1.0` is accepted by both implementations and means the same
+  as `HCS/0.3`; writers keep emitting the oldest version that fits. `SPEC.md` §9 lists what stays stable across 1.x.
+
 ## 0.3.0
 
 Experimental. Not published yet: publication happens when the maintainer pushes the `v0.3.0` tag (ROADMAP B4).

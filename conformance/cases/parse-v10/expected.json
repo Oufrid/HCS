@@ -1,0 +1,37 @@
+{
+  "ok": true,
+  "document": {
+    "headers": {
+      "parser": "heuristic"
+    },
+    "meta": {},
+    "claims": [
+      {
+        "id": "a",
+        "text": "x",
+        "tags": [
+          "recorded"
+        ],
+        "anchors": [
+          {
+            "path": "f.ts",
+            "symbol": "g"
+          }
+        ]
+      }
+    ],
+    "probes": [
+      {
+        "id": "p1",
+        "question": "Who?",
+        "answer": "me",
+        "anchors": [],
+        "claims": [],
+        "tags": [
+          "known"
+        ]
+      }
+    ],
+    "certificates": []
+  }
+}

@@ -65,6 +65,7 @@ case("parse-v01", "parse", "HCS/0.1 is still accepted (SPEC 2).", {"input.hcs": 
 case("parse-v03-probe-tags", "parse", "Probe tags (SPEC 0.3, section 4).", {"input.hcs": "HCS/0.3\n@known-filter a:b,c:d\n[probes]\n?p1[known,x] Who?\n  = me\n?p2 Why?\n  = because\n"})
 case("parse-crlf-comments", "parse", "CRLF line endings, comment lines and blank lines are ignored.", {"input.hcs": "HCS/0.2\r\n@title t\r\n\r\n[claims]\r\n// note\r\n#a one\r\n  > f.txt:2\r\n"})
 case("parse-error-magic", "parse", "A file without the magic line is rejected at line 1.", {"input.hcs": "[claims]\n#a x\n"})
+case("parse-v10", "parse", "HCS/1.0 is accepted and means the same as 0.3 (SPEC 9).", {"input.hcs": "HCS/1.0\n@parser heuristic\n[claims]\n#a[recorded] x\n  > f.ts::g\n[probes]\n?p1[known] Who?\n  = me\n"})
 case("parse-error-version", "parse", "An unknown version is rejected.", {"input.hcs": "HCS/9.0\n"})
 case("parse-error-duplicate-id", "parse", "Ids are unique across claims and probes.", {"input.hcs": "HCS/0.2\n[claims]\n#a x\n[probes]\n?a q\n  = r\n"})
 case("parse-error-probe-answer", "parse", "A probe needs an answer line; the error is reported at line 0 (whole file).", {"input.hcs": "HCS/0.2\n[probes]\n?p1 q\n"})

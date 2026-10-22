@@ -1,0 +1,8 @@
+HCS/1.0
+@parser heuristic
+[claims]
+#a[recorded] x
+  > f.ts::g
+[probes]
+?p1[known] Who?
+  = me
