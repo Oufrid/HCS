@@ -30,7 +30,7 @@ FAIL: 1 item(s) no longer match their sources. ...
 ```
 *(Example output.)*
 
-> **Status: v0.2, early.** The format, the deterministic engine (`check`, `seal`, `render`, `audit`) and the MCP server are complete and tested. A second, independent implementation of the deterministic core in Python passes the same [conformance suite](conformance/) in CI. The LLM features (`compile`, `score`, `snapshot`) are tested against mock OpenAI/Anthropic-compatible servers, and `compile` and `score` have run end to end on real free-tier models (Gemini, Groq); what broke and what was measured is in [bench/REPORT.md](bench/REPORT.md). **There is no benchmark yet.** Benchmark numbers will be published from `bench/` with their raw results, never as bare claims in this README.
+> **Status: v0.3, experimental.** The format, the deterministic engine (`check`, `seal`, `render`, `audit`, `impact`) and the MCP server are complete and tested, and a second implementation of the deterministic core in Python passes the same [conformance suite](conformance/) in CI. **Measured** ([bench/REPORT.md](bench/REPORT.md), D1, one answering model so far): on eight public repositories, with test questions written apart from the context, an HCS context of 2,000 tokens in the compact profile answered 43.8% of questions on the five design repositories and 46.7% on three new ones (pre-registered), against 24.7% and 27.8% for a naive summary of the same budget, and 10% for the repositories' own README. `hcs refine` did not help (same report, C2). Every number here links to its raw results.
 
 ---
 
@@ -122,7 +122,7 @@ Or connect it through MCP (next section) so the model can also open the sources 
 
 Two render profiles exist (SPEC 6.2). `full`, the default of `hcs render`, writes each claim with its sources, for
 people. `compact`, used by `score`, `curve`, `compare` and the MCP server, writes `id: text` only and, under a budget,
-takes one claim per source file in turn, so that the budget covers the whole project. On the D1 benchmark, sources
+takes one claim per source file in turn, so that the budget covers the whole project. On the D1 benchmark ([bench/REPORT.md](bench/REPORT.md)), sources
 took about a third of a 2,000-token `full` render. Certificates record the profile they were scored on.
 
 ### 4. Keep it true
