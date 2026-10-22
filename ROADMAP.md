@@ -98,6 +98,9 @@ tag, and move a `v0` tag for the Action.
 
 ## Phase C: Capabilities nobody else has
 
+Decision (maintainer, 2026-10-22): do not publish yet. Publish once a stable version has passed every test and the
+pending measurements (C1, C2, D1) have come back favorably; until then the CLI is used from a clone.
+
 ### C1. Fidelity-vs-budget curve `[~]`
 Done (2026-10-21): `hcs curve` (budgets scored once per distinct context, shared baseline, resumable), the knee
 (smallest budget within the 95% CI of the best) with a flat-curve warning, certificate fields `curve` and `knee`
