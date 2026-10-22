@@ -223,6 +223,11 @@ async function postJSON(url: string, headers: Record<string, string>, body: unkn
     const text = await res.text();
     lastErr = new Error(`HTTP ${res.status} from ${url}: ${text.slice(0, 500)}${authHint(res, headers, text)}`);
     if (res.status === 429 || res.status === 503) {
+      // A limit of zero never frees up: Mistral answers this way until the account's plan is activated.
+      const zero = [...res.headers].find(([k, v]) => /^x-ratelimit-limit/i.test(k) && v.trim() === "0")?.[0];
+      if (res.status === 429 && zero) {
+        throw new QuotaError(`${url} allows no requests for this key (${zero}: 0); activate a plan for the account, then retry.`);
+      }
       const suggested = retryDelayMs(res.headers, text);
       if (suggested !== undefined && suggested > MAX_RETRY_WAIT_MS) {
         const quota = /"quotaId"\s*:\s*"([^"]+)"/.exec(text)?.[1];
@@ -261,6 +266,19 @@ function countUsage(usage: Usage, input: unknown, output: unknown): void {
   if (typeof output === "number") usage.outputTokens += output;
 }
 
+/**
+ * A chat message's text. Usually a string; some providers (Mistral's reasoning models) return a list of parts,
+ * where only the `text` parts are the answer and `thinking` parts are hidden reasoning.
+ */
+function messageText(content: unknown): string | undefined {
+  if (typeof content === "string") return content;
+  if (!Array.isArray(content)) return undefined;
+  return content
+    .filter((p) => p && typeof p === "object" && (p as { type?: unknown }).type === "text" && typeof (p as { text?: unknown }).text === "string")
+    .map((p) => (p as { text: string }).text)
+    .join("");
+}
+
 function openAICompatible(
   id: string,
   model: string,
@@ -271,6 +289,8 @@ function openAICompatible(
   opts: LLMOptions = {},
 ): LLM {
   const url = `${baseURL.replace(/\/+$/, "")}/chat/completions`;
+  // Dropped for this client when the provider rejects the parameter (one --reasoning-effort applies to every model).
+  let sendEffort = !!opts.reasoningEffort;
   return {
     id,
     async complete(req) {
@@ -279,7 +299,7 @@ function openAICompatible(
           model,
           temperature: 0,
           max_tokens: maxTokens,
-          ...(opts.reasoningEffort ? { reasoning_effort: opts.reasoningEffort } : {}),
+          ...(sendEffort ? { reasoning_effort: opts.reasoningEffort } : {}),
           messages: [
             { role: "system", content: req.system },
             { role: "user", content: req.prompt },
@@ -295,6 +315,10 @@ function openAICompatible(
           data = await call(maxTokens);
           break;
         } catch (e) {
+          if (sendEffort && /^HTTP 4(00|22) [\s\S]*reasoning[_ ]?effort/i.test(e instanceof Error ? e.message : "")) {
+            sendEffort = false;
+            continue;
+          }
           // Groq counts prompt + max_tokens against its tokens-per-minute limit and answers 413 when the sum is
           // over it ("Limit 8000, Requested 8856"). Its count varies between calls, so shrink the output cap by
           // the reported excess plus a margin, a few times at most.
@@ -306,11 +330,11 @@ function openAICompatible(
       }
       // Reasoning models spend output tokens on hidden reasoning first. When that uses the whole budget the
       // visible answer is empty (finish_reason "length"): retry once with room for the reasoning.
-      if (!data?.choices?.[0]?.message?.content && data?.choices?.[0]?.finish_reason === "length" && maxTokens < REASONING_BUDGET) {
+      if (!messageText(data?.choices?.[0]?.message?.content) && data?.choices?.[0]?.finish_reason === "length" && maxTokens < REASONING_BUDGET) {
         usage.retriedForReasoning = (usage.retriedForReasoning ?? 0) + 1;
         data = await call(REASONING_BUDGET);
       }
-      const content = data?.choices?.[0]?.message?.content;
+      const content = messageText(data?.choices?.[0]?.message?.content);
       if (typeof content !== "string") throw new Error(`unexpected response from ${url}: ${JSON.stringify(data).slice(0, 300)}`);
       if (data?.choices?.[0]?.finish_reason === "length") usage.truncated = (usage.truncated ?? 0) + 1;
       return content;
@@ -371,6 +395,10 @@ registerProvider("groq", (model, spec, usage, opts) =>
   openAICompatible(spec, model, env("GROQ_BASE_URL") ?? "https://api.groq.com/openai/v1", usage, proxyableKey("GROQ_API_KEY"), {}, opts),
 );
 
+registerProvider("mistral", (model, spec, usage, opts) =>
+  openAICompatible(spec, model, env("MISTRAL_BASE_URL") ?? "https://api.mistral.ai/v1", usage, proxyableKey("MISTRAL_API_KEY"), {}, opts),
+);
+
 registerProvider("openrouter", (model, spec, usage, opts) =>
   openAICompatible(
     spec,
@@ -429,6 +457,8 @@ function endpoint(provider: string): { url: string; headers: Record<string, stri
       };
     case "groq":
       return { url: `${env("GROQ_BASE_URL") ?? "https://api.groq.com/openai/v1"}/models`, headers: bearer(proxyableKey("GROQ_API_KEY")) };
+    case "mistral":
+      return { url: `${env("MISTRAL_BASE_URL") ?? "https://api.mistral.ai/v1"}/models`, headers: bearer(proxyableKey("MISTRAL_API_KEY")) };
     case "openrouter":
       return { url: `${env("OPENROUTER_BASE_URL") ?? "https://openrouter.ai/api/v1"}/models`, headers: bearer(env("OPENROUTER_API_KEY")) };
     case "anthropic":

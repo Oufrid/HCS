@@ -1,7 +1,7 @@
 HCS/0.2
 @title HCS - Holographic Context Standard (reference CLI)
 @root .
-@updated 2026-10-22T14:57:23.096Z
+@updated 2026-10-22T18:07:21.733Z
 @meta license=MIT language=TypeScript
 
 [claims]
@@ -10,7 +10,7 @@ HCS/0.2
 #purpose[manual] HCS is a plain-text format plus a zero-dependency Node.js CLI and MCP server (`hcs`) that makes LLM context traceable (claims cite sources), verifiable (anchors carry hashes) and measured (probes and fidelity certificates).
   > README.md:3-16 #cddd3cef50fb
 #layers[manual] Deterministic commands (init, validate, check, seal, render, stats, audit, serve, impact, keygen, badge) never call an LLM; compile, score, curve, refine, compare and snapshot need a `provider:model` LLM; models only lists a provider's model ids.
-  > src/cli.ts::HELP #6ca2075e2906
+  > src/cli.ts::HELP #e715ad8f37ec
 
 ## Format
 #magic[manual] A file starts with `HCS/0.3` (0.1 and 0.2 are still accepted, and the writer emits 0.2 unless a 0.3 feature is used: probe tags, dependency hashes or the `@parser` header), then `@key value` headers, then optional [claims], [probes] and [certificates] blocks; errors carry line numbers.
@@ -140,16 +140,18 @@ HCS/0.2
   > test/fuzz.test.ts::assertWellBehaved #13847c57eb6e
 
 ## Providers
-#providers[manual] Providers are openai (any compatible API), ollama, gemini, groq, openrouter and anthropic, called at temperature 0 with usage accounting; Bearer keys may be absent when a proxy injects them; 429/503 retries honor Retry-After and Google's retryDelay, a 429 without a delay waits one minute at most twice, and waits over 120 s, or a provider still failing after every retry, raise a quota error.
-  > src/llm.ts::postJSON #771045bda8a1
+#providers[manual] Providers are openai (any compatible API), ollama, gemini, groq, mistral, openrouter and anthropic, called at temperature 0 with usage accounting; Bearer keys may be absent when a proxy injects them; 429/503 retries honor Retry-After and Google's retryDelay, a 429 without a delay waits one minute at most twice, a 429 whose rate-limit header is zero fails at once, and waits over 120 s, or a provider still failing after every retry, raise a quota error.
+  > src/llm.ts::postJSON #45c7d11bfad2
   > src/llm.ts::retryDelayMs #53c59bd9ac2f
   > src/llm.ts::MAX_RETRY_WAIT_MS #ffea888e2d7e
+  > src/llm.ts::endpoint #40fefcfb0fe6
 #proxy[manual] Behind HTTPS_PROXY the CLI re-runs itself once with --use-env-proxy so that Node's fetch uses the proxy; auth errors say whether a proxy-injected key was rejected (x-proxy-error header) or no key was sent.
   > src/cli.ts::rerunBehindProxy #865c33840a44
   > src/llm.ts::authHint #093e8811c1e1
-#rpm[manual] `--rpm` (or HCS_RPM) spaces requests evenly with one limiter per model spec; `--reasoning-effort` (or HCS_REASONING_EFFORT) is sent as `reasoning_effort` only when given.
+#rpm[manual] `--rpm` (or HCS_RPM) spaces requests evenly with one limiter per model spec; `--reasoning-effort` (or HCS_REASONING_EFFORT) is sent as `reasoning_effort` only when given, and dropped for that model after the provider rejects it with a 400 or 422.
   > src/llm.ts::RateLimiter #5c815985358a
   > src/llm.ts::createLLM #3e324be51ea7
+  > src/llm.ts::openAICompatible #82fd4ccd9085
 #tokenizer[manual] `--tokenizer M` counts the rendered context with M's tokenizer (Anthropic count_tokens, Gemini native countTokens when GEMINI_API_KEY is set, otherwise the prompt size of a 1-token completion minus the chat framing measured once); `score` and `curve` then write `tokens` from that count and `tokenizer=M`, while budgets and digests keep the estimate.
   > src/llm.ts::framedCounter #30ca9d4028a0
   > src/score.ts::scoreDocument #d5766c4cef00

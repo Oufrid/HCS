@@ -91,7 +91,7 @@ quota). Budgets and digests always use the deterministic estimate.
 
 Providers: openai (OPENAI_API_KEY, OPENAI_BASE_URL for any compatible server),
            anthropic (ANTHROPIC_API_KEY), gemini (GEMINI_API_KEY), groq (GROQ_API_KEY),
-           openrouter (OPENROUTER_API_KEY), ollama (OLLAMA_HOST)
+           openrouter (OPENROUTER_API_KEY), mistral (MISTRAL_API_KEY), ollama (OLLAMA_HOST)
 
 Exit codes: 0 ok, 1 verification failed, 2 usage or syntax error.`;
 

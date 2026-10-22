@@ -350,6 +350,7 @@ Models are written `provider:model`:
 | `gemini:` | `GEMINI_API_KEY` |
 | `groq:` | `GROQ_API_KEY` |
 | `openrouter:` | `OPENROUTER_API_KEY` |
+| `mistral:` | `MISTRAL_API_KEY`, `MISTRAL_BASE_URL` |
 | `openai:` | `OPENAI_API_KEY`, `OPENAI_BASE_URL` (any OpenAI-compatible API: Mistral, vLLM, LM Studio…) |
 | `anthropic:` | `ANTHROPIC_API_KEY`, `ANTHROPIC_BASE_URL` |
 | `ollama:` | `OLLAMA_HOST` (default `http://localhost:11434`) |

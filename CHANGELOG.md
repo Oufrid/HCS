@@ -25,6 +25,8 @@ Experimental. Not published yet: publication happens when the maintainer pushes 
 ### CLI
 - Runs on real free tiers (Gemini, Groq) and local models (Ollama): proxy support, `--rpm`, `--reasoning-effort`,
   quota errors that name the limit, and resume after a quota stop for `compile`, `score`, `curve` and `refine`.
+- `mistral` provider; `reasoning_effort` is dropped for a model whose provider rejects it, list-shaped replies keep
+  only their text parts, and a 429 whose rate-limit header is zero fails at once.
 - `score`: probe quality filter (`compile --filter-known`), two judges, `--runs`, paired `compare`.
 - `curve`: fidelity by token budget and its knee.
 - `refine`: fills the gaps failed probes reveal with verified claims, with held-out probes.

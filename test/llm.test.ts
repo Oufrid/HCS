@@ -439,6 +439,60 @@ test("reasoning models that spend the whole budget on hidden reasoning are retri
   }
 });
 
+test("mistral: list-shaped content keeps only the text parts; a rejected reasoning_effort is dropped once", async () => {
+  const bodies: any[] = [];
+  const server = createServer((req, res) => {
+    let raw = "";
+    req.on("data", (c) => (raw += c));
+    req.on("end", () => {
+      const body = JSON.parse(raw || "{}");
+      bodies.push(body);
+      if (body.reasoning_effort) {
+        res.writeHead(400, { "content-type": "application/json" });
+        res.end(JSON.stringify({ message: "Extra inputs are not permitted: reasoning_effort" }));
+        return;
+      }
+      res.writeHead(200, { "content-type": "application/json" });
+      const content = [
+        { type: "thinking", thinking: [{ type: "text", text: "hidden" }] },
+        { type: "text", text: "po" },
+        { type: "text", text: "ng" },
+      ];
+      res.end(JSON.stringify({ choices: [{ message: { content }, finish_reason: "stop" }], usage: { prompt_tokens: 5, completion_tokens: 2 } }));
+    });
+  });
+  await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
+  process.env.MISTRAL_BASE_URL = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+  try {
+    const m = createLLM("mistral:magistral-small-latest", { reasoningEffort: "low" });
+    assert.equal(await m.complete({ system: "s", prompt: "p", maxTokens: 50 }), "pong");
+    assert.equal(await m.complete({ system: "s", prompt: "p", maxTokens: 50 }), "pong");
+    assert.deepEqual(bodies.map((b) => b.reasoning_effort), ["low", undefined, undefined], "dropped after the first refusal, not resent");
+    assert.equal(bodies[0].model, "magistral-small-latest");
+  } finally {
+    server.close();
+    delete process.env.MISTRAL_BASE_URL;
+  }
+});
+
+test("a 429 whose rate-limit header says zero fails at once instead of waiting", async () => {
+  let calls = 0;
+  const server = createServer((_req, res) => {
+    calls++;
+    res.writeHead(429, { "content-type": "application/json", "x-ratelimit-limit-req-minute": "0" });
+    res.end(JSON.stringify({ message: "Rate limit exceeded" }));
+  });
+  await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
+  process.env.MISTRAL_BASE_URL = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
+  try {
+    await assert.rejects(createLLM("mistral:m").complete({ system: "s", prompt: "p" }), (e) => e instanceof QuotaError && /allows no requests.*x-ratelimit-limit-req-minute: 0/.test(e.message));
+    assert.equal(calls, 1);
+  } finally {
+    server.close();
+    delete process.env.MISTRAL_BASE_URL;
+  }
+});
+
 test("compile keeps its work when the quota runs out, and --update finishes it", async () => {
   const dir = tempProject({ ...FIXTURE, "docs/more.md": "# More\n\nShipping is free above 100 EUR.\n" });
   const fake = new FakeLLM();
