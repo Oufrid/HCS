@@ -6,3 +6,9 @@ bench/a1/gemini.hcs: stopped by the provider's quota (quota: rate limit or quota
 usage groq:openai/gpt-oss-120b: 62 requests, 68461 input + 5746 output tokens (as reported by the provider)
 usage groq:qwen/qwen3.8-27b: 3 requests, 663 input + 1071 output tokens (as reported by the provider)
 exit 1
+--- resume 2026-10-22T07:22:51Z
+resuming from bench/a1/.hcs-cache/refine-gemini.hcs-3e3b857a702c78c0.json
+hold-out: 11 of 37 probes, never shown to refine
+before: training fidelity 7.7%
+round 1: 25 gaps, 29 claims proposed, 29 new and verified
+round 1: training fidelity 7.7% -> 19.2%
