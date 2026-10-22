@@ -88,10 +88,10 @@ Not done (optional): proposing updated claim text with a model.
 Prepared, nothing published: the names `hcs-cli` (npm) and `hcs-format` (PyPI) were free on 2026-10-21. The npm
 tarball (24 files, 87 kB, no runtime dependency) runs `hcs check project.hcs --strict` from a clean checkout with
 no `node_modules` (`npx --package=<tarball> hcs`), and the Python wheel installs in a fresh virtual environment and
-passes the same check with `hcs-py`. `CHANGELOG.md` proposes 0.3.0; `.github/workflows/release.yml` runs only on a
+passes the same check with `hcs-py`. `CHANGELOG.md` and every version number say 0.3.0 (approved by the maintainer, experimental); `.github/workflows/release.yml` runs only on a
 version tag or by hand (dry run by default): it verifies, checks that the tag matches every version number,
 publishes to npm with provenance and to PyPI with trusted publishing, and creates the GitHub release. Remaining,
-all for the maintainer: approve the version, add the `NPM_TOKEN` secret and the PyPI trusted publisher, push the
+all for the maintainer: add the `NPM_TOKEN` secret and the PyPI trusted publisher, push the
 tag, and move a `v0` tag for the Action.
 
 ---
@@ -137,8 +137,8 @@ Done: `hcs seal --deps` stores, on JS/TS and Python symbol anchors, a hash of th
 conformance cases and by the cross-check (785 dependency edges of this repository identical in both). Measured on
 this repository's history (`bench/c3/`): 18 review events over 26 commits, 1 needed, so a false-positive rate of
 17/18 (94%), reported in `bench/REPORT.md`. Follow-up measured: ignoring type-only dependencies and key-only
-names cuts reviews from 38 to 24 over 33 commits and keeps the 3 needed ones; proposed as a draft RFC
-(`rfcs/0000-deps-ignore-types-and-keys.md`), not adopted, since it changes the normative hash.
+names cuts reviews from 38 to 24 over 33 commits and keeps the 3 needed ones; proposed as an RFC
+(`rfcs/0000-deps-ignore-types-and-keys.md`), postponed by the maintainer until there is more evidence.
 
 ### C4. Signed certificates `[x]`
 Done: `hcs keygen`; `score --sign` and `curve --sign` sign certificates with Ed25519 (`node:crypto`) over a

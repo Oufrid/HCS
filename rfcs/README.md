@@ -45,4 +45,4 @@ the 7 days without a version bump.
 | RFC | Title | Status |
 |---|---|---|
 | (none accepted) | Changes up to 0.3 predate this process; they are listed at the top of `SPEC.md`. | |
-| [0000](0000-deps-ignore-types-and-keys.md) | Ignore type-only and key-only names in dependency hashes | draft |
+| [0000](0000-deps-ignore-types-and-keys.md) | Ignore type-only and key-only names in dependency hashes | postponed |

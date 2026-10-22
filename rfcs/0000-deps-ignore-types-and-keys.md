@@ -1,6 +1,7 @@
 # RFC 0000: Ignore type-only and key-only names in dependency hashes
 
-- Status: draft (not yet submitted as a pull request)
+- Status: postponed (2026-10-22): three needed events on one repository are too few to show that recall is kept;
+  to be reconsidered with measurements on more repositories
 - Author: HCS maintainers
 - Discussion: none yet
 

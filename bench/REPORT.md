@@ -249,5 +249,6 @@ event was judged not needed.
 
 The refinements remove about a third of the reviews without losing a needed one on this history, but most reviews
 remain unneeded: the main source left is classes used as parameter types (`cache: SourceCache`), which a regex
-cannot tell from a use. Three needed events is too few to claim recall is preserved in general. Proposed as a draft
-RFC (`rfcs/0000-deps-ignore-types-and-keys.md`), since it changes the normative dependency hash.
+cannot tell from a use. Three needed events is too few to claim recall is preserved in general. Proposed as an RFC
+(`rfcs/0000-deps-ignore-types-and-keys.md`), since it changes the normative dependency hash; postponed by the
+maintainer until there is more evidence.

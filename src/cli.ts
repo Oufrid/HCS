@@ -23,7 +23,7 @@ import { refine, refineStore } from "./refine.js";
 import { parseConversation, toTranscript } from "./snapshot.js";
 import { enableTreeSitter, INSTALL_HINT } from "./treesitter.js";
 
-const VERSION = "0.2.0";
+const VERSION = "0.3.0";
 
 const HELP = `hcs ${VERSION} - Holographic Context Standard
 

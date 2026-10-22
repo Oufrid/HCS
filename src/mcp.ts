@@ -12,7 +12,7 @@ import { isHighRisk } from "./guard.js";
 import { DECODER_PROMPT, renderContext } from "./render.js";
 import { findSymbol } from "./symbols.js";
 
-export const SERVER_VERSION = "0.2.0";
+export const SERVER_VERSION = "0.3.0";
 const PROTOCOL_VERSIONS = ["2025-06-18", "2025-03-26", "2024-11-05"];
 
 interface JsonRpcRequest {

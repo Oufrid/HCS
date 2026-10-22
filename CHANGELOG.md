@@ -3,9 +3,9 @@
 All notable changes to the HCS CLI (`hcs-cli` on npm), the Python package (`hcs-format`) and the format (`SPEC.md`).
 Versions of the CLI and of the format are separate: the CLI reads and writes every format version it lists.
 
-## Unreleased (proposed 0.3.0)
+## 0.3.0
 
-Nothing below is published yet; see ROADMAP item B4.
+Experimental. Not published yet: publication happens when the maintainer pushes the `v0.3.0` tag (ROADMAP B4).
 
 ### Format (SPEC 0.3)
 - Probe tags and the `known` tag; `@known-filter` and `@incomplete` headers.
