@@ -66,6 +66,42 @@
     "correct"
    ],
    "points": 1
+  },
+  "q6": {
+   "id": "q6",
+   "question": "What terminal color code is returned by editorSyntaxToColor for HL_KEYWORD1?",
+   "expected": "33",
+   "answer": "The terminal color code returned by `editorSyntaxToColor` for `HL_KEYWORD1` is **yellow (33)** (cited from **kilo.c:1-589**).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q7": {
+   "id": "q7",
+   "question": "What file permissions mode is passed to open() when editorSave creates or opens the file?",
+   "expected": "0644",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q8": {
+   "id": "q8",
+   "question": "Which function handles the BACKSPACE, CTRL_H, and DEL_KEY keypress events?",
+   "expected": "editorDelChar()",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
   }
  }
 }
