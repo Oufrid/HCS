@@ -1,0 +1,71 @@
+{
+ "repo": "antirez__kilo",
+ "commit": "323d93b29bd89a2cb446de90c4ed4fea1764176e",
+ "condition": "summary",
+ "answerer": "mistral:ministral-14b-latest",
+ "judge": "gemini:gemini-3.8-flash",
+ "budget": 2000,
+ "tokens": 1646,
+ "results": {
+  "q1": {
+   "id": "q1",
+   "question": "What tool was used to measure that Kilo is less than 1K lines of code?",
+   "expected": "cloc",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q2": {
+   "id": "q2",
+   "question": "What is the version string defined by the KILO_VERSION macro?",
+   "expected": "\"0.0.1\"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q3": {
+   "id": "q3",
+   "question": "Which errno value is explicitly ignored as non-fatal when editorOpen attempts to fopen a file?",
+   "expected": "ENOENT",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q4": {
+   "id": "q4",
+   "question": "How many times must Ctrl-Q be pressed to quit when the file has unsaved changes?",
+   "expected": "3",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q5": {
+   "id": "q5",
+   "question": "Which key combination is used to find a string in a file?",
+   "expected": "CTRL-F",
+   "answer": "The key combination to search for a string in a file is **`CTRL-F`** (cited from **README.md:1-26**).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  }
+ }
+}

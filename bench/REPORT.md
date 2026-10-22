@@ -505,5 +505,22 @@ zero. Analysis output: `bench/d1/analysis-confirmation.txt`; raw results under
   minus summary + files +11.1 [-2.2, +24.4] (33 and 30 reads of 90).
 - Per repository, compact versus summary: express 43.3 vs 31.7, requests 43.3 vs 20.0, logrus 53.3 vs 31.7.
 
-Still open: the second answering family (gpt-oss-20b answering, Gemini judging), which runs on Groq's free tier and
-is reported when complete, and the fact that one model compiled the files, wrote the probes and answered here.
+**Second answering family (pre-registered secondary endpoint).** mistral:ministral-14b-latest answers, gemini-3.8-flash
+judges, conditions `hcs-compact` and `summary`, same probes and budget. The family was changed from gpt-oss-20b
+before any call with the new model, because Groq's free tier covered only part of one repository per day (amendment
+in `bench/d1/CONFIRMATION.md`). The abandoned gpt-oss-20b run stopped on express after `summary` 30/30 probes (13
+correct) and `hcs-compact` 13/30 (7 correct); it is kept under `results/expressjs__express/groq_*` and counts for
+nothing. Analysis: `node bench/d1/paired.mjs` (output `bench/d1/analysis-confirmation-family2.txt`, which reproduces
+the family 1 numbers above from their raw results).
+
+| ministral-14b answers, Gemini judges | Fidelity [95% CI], 90 probes |
+|---|---|
+| **HCS, compact profile** | **43.3% [33.9-53.3]** |
+| Naive summary, same budget | 27.2% [18.3-36.7] |
+
+- **Compact minus naive summary: +16.1 points [+3.9, +27.8]**, entirely above zero, so the result holds with a
+  second, smaller answering model from another family. Per repository: express 48.3 vs 38.3, requests 38.3 vs 20.0,
+  logrus 43.3 vs 23.3.
+
+Still open: one model (gemini-3.8-flash) compiled the files, wrote the probes and the summaries, and judges family 2;
+the second family on the five design repositories is running.
