@@ -52,6 +52,7 @@
         "active_help.go",
         "args.go",
         "bash_completions.go",
+        "bash_completionsV2.go",
         "cobra.go",
         "command.go",
         "command_notwin.go",
@@ -65,10 +66,7 @@
         "README.md"
       ],
       "readme": "README.md",
-      "agents": null,
-      "excluded": {
-        "bash_completionsV2.go": "mostly a Bash script template inside a Go string; gemini-3.1-flash-lite's reply was cut by the output limit three times (bench/d1/runs/compile-cobra.txt)"
-      }
+      "agents": null
     },
     {
       "name": "sindresorhus__ky",

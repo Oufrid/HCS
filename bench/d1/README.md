@@ -7,7 +7,7 @@ Five public repositories, pinned in `repos.json`, in five languages and three si
 | antirez/kilo | C | `kilo.c`, README | 13k |
 | pallets/itsdangerous | Python | `src`, README, `docs` | 16k |
 | dtolnay/anyhow | Rust | `src`, README | 56k |
-| spf13/cobra | Go | top-level non-test `.go` files except `bash_completionsV2.go` (a Bash template the compiler could not finish), README | 61k |
+| spf13/cobra | Go | top-level non-test `.go` files, README | 61k |
 | sindresorhus/ky | TypeScript | `source`, readme | 76k |
 
 Tests are left out to fit free tiers; the sizes are HCS's own token estimates.
