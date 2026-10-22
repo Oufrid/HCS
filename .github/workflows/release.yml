@@ -85,6 +85,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Release notes from CHANGELOG.md
         run: awk -v v="## ${GITHUB_REF_NAME#v}" 'index($0, v) == 1 {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
-      - run: gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file notes.md
+      # The maintainer may have created the release (and its tag) in the GitHub interface: then only set its notes.
+      - run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release edit "$GITHUB_REF_NAME" --notes-file notes.md
+          else
+            gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file notes.md
+          fi
         env:
           GH_TOKEN: ${{ github.token }}

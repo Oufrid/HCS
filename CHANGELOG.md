@@ -10,7 +10,7 @@ Versions of the CLI and of the format are separate: the CLI reads and writes eve
 
 ## 0.3.0
 
-Experimental. Not published yet: publication happens when the maintainer pushes the `v0.3.0` tag (ROADMAP B4).
+Experimental: the first release on npm (`hcs-cli`) and PyPI (`hcs-format`). Implements format SPEC 1.0 (identical to 0.3).
 
 ### Format (SPEC 0.3)
 - Probe tags and the `known` tag; `@known-filter` and `@incomplete` headers.
