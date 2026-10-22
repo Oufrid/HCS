@@ -169,13 +169,19 @@ on 470 of 474 common symbols, every difference being a heuristic error.
 
 ## Phase D: Ecosystem and governance
 
-### D1. Public benchmark `[ ]`
+### D1. Public benchmark `[~]`
 - Run `bench/run.mjs` on ≥ 5 public repositories (several languages and sizes) with ≥ 2 model families, with
   the raw results committed.
 - `bench/REPORT.md` with tables, CIs, the method and its limitations.
 - Compare with the baselines: no context, the repo's own README/AGENTS.md (via `audit`), and an equal-budget
   naive summary.
 - **Done when:** the report is published and every number in README links to it.
+
+Harness ready, runs pending quota: `bench/d1/` pins five public repositories (C, Python, Rust, Go, TypeScript;
+13k to 76k source tokens) and runs resumable steps (compile, an equal-budget naive summary, scoring of hcs / none /
+readme / agents / summary on the same probes, and a report with paired bootstrap CIs). The protocol and its biases
+are in `bench/d1/README.md`. On free tiers this is about five days of one Groq model's daily tokens per answering
+model; a daily scheduled run advances it.
 
 ### D2. Spec 1.0 and governance `[~]`
 - `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, issue and PR templates.
