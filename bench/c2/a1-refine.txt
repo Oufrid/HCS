@@ -1,2 +1,8 @@
 hold-out: 11 of 37 probes, never shown to refine
 before: training fidelity 7.7%
+round 1: 25 gaps, 29 claims proposed, 29 new and verified
+bench/a1/gemini.hcs: stopped by the provider's quota (quota: rate limit or quota exhausted at https://api.groq.com/openai/v1/chat/completions (server asks to wait 262s; Rate limit reached for model `openai/gpt-oss-120b` in organization `org_01kq6dek8kf3ptkrbhwjhgsk0f` service tier `on_demand` on tokens per day (TPD): Limit 200000, Used 199152, Requested 1453. Please try again in 4m21.36s. Need more tokens?). Try later, lower --rpm, or use another model.).
+  progress is saved in bench/a1/.hcs-cache/refine-gemini.hcs-3e3b857a702c78c0.json; run the same command later to resume
+usage groq:openai/gpt-oss-120b: 62 requests, 68461 input + 5746 output tokens (as reported by the provider)
+usage groq:qwen/qwen3.8-27b: 3 requests, 663 input + 1071 output tokens (as reported by the provider)
+exit 1
