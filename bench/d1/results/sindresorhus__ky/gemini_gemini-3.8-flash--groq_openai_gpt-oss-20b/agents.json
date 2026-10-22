@@ -1,0 +1,371 @@
+{
+ "repo": "sindresorhus__ky",
+ "commit": "3541888878c4d303a8bc2ad61815f4e048f55a5d",
+ "condition": "agents",
+ "answerer": "gemini:gemini-3.8-flash",
+ "judge": "groq:openai/gpt-oss-20b",
+ "budget": 2000,
+ "tokens": 158,
+ "results": {
+  "p1": {
+   "id": "p1",
+   "question": "What is the default per-attempt timeout in milliseconds for Ky requests?",
+   "expected": "10000",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p2": {
+   "id": "p2",
+   "question": "What happens if a custom fetch function does not resolve with a Response object?",
+   "expected": "A TypeError is thrown.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p3": {
+   "id": "p3",
+   "question": "What error does Ky throw if totalTimeout expires while error.data is being populated?",
+   "expected": "TimeoutError",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p4": {
+   "id": "p4",
+   "question": "What does a request resolve with if ky.stop is returned from a beforeRetry hook?",
+   "expected": "undefined",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p5": {
+   "id": "p5",
+   "question": "What is the maximum allowed error response body size in bytes before Ky cancels reading and returns undefined?",
+   "expected": "10 * 1024 * 1024 (10 MB)",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p6": {
+   "id": "p6",
+   "question": "What error is thrown if retry.delay returns a non-number or negative value?",
+   "expected": "A TypeError stating '`retry.delay` must return a non-negative number or `Infinity`'.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p7": {
+   "id": "p7",
+   "question": "What error does Ky throw if a raw network error occurs inside `#fetch`?",
+   "expected": "NetworkError (wrapping the original error as cause)",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p8": {
+   "id": "p8",
+   "question": "What is the numeric value of maxSafeTimeout in Ky?",
+   "expected": "2147483647",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p9": {
+   "id": "p9",
+   "question": "What is the minimum numeric second threshold required for an allowed header value to be treated as an epoch timestamp?",
+   "expected": "1_000_000_000 (representing 2001-09-09)",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p10": {
+   "id": "p10",
+   "question": "What error message is produced when null is passed into ForceRetryError's constructor?",
+   "expected": "The `ky.retry()` options must be an object",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p11": {
+   "id": "p11",
+   "question": "What is the timeout duration for error.data body reads and parsing if the timeout option is disabled?",
+   "expected": "10 seconds",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p12": {
+   "id": "p12",
+   "question": "Which specific error classes extend KyError?",
+   "expected": "HTTPError, NetworkError, TimeoutError, ResponseSizeError, and ForceRetryError.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p13": {
+   "id": "p13",
+   "question": "Why is a dropped connection while reading a response body via .json() not retried even though it is wrapped in NetworkError?",
+   "expected": "Because the response has already been received.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p14": {
+   "id": "p14",
+   "question": "What does NonError.wrap return if the provided value is already an Error?",
+   "expected": "The value as-is.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p15": {
+   "id": "p15",
+   "question": "What message format does ResponseSizeError pass to its superclass constructor?",
+   "expected": "Response body exceeded ${maxResponseSize} bytes: ${request.method} ${request.url}",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p16": {
+   "id": "p16",
+   "question": "Why does SchemaValidationError avoid extending KyError?",
+   "expected": "It does not represent a failure in Ky's HTTP lifecycle since the request succeeded and only the user's schema rejected the data.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p17": {
+   "id": "p17",
+   "question": "What message does the TimeoutError constructor pass to super()?",
+   "expected": "`Request timed out: ${request.method} ${request.url}`",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p18": {
+   "id": "p18",
+   "question": "Why does createRequest catch setup errors and return a rejected promise instead of letting them throw?",
+   "expected": "To match fetch() reporting and ensure callers only have one error channel to handle.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p19": {
+   "id": "p19",
+   "question": "What error does ResponsePromise's body shortcut throw if the response status is outside 200...299?",
+   "expected": "An HTTPError.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p20": {
+   "id": "p20",
+   "question": "What constraint must BaseType satisfy in LiteralUnion?",
+   "expected": "BaseType must extend Primitive.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p21": {
+   "id": "p21",
+   "question": "What happens if a beforeRetry hook returns `{options: {...}}` with an omitted option versus setting it to `undefined`?",
+   "expected": "Omitted options retain their current value, while `undefined` restores Ky's default value rather than settings from `ky.create()` or `ky.extend()`.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p22": {
+   "id": "p22",
+   "question": "What error occurs if body methods like .json() are called on a request aborted via ky.stop?",
+   "expected": "A TypeError is thrown because there is no response to parse.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p23": {
+   "id": "p23",
+   "question": "What happens when parseJson is called in terms of the arguments passed to it?",
+   "expected": "It receives the response text as the first argument and a context object containing request and response as the second argument.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p24": {
+   "id": "p24",
+   "question": "What is the default type parameter for the generic J in KyRequest's json method?",
+   "expected": "T",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p25": {
+   "id": "p25",
+   "question": "What standard type does KyResponse intersect with?",
+   "expected": "Response",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p26": {
+   "id": "p26",
+   "question": "What is the default exponential backoff delay formula in RetryOptions?",
+   "expected": "attemptCount => 0.3 * (2 ** (attemptCount - 1)) * 1000",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p27": {
+   "id": "p27",
+   "question": "What literal number type is required for '~standard'.version in StandardSchemaV1?",
+   "expected": "1",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p28": {
+   "id": "p28",
+   "question": "Which HTTP status codes are classified as nullBodyStatuses?",
+   "expected": "101, 103, 204, 205, and 304.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p29": {
+   "id": "p29",
+   "question": "What method is called on signal at the start of delay if signal is provided?",
+   "expected": "signal.throwIfAborted()",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "p30": {
+   "id": "p30",
+   "question": "What error name must an error have to be considered a valid raw network error?",
+   "expected": "TypeError",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  }
+ }
+}

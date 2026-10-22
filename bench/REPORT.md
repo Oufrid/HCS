@@ -292,3 +292,46 @@ Next measurements, with the same split: the same file without a budget (about fo
 second repository (pallets/itsdangerous, once compiled for D1). A possible change, to be measured rather than
 assumed: under a budget, rank claims by how many training probes they help (ablation) instead of by the writer's
 importance.
+
+## D1. Public benchmark
+
+Protocol, repositories and known biases: `bench/d1/README.md`. Full table with per-repository CIs:
+`bench/d1/results.md` (raw per-probe answers and verdicts in `bench/d1/results/`).
+
+### 2026-10-22: first model family (Gemini 3.8 Flash answers, gpt-oss-20b judges)
+
+All five repositories were compiled and summarized by one model, gemini-3.8-flash (paid key; 379,536 input and
+99,360 output tokens). A first attempt on free tiers used five different Gemini models and is archived in
+`bench/d1/archive-mixed/` without results. Every context gets the same 2,000-token budget.
+
+Pooled over the 147 probes of the five repositories (paired bootstrap, 95% CI):
+
+| Condition | Fidelity [95% CI] | HCS minus condition |
+|---|---|---|
+| HCS context | 29.9% [23.1%-37.4%] | |
+| No context | 30.3% [22.8%-37.8%] | -0.3 points [-10.5, +10.2] |
+| README (cut to the budget) | 8.8% [4.8%-13.6%] | **+21.1 points [+13.6, +29.3]** |
+| Naive summary, same budget | 23.5% [17.0%-30.6%] | +6.5 points [-1.4, +14.3] |
+
+Per repository, HCS minus no context: kilo -25.9, itsdangerous +16.7, anyhow +10.0, cobra -13.3, ky +8.3
+points (every interval includes 0 or nearly).
+
+What this shows, and what it does not:
+
+- **HCS clearly beats the repositories' own README** at the same budget, on every repository (ky's AGENTS.md:
+  0.0%, HCS 26.7%). This is the only difference that is clearly outside the noise.
+- **HCS does not measurably beat a naive summary of the same size** made by the same model: +6.5 points, with an
+  interval that includes zero. With 147 probes, a real gain of a few points cannot be shown.
+- **HCS does not beat no context at all, pooled.** On the two best-known projects (antirez/kilo, spf13/cobra) the
+  model answers better from its own knowledge: without context it may use what it knows, while every context
+  condition tells it to answer only from the context and to say "UNKNOWN" otherwise. The no-context condition
+  measures something different (memory of public code), and it favors popular repositories. A private codebase
+  would not have this advantage, but none was measured.
+- Fidelity is low everywhere (about 30%): the probes ask precise details (names, values, messages) and 2,000
+  tokens cover a small part of 13k to 76k tokens of source.
+- The probes are written by the compiling model from the chunks it compiles, which favors HCS over the README and
+  the summary (`bench/d1/README.md`, biases). The +6.5 points over the summary may be partly that bias.
+- One answering family so far. The second (gpt-oss-120b answering, Gemini judging) is running on Groq's free tier.
+
+Not yet measured: a second answering family, larger budgets, and whether `--filter-known` (dropping probes models
+answer without context) changes the comparison with no context.
