@@ -479,3 +479,31 @@ Limits, to be read with the numbers: the compact profile was designed after look
 answering model (gemini-3.8-flash), which also compiled the files and wrote the independent probes; one judge
 (gpt-oss-20b); 144 probes. Next: the same comparison with a second answering family and on repositories not used to
 design the profile.
+
+### 2026-10-22: confirmation on three new repositories (pre-registered)
+
+The protocol was committed before any model call on these repositories (`bench/d1/CONFIRMATION.md`, commit
+51204e5): expressjs/express, psf/requests and sirupsen/logrus, the same pipeline as the v2 run, and one primary
+endpoint fixed in advance: `hcs-compact` minus `summary`, pooled, confirmed only if its 95% interval is entirely above
+zero. Analysis output: `bench/d1/analysis-confirmation.txt`; raw results under
+`bench/d1/results/{expressjs__express,psf__requests,sirupsen__logrus}/*--independent--v2/`.
+
+| Condition (gemini-3.8-flash answers, gpt-oss-20b judges) | Fidelity [95% CI], 90 probes | On the 56 unknown probes |
+|---|---|---|
+| **HCS, compact profile** | **46.7% [36.7-56.7]** | **48.2% [35.7-62.5]** |
+| HCS, full profile | 32.2% [23.3-42.2] | 37.5% [25.0-50.0] |
+| Naive summary, same budget | 27.8% [18.9-37.2] | 24.1% [13.4-35.7] |
+| No context | 37.2% [27.8-47.2] | 0.0% |
+| README, cut to the budget | 10.0% [4.4-16.7] | 8.9% [1.8-17.9] |
+| HCS compact + read claims' source | 62.8% [52.2-72.2] | 64.3% [51.8-76.8] |
+| Summary + open files | 51.7% [41.1-62.2] | 52.7% [40.2-64.3] |
+
+- **Primary endpoint, compact minus naive summary: +18.9 points [+7.2, +30.6]: confirmed** (+24.1 [+8.9, +39.3] on
+  unknown probes). The five design repositories gave +19.1 [+10.4, +28.1].
+- Secondary: compact minus full +14.4 [+6.7, +23.3]; minus README +36.7 [+26.7, +47.8]; minus no context +9.4
+  [-5.0, +23.9] (not significant here: these are well-known libraries; on unknown probes +48.2); compact + source
+  minus summary + files +11.1 [-2.2, +24.4] (33 and 30 reads of 90).
+- Per repository, compact versus summary: express 43.3 vs 31.7, requests 43.3 vs 20.0, logrus 53.3 vs 31.7.
+
+Still open: the second answering family (gpt-oss-20b answering, Gemini judging), which runs on Groq's free tier and
+is reported when complete, and the fact that one model compiled the files, wrote the probes and answered here.

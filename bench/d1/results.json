@@ -1494,5 +1494,362 @@
    0.43333333333333335
   ],
   "misled": 0
+ },
+ {
+  "repo": "expressjs__express",
+  "commit": "0dee2c52c7c873498f8ed7d8ee4ddd0a04d3ada8",
+  "answerer": "gemini:gemini-3.8-flash",
+  "judge": "groq:openai/gpt-oss-20b",
+  "probeSet": "independent",
+  "run": "gemini_gemini-3.8-flash--groq_openai_gpt-oss-20b--independent--v2",
+  "condition": "hcs",
+  "tokens": 1940,
+  "probes": 30,
+  "fidelity": 0.4,
+  "ci95": [
+   0.23333333333333334,
+   0.5666666666666667
+  ],
+  "misled": 0.06666666666666667
+ },
+ {
+  "repo": "expressjs__express",
+  "commit": "0dee2c52c7c873498f8ed7d8ee4ddd0a04d3ada8",
+  "answerer": "gemini:gemini-3.8-flash",
+  "judge": "groq:openai/gpt-oss-20b",
+  "probeSet": "independent",
+  "run": "gemini_gemini-3.8-flash--groq_openai_gpt-oss-20b--independent--v2",
+  "condition": "hcs-compact",
+  "tokens": 1417,
+  "probes": 30,
+  "fidelity": 0.43333333333333335,
+  "ci95": [
+   0.26666666666666666,
+   0.6
+  ],
+  "misled": 0.06666666666666667
+ },
+ {
+  "repo": "expressjs__express",
+  "commit": "0dee2c52c7c873498f8ed7d8ee4ddd0a04d3ada8",
+  "answerer": "gemini:gemini-3.8-flash",
+  "judge": "groq:openai/gpt-oss-20b",
+  "probeSet": "independent",
+  "run": "gemini_gemini-3.8-flash--groq_openai_gpt-oss-20b--independent--v2",
+  "condition": "none",
+  "tokens": 0,
+  "probes": 30,
+  "fidelity": 0.5166666666666667,
+  "ci95": [
+   0.3333333333333333,
+   0.6833333333333333
+  ],
+  "misled": 0.1
+ },
+ {
+  "repo": "expressjs__express",
+  "commit": "0dee2c52c7c873498f8ed7d8ee4ddd0a04d3ada8",
+  "answerer": "gemini:gemini-3.8-flash",
+  "judge": "groq:openai/gpt-oss-20b",
+  "probeSet": "independent",
+  "run": "gemini_gemini-3.8-flash--groq_openai_gpt-oss-20b--independent--v2",
+  "condition": "readme",
+  "tokens": 1994,
+  "probes": 30,
+  "fidelity": 0.13333333333333333,
+  "ci95": [
+   0.03333333333333333,
+   0.26666666666666666
+  ],
+  "misled": 0
+ },
+ {
+  "repo": "expressjs__express",
+  "commit": "0dee2c52c7c873498f8ed7d8ee4ddd0a04d3ada8",
+  "answerer": "gemini:gemini-3.8-flash",
+  "judge": "groq:openai/gpt-oss-20b",
+  "probeSet": "independent",
+  "run": "gemini_gemini-3.8-flash--groq_openai_gpt-oss-20b--independent--v2",
+  "condition": "summary",
+  "tokens": 1938,
+  "probes": 30,
+  "fidelity": 0.31666666666666665,
+  "ci95": [
+   0.16666666666666666,
+   0.48333333333333334
+  ],
+  "misled": 0
+ },
+ {
+  "repo": "expressjs__express",
+  "commit": "0dee2c52c7c873498f8ed7d8ee4ddd0a04d3ada8",
+  "answerer": "gemini:gemini-3.8-flash",
+  "judge": "groq:openai/gpt-oss-20b",
+  "probeSet": "independent",
+  "run": "gemini_gemini-3.8-flash--groq_openai_gpt-oss-20b--independent--v2",
+  "condition": "hcs-compact+expand",
+  "tokens": 1417,
+  "probes": 30,
+  "fidelity": 0.6166666666666667,
+  "ci95": [
+   0.45,
+   0.7666666666666667
+  ],
+  "misled": 0.06666666666666667
+ },
+ {
+  "repo": "expressjs__express",
+  "commit": "0dee2c52c7c873498f8ed7d8ee4ddd0a04d3ada8",
+  "answerer": "gemini:gemini-3.8-flash",
+  "judge": "groq:openai/gpt-oss-20b",
+  "probeSet": "independent",
+  "run": "gemini_gemini-3.8-flash--groq_openai_gpt-oss-20b--independent--v2",
+  "condition": "summary+open",
+  "tokens": 1938,
+  "probes": 30,
+  "fidelity": 0.5333333333333333,
+  "ci95": [
+   0.36666666666666664,
+   0.7
+  ],
+  "misled": 0.03333333333333333
+ },
+ {
+  "repo": "psf__requests",
+  "commit": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+  "answerer": "gemini:gemini-3.8-flash",
+  "judge": "groq:openai/gpt-oss-20b",
+  "probeSet": "independent",
+  "run": "gemini_gemini-3.8-flash--groq_openai_gpt-oss-20b--independent--v2",
+  "condition": "hcs",
+  "tokens": 1968,
+  "probes": 30,
+  "fidelity": 0.3,
+  "ci95": [
+   0.13333333333333333,
+   0.4666666666666667
+  ],
+  "misled": 0
+ },
+ {
+  "repo": "psf__requests",
+  "commit": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+  "answerer": "gemini:gemini-3.8-flash",
+  "judge": "groq:openai/gpt-oss-20b",
+  "probeSet": "independent",
+  "run": "gemini_gemini-3.8-flash--groq_openai_gpt-oss-20b--independent--v2",
+  "condition": "hcs-compact",
+  "tokens": 1936,
+  "probes": 30,
+  "fidelity": 0.43333333333333335,
+  "ci95": [
+   0.23333333333333334,
+   0.6
+  ],
+  "misled": 0.03333333333333333
+ },
+ {
+  "repo": "psf__requests",
+  "commit": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+  "answerer": "gemini:gemini-3.8-flash",
+  "judge": "groq:openai/gpt-oss-20b",
+  "probeSet": "independent",
+  "run": "gemini_gemini-3.8-flash--groq_openai_gpt-oss-20b--independent--v2",
+  "condition": "none",
+  "tokens": 0,
+  "probes": 30,
+  "fidelity": 0.3333333333333333,
+  "ci95": [
+   0.16666666666666666,
+   0.5
+  ],
+  "misled": 0.13333333333333333
+ },
+ {
+  "repo": "psf__requests",
+  "commit": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+  "answerer": "gemini:gemini-3.8-flash",
+  "judge": "groq:openai/gpt-oss-20b",
+  "probeSet": "independent",
+  "run": "gemini_gemini-3.8-flash--groq_openai_gpt-oss-20b--independent--v2",
+  "condition": "readme",
+  "tokens": 938,
+  "probes": 30,
+  "fidelity": 0.06666666666666667,
+  "ci95": [
+   0,
+   0.16666666666666666
+  ],
+  "misled": 0
+ },
+ {
+  "repo": "psf__requests",
+  "commit": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+  "answerer": "gemini:gemini-3.8-flash",
+  "judge": "groq:openai/gpt-oss-20b",
+  "probeSet": "independent",
+  "run": "gemini_gemini-3.8-flash--groq_openai_gpt-oss-20b--independent--v2",
+  "condition": "summary",
+  "tokens": 1839,
+  "probes": 30,
+  "fidelity": 0.2,
+  "ci95": [
+   0.06666666666666667,
+   0.3333333333333333
+  ],
+  "misled": 0
+ },
+ {
+  "repo": "psf__requests",
+  "commit": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+  "answerer": "gemini:gemini-3.8-flash",
+  "judge": "groq:openai/gpt-oss-20b",
+  "probeSet": "independent",
+  "run": "gemini_gemini-3.8-flash--groq_openai_gpt-oss-20b--independent--v2",
+  "condition": "hcs-compact+expand",
+  "tokens": 1936,
+  "probes": 30,
+  "fidelity": 0.5666666666666667,
+  "ci95": [
+   0.4,
+   0.7333333333333333
+  ],
+  "misled": 0
+ },
+ {
+  "repo": "psf__requests",
+  "commit": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+  "answerer": "gemini:gemini-3.8-flash",
+  "judge": "groq:openai/gpt-oss-20b",
+  "probeSet": "independent",
+  "run": "gemini_gemini-3.8-flash--groq_openai_gpt-oss-20b--independent--v2",
+  "condition": "summary+open",
+  "tokens": 1839,
+  "probes": 30,
+  "fidelity": 0.5666666666666667,
+  "ci95": [
+   0.4,
+   0.7333333333333333
+  ],
+  "misled": 0
+ },
+ {
+  "repo": "sirupsen__logrus",
+  "commit": "6ef0748d1177dadaeee9aa79ffef604570f487d7",
+  "answerer": "gemini:gemini-3.8-flash",
+  "judge": "groq:openai/gpt-oss-20b",
+  "probeSet": "independent",
+  "run": "gemini_gemini-3.8-flash--groq_openai_gpt-oss-20b--independent--v2",
+  "condition": "hcs",
+  "tokens": 1955,
+  "probes": 30,
+  "fidelity": 0.26666666666666666,
+  "ci95": [
+   0.13333333333333333,
+   0.43333333333333335
+  ],
+  "misled": 0
+ },
+ {
+  "repo": "sirupsen__logrus",
+  "commit": "6ef0748d1177dadaeee9aa79ffef604570f487d7",
+  "answerer": "gemini:gemini-3.8-flash",
+  "judge": "groq:openai/gpt-oss-20b",
+  "probeSet": "independent",
+  "run": "gemini_gemini-3.8-flash--groq_openai_gpt-oss-20b--independent--v2",
+  "condition": "hcs-compact",
+  "tokens": 1917,
+  "probes": 30,
+  "fidelity": 0.5333333333333333,
+  "ci95": [
+   0.36666666666666664,
+   0.7
+  ],
+  "misled": 0
+ },
+ {
+  "repo": "sirupsen__logrus",
+  "commit": "6ef0748d1177dadaeee9aa79ffef604570f487d7",
+  "answerer": "gemini:gemini-3.8-flash",
+  "judge": "groq:openai/gpt-oss-20b",
+  "probeSet": "independent",
+  "run": "gemini_gemini-3.8-flash--groq_openai_gpt-oss-20b--independent--v2",
+  "condition": "none",
+  "tokens": 0,
+  "probes": 30,
+  "fidelity": 0.26666666666666666,
+  "ci95": [
+   0.1,
+   0.43333333333333335
+  ],
+  "misled": 0.03333333333333333
+ },
+ {
+  "repo": "sirupsen__logrus",
+  "commit": "6ef0748d1177dadaeee9aa79ffef604570f487d7",
+  "answerer": "gemini:gemini-3.8-flash",
+  "judge": "groq:openai/gpt-oss-20b",
+  "probeSet": "independent",
+  "run": "gemini_gemini-3.8-flash--groq_openai_gpt-oss-20b--independent--v2",
+  "condition": "readme",
+  "tokens": 1999,
+  "probes": 30,
+  "fidelity": 0.1,
+  "ci95": [
+   0,
+   0.2
+  ],
+  "misled": 0
+ },
+ {
+  "repo": "sirupsen__logrus",
+  "commit": "6ef0748d1177dadaeee9aa79ffef604570f487d7",
+  "answerer": "gemini:gemini-3.8-flash",
+  "judge": "groq:openai/gpt-oss-20b",
+  "probeSet": "independent",
+  "run": "gemini_gemini-3.8-flash--groq_openai_gpt-oss-20b--independent--v2",
+  "condition": "summary",
+  "tokens": 1341,
+  "probes": 30,
+  "fidelity": 0.31666666666666665,
+  "ci95": [
+   0.16666666666666666,
+   0.48333333333333334
+  ],
+  "misled": 0
+ },
+ {
+  "repo": "sirupsen__logrus",
+  "commit": "6ef0748d1177dadaeee9aa79ffef604570f487d7",
+  "answerer": "gemini:gemini-3.8-flash",
+  "judge": "groq:openai/gpt-oss-20b",
+  "probeSet": "independent",
+  "run": "gemini_gemini-3.8-flash--groq_openai_gpt-oss-20b--independent--v2",
+  "condition": "hcs-compact+expand",
+  "tokens": 1917,
+  "probes": 30,
+  "fidelity": 0.7,
+  "ci95": [
+   0.5333333333333333,
+   0.8666666666666667
+  ],
+  "misled": 0
+ },
+ {
+  "repo": "sirupsen__logrus",
+  "commit": "6ef0748d1177dadaeee9aa79ffef604570f487d7",
+  "answerer": "gemini:gemini-3.8-flash",
+  "judge": "groq:openai/gpt-oss-20b",
+  "probeSet": "independent",
+  "run": "gemini_gemini-3.8-flash--groq_openai_gpt-oss-20b--independent--v2",
+  "condition": "summary+open",
+  "tokens": 1341,
+  "probes": 30,
+  "fidelity": 0.45,
+  "ci95": [
+   0.2833333333333333,
+   0.6166666666666667
+  ],
+  "misled": 0
  }
 ]

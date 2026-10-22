@@ -1,0 +1,120 @@
+--- 2026-10-22T16:25:11Z compile express try 1
+[1/10] Readme.md:1-282 -> 6 claims, 3 probes
+[2/10] index.js:1-11 -> 1 claims, 1 probes
+[3/10] lib/application.js:598-631 -> 4 claims, 3 probes
+[4/10] lib/application.js:1-597 -> 3 claims, 3 probes
+[5/10] lib/express.js:1-81 -> 7 claims, 3 probes
+[6/10] lib/request.js:1-527 -> 6 claims, 3 probes
+[7/10] lib/response.js:1-600 -> 3 claims, 3 probes
+[8/10] lib/response.js:601-1050 -> 4 claims, 3 probes
+[9/10] lib/utils.js:1-271 -> 4 claims, 3 probes
+[10/10] lib/view.js:1-205 -> 2 claims, 3 probes
+synthesized 7 overview claims
+wrote /home/user/HCS/bench/d1/hcs/expressjs__express.hcs: 47 claims, 28 probes from 8 files (8 compiled)
+  rejected by quote verification: 24/64 claims, 0/28 probes
+  context ~2144 tokens for ~22368 tokens of source. Next: hcs score /home/user/HCS/bench/d1/hcs/expressjs__express.hcs --model <answering model> --judge <a model from another family> --write
+usage gemini:gemini-3.8-flash: 11 requests, 42292 input + 10769 output tokens (as reported by the provider)
+--- 2026-10-22T16:25:51Z summarize express try 1
+expressjs__express: summary ~1938 tokens from 7 requests by gemini:gemini-3.8-flash
+usage gemini:gemini-3.8-flash: 7 requests, 23393 input + 3014 output tokens (as reported by the provider)
+--- 2026-10-22T16:26:28Z probes express try 1
+expressjs__express: 30 independent probes (46 verified of 46 proposed) by gemini:gemini-3.8-flash
+usage gemini:gemini-3.8-flash: 10 requests, 38639 input + 3593 output tokens (as reported by the provider)
+--- 2026-10-22T16:27:09Z compile requests try 1
+[1/25] README.md:1-76 -> 4 claims, 3 probes
+[2/25] src/requests/__version__.py:1-14 -> 2 claims, 3 probes
+[3/25] src/requests/__init__.py:1-219 -> 5 claims, 3 probes
+[4/25] src/requests/_internal_utils.py:1-51 -> 5 claims, 3 probes
+[5/25] src/requests/_types.py:1-188 -> 5 claims, 3 probes
+[6/25] src/requests/adapters.py:1-598 -> 6 claims, 2 probes
+[7/25] src/requests/api.py:1-180 -> 5 claims, 2 probes
+[8/25] src/requests/adapters.py:599-748 -> 7 claims, 3 probes
+[9/25] src/requests/certs.py:1-18 -> 3 claims, 2 probes
+[10/25] src/requests/auth.py:1-354 -> 8 claims, 3 probes
+[11/25] src/requests/compat.py:1-115 -> 4 claims, 3 probes
+[12/25] src/requests/cookies.py:601-625 -> 5 claims, 3 probes
+[13/25] src/requests/cookies.py:1-600 -> 7 claims, 3 probes
+[14/25] src/requests/exceptions.py:1-162 -> 7 claims, 3 probes
+[15/25] src/requests/help.py:1-132 -> 6 claims, 3 probes
+[16/25] src/requests/hooks.py:1-48 -> 5 claims, 3 probes
+[17/25] src/requests/models.py:1-600 -> 5 claims, 3 probes
+[18/25] src/requests/models.py:601-1184 -> 8 claims, 3 probes
+[19/25] src/requests/packages.py:1-23 -> 2 claims, 2 probes
+[20/25] src/requests/sessions.py:579-920 -> 6 claims, 3 probes
+[21/25] src/requests/status_codes.py:1-128 -> 5 claims, 2 probes
+[22/25] src/requests/sessions.py:1-578 -> 3 claims, 3 probes
+[23/25] src/requests/structures.py:1-130 -> 6 claims, 2 probes
+[24/25] src/requests/utils.py:1-598 -> 6 claims, 3 probes
+[25/25] src/requests/utils.py:599-1155 -> 6 claims, 3 probes
+synthesized 8 overview claims
+wrote /home/user/HCS/bench/d1/hcs/psf__requests.hcs: 139 claims, 30 probes from 20 files (20 compiled)
+  rejected by quote verification: 24/155 claims, 2/71 probes
+  context ~7293 tokens for ~56133 tokens of source. Next: hcs score /home/user/HCS/bench/d1/hcs/psf__requests.hcs --model <answering model> --judge <a model from another family> --write
+usage gemini:gemini-3.8-flash: 26 requests, 102412 input + 26225 output tokens (as reported by the provider)
+--- 2026-10-22T16:28:38Z summarize requests try 1
+psf__requests: summary ~1839 tokens from 13 requests by gemini:gemini-3.8-flash
+usage gemini:gemini-3.8-flash: 13 requests, 60277 input + 3444 output tokens (as reported by the provider)
+--- 2026-10-22T16:29:28Z probes requests try 1
+psf__requests: 30 independent probes (49 verified of 50 proposed) by gemini:gemini-3.8-flash
+usage gemini:gemini-3.8-flash: 25 requests, 91499 input + 4159 output tokens (as reported by the provider)
+--- 2026-10-22T16:30:44Z compile logrus try 1
+[1/21] README.md:1-505 -> 8 claims, 3 probes
+[2/21] alt_exit.go:1-76 -> 4 claims, 3 probes
+[3/21] buffer_pool.go:1-37 -> 5 claims, 3 probes
+[4/21] doc.go:1-26 -> 3 claims, 2 probes
+[5/21] entry.go:1-567 -> 7 claims, 3 probes
+[6/21] exported.go:1-265 -> 8 claims, 3 probes
+[7/21] formatter.go:1-93 -> 6 claims, 3 probes
+[8/21] hooks.go:1-34 -> 4 claims, 3 probes
+[9/21] json_formatter.go:1-137 -> 7 claims, 3 probes
+[10/21] level.go:1-101 -> 3 claims, 3 probes
+[11/21] logger.go:1-475 -> 8 claims, 3 probes
+[12/21] terminal_check_appengine.go:1-7 -> 1 claims, 1 probes
+[13/21] terminal_check_bsd.go:1-12 -> 3 claims, 2 probes
+[14/21] logrus.go:1-227 -> 6 claims, 3 probes
+[15/21] terminal_check_no_terminal.go:1-7 -> 2 claims, 2 probes
+[16/21] terminal_check_notappengine.go:1-21 -> 4 claims, 3 probes
+[17/21] terminal_check_solaris.go:1-13 -> 3 claims, 2 probes
+[18/21] terminal_check_unix.go:1-12 -> 3 claims, 3 probes
+[19/21] terminal_check_windows.go:1-27 -> 5 claims, 2 probes
+[20/21] text_formatter.go:1-483 -> 7 claims, 3 probes
+[21/21] writer.go:1-100 -> 5 claims, 3 probes
+synthesized 8 overview claims
+wrote /home/user/HCS/bench/d1/hcs/sirupsen__logrus.hcs: 110 claims, 30 probes from 21 files (21 compiled)
+  rejected by quote verification: 11/113 claims, 0/56 probes
+  context ~4865 tokens for ~26759 tokens of source. Next: hcs score /home/user/HCS/bench/d1/hcs/sirupsen__logrus.hcs --model <answering model> --judge <a model from another family> --write
+usage gemini:gemini-3.8-flash: 22 requests, 54704 input + 17382 output tokens (as reported by the provider)
+--- 2026-10-22T16:31:59Z summarize logrus try 1
+sirupsen__logrus: summary ~1341 tokens from 7 requests by gemini:gemini-3.8-flash
+usage gemini:gemini-3.8-flash: 7 requests, 29412 input + 3170 output tokens (as reported by the provider)
+--- 2026-10-22T16:32:39Z probes logrus try 1
+sirupsen__logrus: 30 independent probes (63 verified of 63 proposed) by gemini:gemini-3.8-flash
+usage gemini:gemini-3.8-flash: 21 requests, 46350 input + 4840 output tokens (as reported by the provider)
+expressjs__express hcs: fidelity 40.0% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+expressjs__express none: fidelity 51.7% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+expressjs__express readme: fidelity 13.3% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+expressjs__express summary: fidelity 31.7% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+expressjs__express hcs-compact: fidelity 43.3% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+expressjs__express hcs-compact+expand: fidelity 61.7% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b), read more source on 15/30
+expressjs__express summary+open: fidelity 53.3% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b), read more source on 11/30
+usage gemini:gemini-3.8-flash: 236 requests, 412781 input + 3325 output tokens (as reported by the provider)
+usage groq:openai/gpt-oss-20b: 36 requests, 8228 input + 2733 output tokens (as reported by the provider)
+psf__requests hcs: fidelity 30.0% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+psf__requests none: fidelity 33.3% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+psf__requests readme: fidelity 6.7% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+psf__requests summary: fidelity 20.0% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+psf__requests hcs-compact: fidelity 43.3% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+psf__requests hcs-compact+expand: fidelity 56.7% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b), read more source on 8/30
+psf__requests summary+open: fidelity 56.7% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b), read more source on 15/30
+usage gemini:gemini-3.8-flash: 233 requests, 416120 input + 3699 output tokens (as reported by the provider)
+usage groq:openai/gpt-oss-20b: 35 requests, 9159 input + 2643 output tokens (as reported by the provider)
+sirupsen__logrus hcs: fidelity 26.7% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+sirupsen__logrus none: fidelity 26.7% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+sirupsen__logrus readme: fidelity 10.0% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+sirupsen__logrus summary: fidelity 31.7% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+sirupsen__logrus hcs-compact: fidelity 53.3% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b)
+sirupsen__logrus hcs-compact+expand: fidelity 70.0% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b), read more source on 10/30
+sirupsen__logrus summary+open: fidelity 45.0% on 30 probes (gemini:gemini-3.8-flash, judge groq:openai/gpt-oss-20b), read more source on 4/30
+usage gemini:gemini-3.8-flash: 224 requests, 389131 input + 2864 output tokens (as reported by the provider)
+usage groq:openai/gpt-oss-20b: 47 requests, 10668 input + 3350 output tokens (as reported by the provider)
+FAMILY1-DONE

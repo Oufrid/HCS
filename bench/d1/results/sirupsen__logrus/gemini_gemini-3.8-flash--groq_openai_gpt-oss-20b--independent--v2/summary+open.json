@@ -1,0 +1,373 @@
+{
+ "repo": "sirupsen__logrus",
+ "commit": "6ef0748d1177dadaeee9aa79ffef604570f487d7",
+ "condition": "summary+open",
+ "answerer": "gemini:gemini-3.8-flash",
+ "judge": "groq:openai/gpt-oss-20b",
+ "budget": 2000,
+ "tokens": 1341,
+ "results": {
+  "q1": {
+   "id": "q1",
+   "question": "What function should be called to add the calling method as a field in logs?",
+   "expected": "logrus.SetReportCaller(true)",
+   "answer": "`SetReportCaller(true)` should be called to add the calling method as a field in logs.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q2": {
+   "id": "q2",
+   "question": "What happens if a registered exit handler panics during execution?",
+   "expected": "The panic is recovered and an error message is printed to os.Stderr.",
+   "answer": "If a registered exit handler panics, the panic is recovered and printed to `os.Stderr`. It does not prevent subsequent handlers from running or stop the final termination.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q3": {
+   "id": "q3",
+   "question": "What method signature must be implemented on a BufferPool to retrieve a buffer?",
+   "expected": "Get() *bytes.Buffer",
+   "answer": "To retrieve a buffer, a `BufferPool` must implement the method `Get() *bytes.Buffer`.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q4": {
+   "id": "q4",
+   "question": "What standard logger is Logrus completely API compatible with?",
+   "expected": "the standard library logger",
+   "answer": "Logrus provides full compatibility with the Go standard library `log` package (README.md:1-505).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q5": {
+   "id": "q5",
+   "question": "What is the default field name used when adding an error via WithError?",
+   "expected": "\"error\"",
+   "answer": "The default field name used when adding an error via `WithError` is `\"error\"` (defined by `ErrorKey`) (entry.go:1-567).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q6": {
+   "id": "q6",
+   "question": "What key is used when adding an error to an entry via WithError?",
+   "expected": "The value defined in ErrorKey.",
+   "answer": "The key used by `WithError` is `\"error\"`, defined by `ErrorKey` (`entry.go:1-567`).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q7": {
+   "id": "q7",
+   "question": "What layout is used as the defaultTimestampFormat when a custom TimestampFormat is not specified?",
+   "expected": "time.RFC3339",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q8": {
+   "id": "q8",
+   "question": "What methods make up the Hook interface?",
+   "expected": "Levels() []Level and Fire(*Entry) error",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q9": {
+   "id": "q9",
+   "question": "When a field name in Entry.Data conflicts with a standard field, what prefix is added to it?",
+   "expected": "\"fields.\"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q10": {
+   "id": "q10",
+   "question": "Which ANSI color constant is assigned to TraceLevel in colorize?",
+   "expected": "ansiDimWhite",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q11": {
+   "id": "q11",
+   "question": "What is the default Formatter set when constructing a Logger via New?",
+   "expected": "new(TextFormatter)",
+   "answer": "According to `README.md:1-505`, the default formatter is `TextFormatter`.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q12": {
+   "id": "q12",
+   "question": "What string representation is returned by Level.String() when called on WarnLevel?",
+   "expected": "\"warning\"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q13": {
+   "id": "q13",
+   "question": "Which build tag is required to compile terminal_check_appengine.go?",
+   "expected": "appengine",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q14": {
+   "id": "q14",
+   "question": "What unix constant is assigned to ioctlReadTermios?",
+   "expected": "unix.TIOCGETA",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q15": {
+   "id": "q15",
+   "question": "What build tags are specified in the build constraint comment for this file?",
+   "expected": "js || nacl || plan9 || wasi || wasip1 || tinygo",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q16": {
+   "id": "q16",
+   "question": "What does checkIfTerminal return by default if the writer is not an *os.File?",
+   "expected": "false",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q17": {
+   "id": "q17",
+   "question": "Which build tags are required for terminal_check_solaris.go to compile?",
+   "expected": "solaris && !tinygo",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q18": {
+   "id": "q18",
+   "question": "What value is assigned to ioctlReadTermios?",
+   "expected": "unix.TCGETS",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q19": {
+   "id": "q19",
+   "question": "What build tags are specified for compiling terminal_check_windows.go?",
+   "expected": "windows && !appengine",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q20": {
+   "id": "q20",
+   "question": "Which sorting function is used for keys by default when SortingFunc is left uninitialized?",
+   "expected": "slices.Sort",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q21": {
+   "id": "q21",
+   "question": "What is the default logging level used by Logger.Writer()?",
+   "expected": "InfoLevel",
+   "answer": "The default logging level used by `Logger.Writer()` is the `Info` level.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q22": {
+   "id": "q22",
+   "question": "What logging level is assigned by default to lines written to the io.Writer returned by logger.Writer()?",
+   "expected": "info",
+   "answer": "Lines written to the `io.Writer` returned by `logger.Writer()` are assigned the `Info` level by default.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q23": {
+   "id": "q23",
+   "question": "How does DeferExitHandler order a new handler relative to existing exit handlers?",
+   "expected": "It prepends the handler to the list of handlers.",
+   "answer": "`DeferExitHandler` prepends the new handler to the front of the existing handlers list. Because exit handlers run in sequence before termination, prepending ensures it will run before any previously registered handlers.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q24": {
+   "id": "q24",
+   "question": "What is the return value of the default sync.Pool's New function?",
+   "expected": "new(bytes.Buffer)",
+   "answer": "The return value of the default `sync.Pool`'s `New` function is `new(bytes.Buffer)`.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q25": {
+   "id": "q25",
+   "question": "What is the simplest way to use Logrus?",
+   "expected": "simply the package-level exported logger",
+   "answer": "The simplest way to use Logrus is to use the package-level exported logger.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q26": {
+   "id": "q26",
+   "question": "What kind of field values are considered unsupported and skipped in addField?",
+   "expected": "Function types or pointers to function types (that do not implement error)",
+   "answer": "Function types and pointers to functions are rejected and skipped in fields, recording a skip notice in `entry.err` (entry.go:1-567).",
+   "verdict": "partial",
+   "by": "judge",
+   "verdicts": [
+    "partial"
+   ],
+   "points": 0.5
+  },
+  "q27": {
+   "id": "q27",
+   "question": "What exit status code is used when Fatal logs a message on the standard logger?",
+   "expected": "1",
+   "answer": "When `Fatal` logs a message, it terminates via `os.Exit(1)` (or invokes `Logger.Exit(1)`), using an exit status code of `1`.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q28": {
+   "id": "q28",
+   "question": "What capacity hint value is defined for defaultFields?",
+   "expected": "3",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q29": {
+   "id": "q29",
+   "question": "What underlying type does LevelHooks use to store hooks?",
+   "expected": "map[Level][]Hook",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q30": {
+   "id": "q30",
+   "question": "How are values of type error in entry.Data processed before being added to the JSON data map?",
+   "expected": "By calling v.Error()",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  }
+ },
+ "reads": 4,
+ "asked": 30
+}

@@ -1,0 +1,423 @@
+HCS/0.2
+@title psf__requests
+@root ../../.work/d1/psf__requests
+@created 2026-10-22T16:28:32.119Z
+@updated 2026-10-22T16:28:38.311Z
+@generator hcs-cli compile (gemini:gemini-3.8-flash)
+@source-files 20
+@source-tokens 56133
+
+[claims]
+
+## Overview
+#c1[overview,i5] The public API functions instantiate a Session context manager and delegate HTTP method calls to Session.request and Session.send.
+  > src/requests/api.py:70-71 #c604e8169842
+  > src/requests/api.py:87 #d5a42457cd52
+  > src/requests/api.py::head #dd27d6726056
+  > src/requests/api.py:48 #3e74e065b21f
+  > src/requests/api.py:117-122 #7bc543a0e5a3
+  > src/requests/sessions.py::Session.head #1ebdd5f32930
+#c2[overview,i5] Requests transforms inputs into PreparedRequest instances by parsing URLs, serializing bodies, validating headers via regular expressions, and managing cookies.
+  > src/requests/_internal_utils.py:20-23 #72783c2de57b
+  > src/requests/_internal_utils.py:13 #36926db267f5
+  > src/requests/_internal_utils.py:16 #ded8b848d392
+  > src/requests/cookies.py::MockRequest.get_full_url #181cfb032642
+  > src/requests/models.py:505-507 #f67f78a0f031
+  > src/requests/models.py:593-597 #42c23a081921
+#c3[overview,i5] Session.send dispatches prepared requests through transport adapters like HTTPAdapter, which configure urllib3 connection pools, timeouts, and TLS certificate contexts.
+  > src/requests/adapters.py:97-105 #da3aa7ca276d
+  > src/requests/adapters.py:201-207 #a4f713a1a81e
+  > src/requests/adapters.py:331-335 #bf763a2f86a0
+  > src/requests/adapters.py:681-693 #0dfa5354b9f2
+  > src/requests/adapters.py:696-708 #eeb6871836dc
+  > src/requests/sessions.py::Session.send #ce09a317e9fe
+#c4[overview,i5] Session manages request lifecycles by handling redirects, tracking history, preventing credential leaks, and reading responses immediately unless streaming is enabled.
+  > src/requests/sessions.py:216-219 #f82acd68edfd
+  > src/requests/sessions.py:250-258 #156a61e80b20
+  > src/requests/sessions.py:363-366 #fe676c8d3cb6
+  > src/requests/sessions.py::Session.send #ce09a317e9fe
+#c5[overview,i5] HTTPAdapter and Response map lower-level urllib3, OS, and socket errors into Requests exception hierarchies including ConnectionError, Timeout, and ContentDecodingError.
+  > src/requests/adapters.py:665-666 #46ba8085ddb3
+  > src/requests/adapters.py:710-711 #7df0897fc812
+  > src/requests/adapters.py:714-717 #24cbc6de4bb5
+  > src/requests/adapters.py:741-744 #02215c117ec6
+  > src/requests/exceptions.py::ConnectTimeout #0b53951dfa35
+  > src/requests/exceptions.py::ReadTimeout #649d26b7d790
+#c6[overview,i5] Authentication handlers like HTTPDigestAuth intercept responses to authenticate requests, manage state across threads, rewind request bodies, and retry on 401 statuses.
+  > src/requests/auth.py::AuthBase.__call__ #1227b297798b
+  > src/requests/auth.py::HTTPProxyAuth.__call__ #93b7ae8425f7
+  > src/requests/auth.py:145 #1c961c6a71e6
+  > src/requests/auth.py::HTTPDigestAuth.handle_401 #ff52387bb1f7
+  > src/requests/utils.py::rewind_body #17e010a93be5
+#c7[overview,i5] Response objects maintain cookies via RequestsCookieJar, measure elapsed header duration, manage consumed content streams, and trigger registered hook callbacks.
+  > src/requests/cookies.py:237-242 #865da447fcbe
+  > src/requests/cookies.py:442-449 #4a51699339ef
+  > src/requests/cookies.py:144-145 #c3be0ae46710
+  > src/requests/hooks.py:22 #937f0db77b7b
+  > src/requests/hooks.py:45-47 #b1a62da1022b
+  > src/requests/models.py::Response.__init__ #e67c0c26b4c2
+#c8[overview,i5] Proxy selection, environment CA certificates, and system proxy bypass settings are resolved dynamically using environment variables, system registries, and netrc configurations.
+  > src/requests/certs.py:15 #e5468f7ab7c1
+  > src/requests/sessions.py:855-861 #6b86b0353483
+  > src/requests/utils.py::proxy_bypass #818ecd60e153
+  > src/requests/utils.py:239-244 #1c5808e19b6c
+  > src/requests/utils.py::should_bypass_proxies #74dd6c883655
+  > src/requests/utils.py::select_proxy #ccd61c75de22
+
+## (root)
+#c9[i3] Requests records around 300 million downloads per week and is depended upon by more than 4,000,000 repositories on GitHub.
+  > README.md::Requests #67ccc7cf87f1
+#c10[i5] Requests officially supports Python version 3.10 and newer.
+  > README.md::"Installing Requests and Supported Versions" #6ede94aee8e2
+#c11[i3] Supported features of Requests include Keep-Alive, connection pooling, SOCKS proxies, cookie persistence sessions, and automatic decompression.
+  > README.md::"Supported Features & Best–Practices" #2984d9cc92d9
+#c12[i4] Cloning the Requests repository may require setting 'fetch.fsck.badTimezone=ignore' to avoid bad commit timestamp errors.
+  > README.md::"Cloning the repository" #7fdec86826ad
+
+## src/requests
+#c13[i4] check_compatibility requires chardet version to be in [3.0.2, 8.0.0), or charset_normalizer in [2.0.0, 4.0.0), issuing RequestsDependencyWarning if neither is present.
+  > src/requests/__init__.py:81-96 #49eda19148e0
+#c14[i3] If check_compatibility fails with AssertionError or ValueError, requests issues a RequestsDependencyWarning indicating unsupported dependency versions.
+  > src/requests/__init__.py:118-124 #c08dfefb78ee
+#c15[i3] requests suppresses urllib3's DependencyWarning using warnings.simplefilter.
+  > src/requests/__init__.py:152 #99daee9614db
+#c16[i2] A NullHandler is attached to requests' logger to avoid 'No handler found' warnings.
+  > src/requests/__init__.py:216 #b99db853b74f
+#c17[i2] requests configures FileModeWarning to trigger using the default filter setting.
+  > src/requests/__init__.py:219 #67d4e61537f3
+#c18[i4] src/requests/__version__.py defines package metadata including __title__ as "requests", __version__ as "2.34.2", and __build__ as 0x023402.
+  > src/requests/__version__.py:5-9 #75a6ebd04356
+#c19[i3] src/requests/__version__.py sets the project's author metadata to Kenneth Reitz and the license to "Apache-2.0".
+  > src/requests/__version__.py:10-12 #f80f5763d3cd
+#c20[i4] The HEADER_VALIDATORS dictionary maps bytes and str types to pairs containing their respective compiled header name and value regex patterns.
+  > src/requests/_internal_utils.py:20-23 #72783c2de57b
+#c21[i3] Header name regexes forbid leading colons or whitespace and prohibit colons, carriage returns, and newlines throughout.
+  > src/requests/_internal_utils.py:13 #36926db267f5
+#c22[i3] Header value regexes require either an empty string or a value starting with non-whitespace and containing no carriage returns or newlines.
+  > src/requests/_internal_utils.py:16 #ded8b848d392
+#c23[i4] to_native_string returns the input unchanged if it is already a builtin_str, or decodes it using the specified encoding (defaulting to ascii).
+  > src/requests/_internal_utils.py::to_native_string #dfc4360b32e9
+#c24[i4] unicode_is_ascii asserts that u_string is a str instance and tests whether it can be encoded as ascii without raising UnicodeEncodeError.
+  > src/requests/_internal_utils.py::unicode_is_ascii #47b2f13bad13
+#c25[i3] The requests._types module defines internal type aliases that are not part of the public API and must not be relied upon externally.
+  > src/requests/_types.py:5-7 #793ac3fcfaa0
+#c26[i3] The has_read helper checks whether an object supports read either through the SupportsRead protocol or by having a read attribute.
+  > src/requests/_types.py::has_read #0785e9af77b3
+#c27[i2] HookType and HooksInputType are evaluated at runtime because they are needed for the default_hooks() return type annotation.
+  > src/requests/_types.py:42-44 #1f257f3ff786
+#c28[i4] is_prepared verifies both url and method are not None during type checking, but acts as a no-op returning True at runtime.
+  > src/requests/_types.py::is_prepared #ea1d8ebefc35
+#c29[i4] File specifications can be raw content, a 2-tuple (name, content), a 3-tuple adding content-type, or a 4-tuple adding custom headers.
+  > src/requests/_types.py:124-131 #e1a5dc4d1571
+#c30[i3] If `urllib3.contrib.socks.SOCKSProxyManager` cannot be imported, SOCKSProxyManager is defined to raise an InvalidSchema exception when called.
+  > src/requests/adapters.py::SOCKSProxyManager #14fbcb7693af
+#c31[i4] _urllib3_request_context sets cert_reqs to 'CERT_NONE' when verify is False, and parses verify into ca_certs or ca_cert_dir if verify is a string path.
+  > src/requests/adapters.py:97-105 #da3aa7ca276d
+#c32[i3] HTTPAdapter defaults to pool_connections=10, pool_maxsize=10, max_retries=0, and pool_block=False.
+  > src/requests/adapters.py:201-207 #a4f713a1a81e
+#c33[i4] proxy_manager_for extracts credentials via get_auth_from_url and instantiates SOCKSProxyManager if the proxy URL starts with 'socks'.
+  > src/requests/adapters.py::HTTPAdapter.proxy_manager_for #3878884ae981
+#c34[i4] cert_verify validates that TLS CA bundles and client cert/key files exist on disk, raising an OSError if any specified path is missing.
+  > src/requests/adapters.py:331-335 #bf763a2f86a0
+#c35[i3] get_connection_with_tls_context raises InvalidProxyURL if the resolved proxy URL lacks a host component.
+  > src/requests/adapters.py:494-499 #fac173d1dd58
+#c36[i4] In HTTPAdapter.send, a LocationValueError raised during connection retrieval is converted into a requests.exceptions.InvalidURL error attached to the request.
+  > src/requests/adapters.py:665-666 #46ba8085ddb3
+#c37[i4] HTTPAdapter.send determines chunked encoding when request.body is not None and 'Content-Length' is absent from request.headers.
+  > src/requests/adapters.py:679 #2f9304f745c2
+#c38[i4] HTTPAdapter.send accepts timeout as a tuple of (connect, read), a single TimeoutSauce instance, or a single value applied equally to both connect and read.
+  > src/requests/adapters.py:681-693 #0dfa5354b9f2
+#c39[i5] HTTPAdapter.send invokes conn.urlopen with redirect=False, assert_same_host=False, preload_content=False, and decode_content=False.
+  > src/requests/adapters.py:696-708 #eeb6871836dc
+#c40[i4] During HTTPAdapter.send, ProtocolError, OSError, and ClosedPoolError are converted into requests ConnectionError exceptions.
+  > src/requests/adapters.py:710-711 #7df0897fc812
+#c41[i3] If a MaxRetryError's reason is ConnectTimeoutError and not NewConnectionError, HTTPAdapter.send raises ConnectTimeout.
+  > src/requests/adapters.py:714-717 #24cbc6de4bb5
+#c42[i4] When urllib3 raises ReadTimeoutError or _InvalidHeader during HTTPAdapter.send, requests maps them to ReadTimeout and InvalidHeader respectively.
+  > src/requests/adapters.py:741-744 #02215c117ec6
+#c43[i5] The request function instantiates sessions.Session within a context manager to ensure the session closes and prevent lingering open sockets.
+  > src/requests/api.py:70-71 #c604e8169842
+#c44[i4] The public helper functions get, options, head, post, put, patch, and delete all delegate execution to api.request with their respective HTTP method strings.
+  > src/requests/api.py:87 #d5a42457cd52
+#c45[i4] api.head overrides the default redirection behavior of request by setting allow_redirects to False if not explicitly provided.
+  > src/requests/api.py::head #dd27d6726056
+#c46[i3] api.request defaults allow_redirects and verify to True if left unspecified.
+  > src/requests/api.py:48 #3e74e065b21f
+#c47[i3] api.post accepts optional data and json parameters directly in its signature before delegating them to request.
+  > src/requests/api.py:117-122 #7bc543a0e5a3
+#c48[i3] _basic_auth_str converts string credentials using latin1 encoding and emits a DeprecationWarning if usernames or passwords are not instances of basestring.
+  > src/requests/auth.py::_basic_auth_str #bc25a1bfdcf5
+#c49[i2] AuthBase requires subclasses to implement a __call__ method accepting a PreparedRequest, raising NotImplementedError if called directly.
+  > src/requests/auth.py::AuthBase.__call__ #1227b297798b
+#c50[i4] HTTPBasicAuth sets the 'Authorization' header, whereas HTTPProxyAuth sets the 'Proxy-Authorization' header with the generated basic auth string.
+  > src/requests/auth.py::HTTPProxyAuth.__call__ #93b7ae8425f7
+#c51[i4] HTTPDigestAuth manages state per thread using threading.local to track challenge parameters, nonces, nonce counts, file positions, and 401 retry counts.
+  > src/requests/auth.py:145 #1c961c6a71e6
+#c52[i3] build_digest_header supports MD5, MD5-SESS, SHA, SHA-256, and SHA-512 algorithms, but returns None if an unsupported algorithm or auth-int qop is encountered.
+  > src/requests/auth.py:246-248 #27cdbdc92652
+#c53[i4] When handling a 401 response, HTTPDigestAuth rewinds the request body if seek is available, using the position captured from tell during request preparation.
+  > src/requests/auth.py::HTTPDigestAuth.handle_401 #ff52387bb1f7
+#c54[i5] HTTPDigestAuth only retries on 401 if num_401_calls is less than 2, preventing infinite authentication retry loops.
+  > src/requests/auth.py::HTTPDigestAuth.handle_401 #ff52387bb1f7
+#c55[i3] HTTPDigestAuth.handle_401 closes the original response and consumes its content before resending the request to allow connection reuse.
+  > src/requests/auth.py::HTTPDigestAuth.handle_401 #ff52387bb1f7
+#c56[i5] The requests.certs module exposes the preferred default CA certificate bundle by importing where directly from certifi.
+  > src/requests/certs.py:15 #e5468f7ab7c1
+#c57[i4] Packagers for Linux distributions or managed environments can redefine requests.certs.where() to return a separately packaged CA bundle.
+  > src/requests/certs.py:11-12 #f4171cc9bd3d
+#c58[i2] When executed as the main script, requests.certs prints the result of where().
+  > src/requests/certs.py:17-18 #dd463379e891
+#c59[i2] The requests.compat module remains for backwards compatibility until the next major version after previously handling Python 2 and Python 3 differences.
+  > src/requests/compat.py:5-7 #9a00c84bdb87
+#c60[i4] requests.compat sets is_urllib3_1 to True if urllib3's major version is 1, or defaults it to True upon TypeError or AttributeError.
+  > src/requests/compat.py:25-30 #16148e7b998f
+#c61[i4] The _resolve_char_detection function checks for 'chardet' first, then 'charset_normalizer', returning the first module successfully imported or None.
+  > src/requests/compat.py::_resolve_char_detection #578c803b63a9
+#c62[i3] requests.compat aliases http.cookiejar as cookielib and exports basestring, numeric_types, and integer_types tuples for backwards compatibility.
+  > src/requests/compat.py:83 #41ff3eac6275
+#c63[i4] MockRequest wraps PreparedRequest for CookieJar and reconstructs the full URL using the Host header if one was explicitly set.
+  > src/requests/cookies.py::MockRequest.get_full_url #181cfb032642
+#c64[i3] MockRequest explicitly disables add_header by raising a NotImplementedError indicating add_unredirected_header should be used.
+  > src/requests/cookies.py::MockRequest.add_header #3c851f92743d
+#c65[i4] Setting a cookie to None in RequestsCookieJar unsets the cookie using remove_cookie_by_name.
+  > src/requests/cookies.py:237-242 #865da447fcbe
+#c66[i3] RequestsCookieJar.set_cookie strips escaped quotes from values enclosed in double quotation marks before adding the cookie.
+  > src/requests/cookies.py::RequestsCookieJar.set_cookie #f1905ddf7e32
+#c67[i4] RequestsCookieJar raises CookieConflictError during key lookup if multiple cookies match the specified name, domain, and path.
+  > src/requests/cookies.py:442-449 #4a51699339ef
+#c68[i3] create_cookie validates kwargs against default fields and raises TypeError if any unexpected keyword argument is supplied.
+  > src/requests/cookies.py::create_cookie #40873d093874
+#c69[i3] extract_cookies_to_jar only inspects response if it contains a truthy _original_response attribute.
+  > src/requests/cookies.py:144-145 #c3be0ae46710
+#c70[i4] merge_cookies raises a ValueError if the provided cookiejar parameter is not an instance of cookielib.CookieJar.
+  > src/requests/cookies.py:613-614 #b48ad5d0dc5b
+#c71[i4] When cookies is a dictionary, merge_cookies merges them into cookiejar using cookiejar_from_dict with overwrite set to False.
+  > src/requests/cookies.py:616-617 #b85275f04baf
+#c72[i4] When cookies is a cookielib.CookieJar, merge_cookies invokes cookiejar.update(cookies) if the update method exists.
+  > src/requests/cookies.py:618-620 #f5d74fbc7c59
+#c73[i3] If cookies is a cookielib.CookieJar and cookiejar lacks an update method, merge_cookies iterates cookies and adds each cookie via cookiejar.set_cookie.
+  > src/requests/cookies.py:621-623 #3595d5537a6c
+#c74[i3] merge_cookies returns the merged CookieJar instance.
+  > src/requests/cookies.py:601 #97a023bad5b8
+#c75[i5] RequestException inherits from IOError and initializes self.request and self.response, inferring self.request from response.request if not explicitly provided.
+  > src/requests/exceptions.py::RequestException.__init__ #b16dfbdb2263
+#c76[i4] JSONDecodeError subclasses both InvalidJSONError and CompatJSONDecodeError, delegating __reduce__ to CompatJSONDecodeError to preserve pickling behavior despite IOError in the MRO.
+  > src/requests/exceptions.py::JSONDecodeError.__reduce__ #484b8d3726d2
+#c77[i3] JSONDecodeError explicitly initializes CompatJSONDecodeError first, then initializes InvalidJSONError with its args to preserve error messages without contaminating IOError args.
+  > src/requests/exceptions.py::JSONDecodeError.__init__ #a9cbc5284a3b
+#c78[i4] ConnectTimeout inherits from both ConnectionError and Timeout, allowing both types of exception handlers to catch it.
+  > src/requests/exceptions.py::ConnectTimeout #0b53951dfa35
+#c79[i3] ReadTimeout inherits from Timeout, which is a subclass of RequestException.
+  > src/requests/exceptions.py::ReadTimeout #649d26b7d790
+#c80[i4] MissingSchema, InvalidSchema, InvalidURL, and InvalidHeader inherit from both RequestException and ValueError.
+  > src/requests/exceptions.py::MissingSchema #d2352eda7eac
+#c81[i3] ContentDecodingError subclasses both RequestException and urllib3's BaseHTTPError.
+  > src/requests/exceptions.py::ContentDecodingError #1937c5bfa162
+#c82[i3] help.py safely imports optional dependencies charset_normalizer, chardet, and urllib3.contrib.pyopenssl, falling back to None if they are unavailable.
+  > src/requests/help.py:14-17 #9df7b2944313
+#c83[i2] The _implementation helper returns the Python implementation name and version, formatting non-final PyPy releases with their releaselevel suffix.
+  > src/requests/help.py::_implementation #efb6e9990ffc
+#c84[i3] If platform.system() or platform.release() raises an OSError, info() defaults both system and release values to 'Unknown'.
+  > src/requests/help.py::info #3f408f5a0637
+#c85[i3] When OpenSSL is present, info() formats OpenSSL.SSL.OPENSSL_VERSION_NUMBER as a hexadecimal string.
+  > src/requests/help.py::info #3f408f5a0637
+#c86[i4] In the info() return dictionary, using_charset_normalizer evaluates to True whenever chardet is None.
+  > src/requests/help.py::info #3f408f5a0637
+#c87[i2] help.py provides a main() function that pretty-prints the dictionary from info() as sorted, indented JSON.
+  > src/requests/help.py::main #272d7e9af16b
+#c88[i4] The HOOKS list defines "response" as the available hook in requests.hooks.
+  > src/requests/hooks.py:22 #937f0db77b7b
+#c89[i4] default_hooks creates and returns a dictionary mapping each event in HOOKS to an empty list.
+  > src/requests/hooks.py::default_hooks #ff054f72b94b
+#c90[i5] In dispatch_hook, if a hook returns a value other than None, hook_data is overwritten with that returned value.
+  > src/requests/hooks.py:45-47 #b1a62da1022b
+#c91[i4] dispatch_hook treats a single Callable hook value as a single-element list when executing hooks.
+  > src/requests/hooks.py:42-43 #8c6e19bd5cf9
+#c92[i3] If hooks is None or falsey, dispatch_hook defaults to an empty dictionary.
+  > src/requests/hooks.py:39 #be1d3607ed0d
+#c93[i3] Preparing a request with files rejects data provided as a string with a ValueError.
+  > src/requests/models.py:196-197 #f67b84edc3aa
+#c94[i3] Non-HTTP URLs containing colons, such as mailto or data URIs, bypass URL preparation in PreparedRequest.prepare_url.
+  > src/requests/models.py:505-507 #f67f78a0f031
+#c95[i3] PreparedRequest.prepare_url rejects ASCII hostnames starting with an asterisk or dot by raising InvalidURL.
+  > src/requests/models.py:533-534 #7fdfd00342dc
+#c96[i4] When json is provided without data in prepare_body, json.dumps is invoked with allow_nan=False and failures raise InvalidJSONError.
+  > src/requests/models.py:593-597 #42c23a081921
+#c97[i3] PreparedRequest.prepare_headers stores headers into a CaseInsensitiveDict and validates each header tuple with check_header_validity.
+  > src/requests/models.py::PreparedRequest.prepare_headers #576ce104e7f5
+#c98[i3] Providing both streamed body data and files during request preparation raises a NotImplementedError.
+  > src/requests/models.py:623-625 #0c1b37e56567
+#c99[i3] For request methods other than GET or HEAD, prepare_content_length sets Content-Length to '0' if no body or Content-Length exists.
+  > src/requests/models.py::PreparedRequest.prepare_content_length #5b2b305d7b6b
+#c100[i3] Response.elapsed measures only the duration between sending the first byte and completing header parsing, unaffected by streaming or reading content.
+  > src/requests/models.py::Response.__init__ #e67c0c26b4c2
+#c101[i3] Pickling a Response consumes its content completely via self.content, while unpickling restores raw as None and _content_consumed as True.
+  > src/requests/models.py::Response.__setstate__ #041de468857a
+#c102[i4] Response.ok and boolean evaluation evaluate to False only when raise_for_status raises an HTTPError for 4xx or 5xx status codes.
+  > src/requests/models.py::Response.ok #c199216f8497
+#c103[i4] Response.iter_content maps urllib3 ProtocolError, DecodeError, ReadTimeoutError, and SSLError into RequestsChunkedEncodingError, ContentDecodingError, ConnectionError, and RequestsSSLError respectively.
+  > src/requests/models.py::Response.generate #2ad646c47ced
+#c104[i4] Accessing Response.content when content has already been consumed and _content remains False raises a RuntimeError.
+  > src/requests/models.py::Response.content #78c75445d00f
+#c105[i3] Response.raise_for_status decodes byte reason phrases using utf-8 first, falling back to iso-8859-1 upon UnicodeDecodeError.
+  > src/requests/models.py::Response.raise_for_status #66e15b38db34
+#c106[i5] For urllib3 and idna, packages.py imports each package into locals and aliases them and their submodules under requests.packages in sys.modules.
+  > src/requests/packages.py:8-14 #0adf3a771488
+#c107[i4] When chardet is not None, its modules are mapped into sys.modules under both their actual package name and aliased to chardet under requests.packages.
+  > src/requests/packages.py:16-23 #293ad20259c2
+#c108[i4] resolve_redirects tracks redirect depth via response history and raises TooManyRedirects if count reaches or exceeds max_redirects.
+  > src/requests/sessions.py:216-219 #f82acd68edfd
+#c109[i4] When handling redirects not matching 307 or 308, resolve_redirects purges Content-Length, Content-Type, and Transfer-Encoding headers and clears the body.
+  > src/requests/sessions.py:250-258 #156a61e80b20
+#c110[i4] rebuild_proxies injects a basic Proxy-Authorization header only for non-HTTPS schemes to prevent credential leakage in TLS tunnels.
+  > src/requests/sessions.py:363-366 #fe676c8d3cb6
+#c111[i4] Passing an unprepared Request instance to Session.send raises a ValueError.
+  > src/requests/sessions.py::Session.send #ce09a317e9fe
+#c112[i3] Session.head sets the default allow_redirects parameter to False, whereas get and options set it to True.
+  > src/requests/sessions.py::Session.head #1ebdd5f32930
+#c113[i4] When trust_env is True and verify is True or None, merge_environment_settings checks REQUESTS_CA_BUNDLE and CURL_CA_BUNDLE environment variables.
+  > src/requests/sessions.py:855-861 #6b86b0353483
+#c114[i3] When allow_redirects is False, Session.send attempts to resolve the next redirect request and assigns it to r._next.
+  > src/requests/sessions.py::Session.send #ce09a317e9fe
+#c115[i4] Session.send immediately consumes and downloads r.content if the stream argument evaluates to False.
+  > src/requests/sessions.py::Session.send #ce09a317e9fe
+#c116[i2] The session() function is a deprecated wrapper that returns a new Session instance for backwards compatibility.
+  > src/requests/sessions.py::session #b0c511f1b798
+#c117[i5] The codes object is a LookupDict instance named 'status_codes' mapping HTTP status names to integer codes.
+  > src/requests/status_codes.py:106 #4caba22424b7
+#c118[i4] HTTP status codes in codes are accessible either as attributes or as dictionary items.
+  > src/requests/status_codes.py:2-4 #2acef9f3f8ad
+#c119[i4] During initialization, title names that do not start with a backslash or forward slash are also set in uppercase on codes.
+  > src/requests/status_codes.py::_init #ff4b61c38c8d
+#c120[i3] The _init function appends a sorted markdown-style list of status codes and their aliases to the module docstring if __doc__ is not None.
+  > src/requests/status_codes.py::_init #ff4b61c38c8d
+#c121[i2] The status aliases resume and resume_incomplete for code 308 are planned to be removed in Requests 3.0.
+  > src/requests/status_codes.py:50-53 #b3da57ab221a
+#c122[i4] CaseInsensitiveDict stores mapping data in an internal OrderedDict mapping lowercased keys to tuples containing the original cased key and the value.
+  > src/requests/structures.py::CaseInsensitiveDict.__setitem__ #d6adca638411
+#c123[i4] CaseInsensitiveDict preserves the case of the last set key during iteration and keys/items access, while queries remain case-insensitive.
+  > src/requests/structures.py::CaseInsensitiveDict #5d8d48aadbb1
+#c124[i3] If CaseInsensitiveDict receives keys with matching lowercase forms in constructor, .update, or equality checks, its behavior is undefined.
+  > src/requests/structures.py::CaseInsensitiveDict #5d8d48aadbb1
+#c125[i3] CaseInsensitiveDict checks equality against any Mapping by converting it to CaseInsensitiveDict and comparing lowercased key-value pairs.
+  > src/requests/structures.py::CaseInsensitiveDict.__eq__ #80124cf81189
+#c126[i4] LookupDict implements item access and get() by retrieving values directly from its own __dict__ attribute, defaulting missing keys to None.
+  > src/requests/structures.py::LookupDict.__getitem__ #a6af463339d7
+#c127[i3] LookupDict.__getattr__ returns an entry from self.__dict__ if present, otherwise raising an AttributeError.
+  > src/requests/structures.py::LookupDict.__getattr__ #e70d157d347c
+#c128[i3] When sys.platform is 'win32', proxy_bypass checks environment settings first and falls back to proxy_bypass_registry.
+  > src/requests/utils.py::proxy_bypass #818ecd60e153
+#c129[i4] In super_len, strings are encoded to utf-8 when not running on urllib3 1.x.
+  > src/requests/utils.py::super_len #355532e7ba1f
+#c130[i4] super_len issues a FileModeWarning if a file's length is resolved using fstat but the file was not opened in binary mode.
+  > src/requests/utils.py::super_len #355532e7ba1f
+#c131[i4] get_netrc_auth resolves netrc paths using either the NETRC environment variable or files specified by NETRC_FILES ('~/.netrc', '~/_netrc').
+  > src/requests/utils.py:239-244 #1c5808e19b6c
+#c132[i3] get_netrc_auth suppresses NetrcParseError and OSError unless raise_errors is set to True.
+  > src/requests/utils.py:272-276 #c2f7b7b1c19c
+#c133[i4] atomic_open writes to a temporary file in the destination's directory and uses os.replace, cleaning up the temp file on failure.
+  > src/requests/utils.py::atomic_open #0ba95d77d1f6
+#c134[i3] unquote_unreserved un-escapes percent sequences of RFC 3986 unreserved characters in a URI, raising InvalidURL for invalid two-character hex sequences.
+  > src/requests/utils.py::unquote_unreserved #3501aeb0f048
+#c135[i4] should_bypass_proxies evaluates no_proxy against the URL hostname, supporting both plain IPv4 and CIDR subnets as well as trailing domain matches.
+  > src/requests/utils.py::should_bypass_proxies #74dd6c883655
+#c136[i4] select_proxy resolves a proxy URL matching keys in order: scheme+host, scheme, all+host, and finally all.
+  > src/requests/utils.py::select_proxy #ccd61c75de22
+#c137[i3] guess_json_utf inspects the first four bytes for BOM markers or ASCII null patterns to detect UTF-8, UTF-16, or UTF-32 encodings.
+  > src/requests/utils.py::guess_json_utf #a03ab563787b
+#c138[i3] check_header_validity verifies header names and values against regular expressions and raises InvalidHeader for improper characters or non-string/bytes types.
+  > src/requests/utils.py:1114-1119 #eb9b1b076a85
+#c139[i4] rewind_body attempts to seek prepared_request.body back to _body_position and raises UnrewindableBodyError on failure or missing seek support.
+  > src/requests/utils.py::rewind_body #17e010a93be5
+
+[probes]
+?p1 Which Python versions are officially supported by Requests?
+  = Python 3.10+
+  > README.md::"Installing Requests and Supported Versions" #6ede94aee8e2
+?p2 What warning category is raised when cryptography is older than 1.3.4 during SNI fallback injection?
+  = RequestsDependencyWarning
+  > src/requests/__init__.py::_check_cryptography #ef14decf043c
+?p3 What is the hex value assigned to __build__ in src/requests/__version__.py?
+  = 0x023402
+  > src/requests/__version__.py:9 #462296e2c965
+?p4 What default encoding does to_native_string use when decoding a non-builtin_str string?
+  = "ascii"
+  > src/requests/_internal_utils.py::to_native_string #dfc4360b32e9
+?p5 What does is_prepared return at runtime?
+  = True
+  > src/requests/_types.py::is_prepared #ea1d8ebefc35
+?p6 What Retry configuration is set on HTTPAdapter when max_retries matches DEFAULT_RETRIES?
+  = Retry(0, read=False)
+  > src/requests/adapters.py:208-209 #6fa58d4683f3
+?p7 What header does HTTPAdapter.proxy_headers populate if the proxy URL includes a username?
+  = Proxy-Authorization
+  > src/requests/adapters.py::HTTPAdapter.proxy_headers #9674a173752a
+?p8 What default value does head assign to allow_redirects if not provided?
+  = False
+  > src/requests/api.py::head #dd27d6726056
+?p9 What header does HTTPProxyAuth populate on the PreparedRequest?
+  = Proxy-Authorization
+  > src/requests/auth.py::HTTPProxyAuth.__call__ #93b7ae8425f7
+?p10 Which external package provides the default CA certificate bundle in requests.certs?
+  = certifi
+  > src/requests/certs.py:7-8 #9bcafb6c9d5d
+?p11 What is the value of is_urllib3_1 if resolving the major version raises a TypeError or AttributeError?
+  = True
+  > src/requests/compat.py:27-29 #fd9ab563230b
+?p12 What happens when RequestsCookieJar.__contains__ catches a CookieConflictError?
+  = It returns True.
+  > src/requests/cookies.py::RequestsCookieJar.__contains__ #db3836587917
+?p13 What exception does merge_cookies raise if the target cookiejar is not a cookielib.CookieJar instance?
+  = ValueError("You can only merge into CookieJar")
+  > src/requests/cookies.py:614 #f54864b74b62
+?p14 What does RequestException set self.request to if kwargs['request'] is omitted but response has a request attribute?
+  = response.request
+  > src/requests/exceptions.py::RequestException.__init__ #b16dfbdb2263
+?p15 Under what condition is 'using_charset_normalizer' set to True in info()?
+  = When chardet is None.
+  > src/requests/help.py::info #3f408f5a0637
+?p16 What happens in dispatch_hook when an executed hook function returns None?
+  = hook_data is not updated and retains its current value.
+  > src/requests/hooks.py:45-47 #b1a62da1022b
+?p17 What error is raised when prepare_url encounters a URL without a scheme?
+  = MissingSchema
+  > src/requests/models.py:515-519 #3337bcd9c148
+?p18 What exception is raised if iter_content is called after the stream was already consumed without retaining content?
+  = StreamConsumedError
+  > src/requests/models.py:958-959 #30a33295b86a
+?p19 Which packages are iterated over and imported into locals in requests.packages?
+  = urllib3 and idna
+  > src/requests/packages.py:8-9 #24c5ce12377e
+?p20 Which headers are purged from prepared_request during redirects when the response status code is not 307 or 308?
+  = Content-Length, Content-Type, and Transfer-Encoding
+  > src/requests/sessions.py:255 #4fe1ede0f515
+?p21 What exception is raised by Session.get_adapter if no adapter prefix matches the request URL?
+  = InvalidSchema
+  > src/requests/sessions.py::Session.get_adapter #f0ca542c3cd8
+?p22 What criteria determines whether an uppercase version of a status title is registered on codes?
+  = The uppercase version is registered if title does not start with '\' or '/'.
+  > src/requests/status_codes.py::_init #ff4b61c38c8d
+?p23 What does CaseInsensitiveDict.lower_items() yield?
+  = An iterator of tuples containing the lowercase key and its value.
+  > src/requests/structures.py::CaseInsensitiveDict.lower_items #bb638e76629b
+?p24 What filenames are defined by NETRC_FILES?
+  = ('.netrc', '_netrc')
+  > src/requests/utils.py:78 #a8a4a231e502
+?p25 What exception is raised when rewind_body catches an OSError during seeking?
+  = UnrewindableBodyError
+  > src/requests/utils.py::rewind_body #17e010a93be5
+?p26 What Git flag may be needed when cloning the Requests repository to avoid timestamp errors?
+  = -c fetch.fsck.badTimezone=ignore
+  > README.md::"Cloning the repository" #7fdec86826ad
+?p27 Which action does requests perform when urllib3.exceptions.DependencyWarning is caught by warning filters?
+  = ignore
+  > src/requests/__init__.py:152 #99daee9614db
+?p28 What is the value of __version__ in src/requests/__version__.py?
+  = "2.34.2"
+  > src/requests/__version__.py:8 #d101292d9e97
+?p29 Which types are mapped as keys in HEADER_VALIDATORS?
+  = bytes and str
+  > src/requests/_internal_utils.py:20-23 #72783c2de57b
+?p30 What conditions must a PreparedRequest meet during TYPE_CHECKING to be considered validated by is_prepared?
+  = Both request.url and request.method must not be None.
+  > src/requests/_types.py::is_prepared #ea1d8ebefc35

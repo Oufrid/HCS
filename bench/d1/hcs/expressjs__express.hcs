@@ -1,0 +1,217 @@
+HCS/0.2
+@title expressjs__express
+@root ../../.work/d1/expressjs__express
+@created 2026-10-22T16:25:47.081Z
+@updated 2026-10-22T16:25:51.824Z
+@generator hcs-cli compile (gemini:gemini-3.8-flash)
+@source-files 8
+@source-tokens 22368
+
+[claims]
+
+## Overview
+#c1[overview,i5] The express entry point exports createApplication, which mixes EventEmitter and the application prototype into a request-handling function before initializing it.
+  > index.js:11 #998ac44cbce5
+  > lib/express.js:27 #82c624a42676
+  > lib/express.js::createApplication #6fbd8f85a9c6
+#c2[overview,i5] In addition to core prototypes, Express exposes external middleware from body-parser and serve-static alongside Router and Route.
+  > lib/express.js:62-64 #75687e7cb748
+  > lib/express.js:70-71 #a36352468b84
+  > lib/express.js:77-81 #63a80a9c6a20
+#c3[overview,i5] The application configures server settings and middleware, dynamically compiling specialized parsers while managing mounted sub-apps and server lifecycle execution.
+  > lib/application.js::use.mounted_app #351a1e6546af
+  > lib/application.js::set #de6ea11a1955
+  > lib/application.js:473-476 #7e8cbeae998f
+  > lib/application.js::listen #e67045e10925
+#c4[overview,i5] Express relies on internal utility helpers to compile ETag strategies, configure query parsing options, and normalize MIME types.
+  > lib/utils.js:137-149 #d42ca879d51b
+  > lib/utils.js::compileQueryParser #007608141499
+  > lib/utils.js:61-65 #e4c7780b032c
+#c5[overview,i5] The request prototype extends Node's IncomingMessage, utilizing application settings like trust proxy and query parser functions to inspect headers, protocols, and query parameters.
+  > lib/request.js::req #ec05f38eda05
+  > lib/request.js::header #57e5ce83e7a8
+  > lib/request.js:233-236 #23acb52c4a75
+  > lib/request.js:303-305 #708ff435ecf7
+  > lib/request.js::ips #aa571e594d02
+  > lib/request.js:450-453 #6be815ff3a7e
+#c6[overview,i5] The response prototype provides helpers to validate status codes, serialize response bodies via res.json, handle redirects, and enforce constraints on headers and cookies.
+  > lib/response.js::status #b5cd102a2ec8
+  > lib/response.js:146-158 #841574746de0
+  > lib/response.js::header #639570e34621
+  > lib/response.js:753-755 #566e027ce0a2
+  > lib/response.js::redirect #3fc0befec2d9
+  > lib/response.js::stringify #3913c874c03c
+#c7[overview,i5] View rendering resolves file extensions or default engines and safely executes template rendering, catching synchronous errors for callback propagation.
+  > lib/application.js::tryRender #e66be7236b3c
+  > lib/view.js::View #b79dee669eea
+  > lib/view.js::tryStat #5bbe7a83900d
+
+## (root)
+#c8[i5] Express requires Node.js version 18 or higher before installation.
+  > Readme.md::Installation #f3c8594470cf
+#c9[i4] Express supports over 14 template engines via @ladjs/consolidate.
+  > Readme.md::Philosophy #c80dae6839b4
+#c10[i3] The generator executable express-generator's major version is specified to match Express's version.
+  > Readme.md::"Quick Start" #4c7e29071a17
+#c11[i3] The test suite for Express is executed using the command npm test.
+  > Readme.md::"Running Tests" #67b2dd7e1aa2
+#c12[i3] The original author of the Express framework is TJ Holowaychuk.
+  > Readme.md:181 #9428323c51f6
+#c13[i4] Express is licensed under the MIT license.
+  > Readme.md::"Table of contents" #d5477cb2fb42
+#c14[i5] The entry point file index.js re-exports the module located at ./lib/express.
+  > index.js:11 #998ac44cbce5
+
+## lib
+#c15[i4] app.use flattens arguments, accepts path prefixes, and for mounted apps it wraps them to restore original request and response prototypes before invoking next.
+  > lib/application.js::use.mounted_app #351a1e6546af
+#c16[i4] Modifying settings via app.set dynamically compiles and sets corresponding functions for 'etag', 'query parser', and 'trust proxy'.
+  > lib/application.js::set #de6ea11a1955
+#c17[i3] app.get acts as a configuration getter when called with a single argument, rather than declaring an HTTP GET route handler.
+  > lib/application.js:473-476 #7e8cbeae998f
+#c18[i5] app.listen creates an HTTP server with the app as handler and starts listening with the provided arguments.
+  > lib/application.js::listen #e67045e10925
+#c19[i4] If a callback is passed to app.listen, it is wrapped with once and attached as an error event listener on the server.
+  > lib/application.js::listen #e67045e10925
+#c20[i3] The logerror helper outputs an error via console.error unless the app's env setting equals 'test'.
+  > lib/application.js::logerror #003dd34a7dff
+#c21[i4] The tryRender helper invokes view.render and catches any synchronous error to pass it to the callback.
+  > lib/application.js::tryRender #e66be7236b3c
+#c22[i5] The main export of the express module is the createApplication function.
+  > lib/express.js:27 #82c624a42676
+#c23[i5] createApplication creates a function app(req, res, next) that delegates handling to app.handle(req, res, next).
+  > lib/express.js::createApplication #6fbd8f85a9c6
+#c24[i4] createApplication mixes EventEmitter.prototype and the application prototype into app without overwriting existing descriptors.
+  > lib/express.js::createApplication #6fbd8f85a9c6
+#c25[i3] createApplication invokes app.init() before returning the created app instance.
+  > lib/express.js::createApplication #6fbd8f85a9c6
+#c26[i3] The module exports the application, request, and response prototypes.
+  > lib/express.js:62-64 #75687e7cb748
+#c27[i3] The module exposes Router and Route from the router dependency.
+  > lib/express.js:70-71 #a36352468b84
+#c28[i3] The module exposes json, raw, text, and urlencoded from body-parser, and static from serve-static.
+  > lib/express.js:77-81 #63a80a9c6a20
+#c29[i4] The request object `req` inherits from `http.IncomingMessage.prototype` and is exported directly.
+  > lib/request.js::req #ec05f38eda05
+#c30[i3] `req.get` aliases `req.header` and treats 'referer' and 'referrer' interchangeably when looking up request headers.
+  > lib/request.js::header #57e5ce83e7a8
+#c31[i3] The `query` getter delegates parsing to the application's `'query parser fn'` setting, returning an empty null-prototype object if disabled.
+  > lib/request.js:233-236 #23acb52c4a75
+#c32[i4] The `protocol` getter trusts `X-Forwarded-Proto` only when the app's `trust proxy fn` accepts `this.socket.remoteAddress` at index 0.
+  > lib/request.js:303-305 #708ff435ecf7
+#c33[i3] `req.ips` uses `proxyaddr.all`, reverses the address list to order from farthest to closest proxy, and drops the socket remote address.
+  > lib/request.js::ips #aa571e594d02
+#c34[i4] The `hostname` getter parses `this.host` and accounts for IPv6 literal brackets before locating a port delimiter.
+  > lib/request.js:450-453 #6be815ff3a7e
+#c35[i4] res.status enforces that the status code is an integer between 100 and 999 inclusive, throwing TypeError or RangeError otherwise.
+  > lib/response.js::status #b5cd102a2ec8
+#c36[i4] res.send automatically routes non-null, non-ArrayBuffer-view objects, numbers, and booleans to res.json.
+  > lib/response.js:146-158 #841574746de0
+#c37[i4] res.sendFile requires the path to be absolute unless a root option is explicitly specified.
+  > lib/response.js::sendFile #41d7bdb37857
+#c38[i3] Setting a Content-Type header with an Array value throws a TypeError.
+  > lib/response.js::header #639570e34621
+#c39[i4] Setting a signed cookie requires req.secret to be configured, otherwise res.cookie throws an Error.
+  > lib/response.js:753-755 #566e027ce0a2
+#c40[i4] res.redirect encodes the destination URL, supports content negotiation for text and HTML, and ends with an empty body on HEAD requests.
+  > lib/response.js::redirect #3fc0befec2d9
+#c41[i2] The internal stringify function escapes HTML-sensitive characters '<', '>', and '&' to unicode escape sequences when the escape flag is enabled.
+  > lib/response.js::stringify #3913c874c03c
+#c42[i3] exports.methods provides an array of lowercased HTTP method names supported by Node.js.
+  > lib/utils.js:29 #7cefb035a48d
+#c43[i4] exports.compileETag maps true and 'weak' to exports.wetag, 'strong' to exports.etag, false to undefined, and throws TypeError for unrecognized values.
+  > lib/utils.js:137-149 #d42ca879d51b
+#c44[i4] exports.compileQueryParser configures query parsing using querystring.parse for true/'simple', qs.parse with allowPrototypes: true for 'extended', and throws TypeError on unknown values.
+  > lib/utils.js::compileQueryParser #007608141499
+#c45[i3] exports.normalizeType parses MIME types containing '/' with acceptParams, or resolves extensions via mime.lookup, falling back to 'application/octet-stream'.
+  > lib/utils.js:61-65 #e4c7780b032c
+#c46[i4] View constructor throws an error if neither the provided view name has a file extension nor defaultEngine is provided in options.
+  > lib/view.js::View #b79dee669eea
+#c47[i2] The tryStat helper calls fs.statSync and catches any thrown exception, returning undefined instead of rethrowing.
+  > lib/view.js::tryStat #5bbe7a83900d
+
+[probes]
+?p1 What minimum version of Node.js is required to install Express?
+  = Node.js 18 or higher.
+  > Readme.md::Installation #f3c8594470cf
+?p2 Which relative path does index.js require and export as its module exports?
+  = ./lib/express
+  > index.js:11 #998ac44cbce5
+?p3 What is the default setting for 'subdomain offset' during application configuration?
+  = 2
+  > lib/application.js::defaultConfiguration #63c05273b081
+?p4 What event on the HTTP server is the callback passed to app.listen registered on?
+  = error
+  > lib/application.js::listen #e67045e10925
+?p5 What function is invoked on app right before createApplication returns it?
+  = app.init()
+  > lib/express.js::createApplication #6fbd8f85a9c6
+?p6 What error does `req.get()` throw if the `name` argument is omitted or not provided?
+  = TypeError with the message 'name argument is required to req.get'
+  > lib/request.js::header #57e5ce83e7a8
+?p7 What Content-Type does res.type set when the given type lacks a slash and is not found in mime.contentType?
+  = application/octet-stream
+  > lib/response.js::contentType #08169673c489
+?p8 What error code is generated in sendfile when the client connection encounters ECONNRESET or the request aborts?
+  = ECONNABORTED
+  > lib/response.js::sendfile.onaborted #cfdd4bd1bbde
+?p9 What options are passed to qs.parse when parseExtendedQueryString is invoked?
+  = { allowPrototypes: true }
+  > lib/utils.js::parseExtendedQueryString #b81538a9aedf
+?p10 What export must an automatically required view engine module provide?
+  = __express
+  > lib/view.js::View.debug #477170f2f039
+?p11 Which package provides Express with support for over 14 template engines?
+  = @ladjs/consolidate
+  > Readme.md::Philosophy #c80dae6839b4
+?p12 What error is thrown if app.use() is invoked without any middleware functions?
+  = TypeError with message 'app.use() requires a middleware function'
+  > lib/application.js::use #b5f766d743a4
+?p13 Under what environment value does logerror suppress logging to console.error?
+  = 'test'
+  > lib/application.js::logerror #003dd34a7dff
+?p14 Which module provides exports.static?
+  = serve-static
+  > lib/express.js:79 #832a46f21211
+?p15 Which HTTP methods are eligible for freshness validation under the `fresh` getter?
+  = GET, HEAD, and QUERY
+  > lib/request.js:475 #1cfa80bab190
+?p16 How does res.send modify headers and chunk when the status code is 205?
+  = It sets Content-Length to '0', removes Transfer-Encoding, and empties chunk.
+  > lib/response.js:207-211 #47c266aad88d
+?p17 What error code is returned when sendfile encounters a directory?
+  = EISDIR
+  > lib/response.js::sendfile.ondirectory #9e216325c4c0
+?p18 What function is returned by compileTrust when val is a number?
+  = A function that returns whether the hop index i is less than val (function(a, i){ return i < val }).
+  > lib/utils.js:204 #c3a0c18047b7
+?p19 If a direct file match is not found in View.prototype.resolve, what alternative file path is checked?
+  = join(dir, basename(file, ext), 'index' + ext)
+  > lib/view.js:181 #7335c02a7d27
+?p20 Who is credited as the original author of Express?
+  = TJ Holowaychuk
+  > Readme.md:181 #9428323c51f6
+?p21 How does app.path() determine its path if the application has a parent?
+  = It concatenates this.parent.path() and this.mountpath.
+  > lib/application.js::path #d295853f65f2
+?p22 How does tryRender handle synchronous exceptions thrown by view.render?
+  = It catches the error and passes it to callback.
+  > lib/application.js::tryRender #e66be7236b3c
+?p23 What property is attached to app.request and app.response pointing back to app?
+  = app
+  > lib/express.js::createApplication #6fbd8f85a9c6
+?p24 What header and value does the `xhr` getter inspect to determine if a request was an XMLHttpRequest?
+  = The X-Requested-With header matching 'xmlhttprequest' (case-insensitive).
+  > lib/request.js::xhr #59f9f52effae
+?p25 Under what condition does res.send avoid generating an ETag and calculating chunk Buffer byteLength directly for strings?
+  = When no ETag is generated and chunk.length is less than 1000.
+  > lib/response.js:170-172 #237f521635a7
+?p26 What is the default HTTP status code used by res.redirect?
+  = 302
+  > lib/response.js::redirect #3fc0befec2d9
+?p27 What fallback value is used by normalizeType if mime.lookup returns falsy for a type without '/'?
+  = 'application/octet-stream'
+  > lib/utils.js::acceptParams #cac2f97e171f
+?p28 How does View.prototype.render ensure synchronous engine invocations do not return synchronously?
+  = It schedules the callback via process.nextTick.
+  > lib/view.js::render #6777650ec243

@@ -1,0 +1,99 @@
+HCS/0.2
+@title psf__requests (independent probes)
+@root ../../.work/d1/psf__requests
+@created 2026-10-22T16:30:44.270Z
+@generator bench/d1 probes (gemini:gemini-3.8-flash)
+
+[claims]
+
+[probes]
+?q1 What versions of Python are officially supported by Requests?
+  = Python 3.10+
+  > README.md::"Installing Requests and Supported Versions" #6ede94aee8e2
+?q2 What is the acceptable version range for chardet enforced in check_compatibility?
+  = >= 3.0.2, < 8.0.0
+  > src/requests/__init__.py:85 #8c25abbcf0e4
+?q3 What is the value of the __build__ constant defined in this module?
+  = 0x023402
+  > src/requests/__version__.py:9 #462296e2c965
+?q4 What regular expressions are paired together in _HEADER_VALIDATORS_STR?
+  = (_VALID_HEADER_NAME_RE_STR, _VALID_HEADER_VALUE_RE_STR)
+  > src/requests/_internal_utils.py:18 #492c7cdc30ab
+?q5 What condition does the has_read function evaluate to determine if an object supports read?
+  = isinstance(obj, SupportsRead) or hasattr(obj, "read")
+  > src/requests/_types.py::has_read #0785e9af77b3
+?q6 What exception is raised when urllib3 SOCKS dependencies are not installed and SOCKSProxyManager is called?
+  = InvalidSchema with the message "Missing dependencies for SOCKS support."
+  > src/requests/adapters.py::SOCKSProxyManager #14fbcb7693af
+?q7 Under what condition is `chunked` set to True when sending a PreparedRequest?
+  = When request.body is not None and "Content-Length" is not present in request.headers.
+  > src/requests/adapters.py:679 #2f9304f745c2
+?q8 What default value does the head function assign to allow_redirects if it is not provided in kwargs?
+  = False
+  > src/requests/api.py::head #dd27d6726056
+?q9 Which encoding is used when converting string usernames and passwords to bytes in _basic_auth_str?
+  = "latin1"
+  > src/requests/auth.py::_basic_auth_str #bc25a1bfdcf5
+?q10 Which package provides the default CA certificate bundle returned by this module?
+  = certifi
+  > src/requests/certs.py:7-8 #9bcafb6c9d5d
+?q11 What fallback value does `is_urllib3_1` receive if urllib3's version cannot be determined?
+  = True
+  > src/requests/compat.py:29 #cdcf99cdfc21
+?q12 When reconstructing the full URL in MockRequest, what condition causes MockRequest to return PreparedRequest's URL directly?
+  = When the user has not set the Host header.
+  > src/requests/cookies.py::MockRequest.get_full_url #181cfb032642
+?q13 What exception is raised by merge_cookies if the target cookiejar argument is not an instance of cookielib.CookieJar?
+  = ValueError
+  > src/requests/cookies.py:614 #f54864b74b62
+?q14 How does RequestException populate self.request when the request argument is not supplied but a response is provided?
+  = It falls back to response.request if the response object has that attribute.
+  > src/requests/exceptions.py::RequestException.__init__ #b16dfbdb2263
+?q15 What value is assigned to the "using_charset_normalizer" key in the dictionary returned by info()?
+  = chardet is None
+  > src/requests/help.py::info #3f408f5a0637
+?q16 What list of hook events is defined in HOOKS?
+  = ["response"]
+  > src/requests/hooks.py:22 #937f0db77b7b
+?q17 What is the default integer value of CONTENT_CHUNK_SIZE?
+  = 10 * 1024
+  > src/requests/models.py:104 #c02aa2035074
+?q18 What exception is raised if `iter_content` is called when response content has already been consumed and `_content` is still a boolean?
+  = StreamConsumedError
+  > src/requests/models.py:958-959 #30a33295b86a
+?q19 Which two package names are imported and mapped to sys.modules under requests.packages for backwards compatibility in the initial loop?
+  = ("urllib3", "idna")
+  > src/requests/packages.py:8 #e3b12e0b1dae
+?q20 Which function is selected as preferred_clock when running on Windows (win32)?
+  = time.perf_counter
+  > src/requests/sessions.py:70-71 #b7a87304d171
+?q21 What error is raised if a caller passes an unprepared Request object to Session.send()?
+  = ValueError with the message "You can only send PreparedRequests."
+  > src/requests/sessions.py::Session.send #ce09a317e9fe
+?q22 Which class is instantiated to create the `codes` status code lookup object?
+  = LookupDict
+  > src/requests/status_codes.py:106 #4caba22424b7
+?q23 What internal collection type does CaseInsensitiveDict use to hold its items?
+  = OrderedDict
+  > src/requests/structures.py::CaseInsensitiveDict #5d8d48aadbb1
+?q24 Which filenames are searched for netrc configuration if the NETRC environment variable is unset?
+  = (".netrc", "_netrc")
+  > src/requests/utils.py:78 #a8a4a231e502
+?q25 In which order does select_proxy evaluate potential proxy dictionary keys when selecting a proxy for a URL with a hostname?
+  = urlparts.scheme + "://" + urlparts.hostname, urlparts.scheme, "all://" + urlparts.hostname, "all"
+  > src/requests/utils.py::select_proxy #ccd61c75de22
+?q26 What Git flag may be required when cloning the Requests repository to avoid a bad commit timestamp error?
+  = -c fetch.fsck.badTimezone=ignore
+  > README.md::"Cloning the repository" #7fdec86826ad
+?q27 What threshold of cryptography version list triggers a slowdown warning?
+  = < [1, 3, 4]
+  > src/requests/__init__.py::_check_cryptography #ef14decf043c
+?q28 Which license is specified in the __license__ variable?
+  = Apache-2.0
+  > src/requests/__version__.py:12 #87dfcd04c468
+?q29 What is the default encoding used by to_native_string?
+  = "ascii"
+  > src/requests/_internal_utils.py::to_native_string #dfc4360b32e9
+?q30 Which TypedDict kwargs class serves as the kwargs definition for put() and patch()?
+  = DataKwargs
+  > src/requests/_types.py::DataKwargs #d0439e39b8a0

@@ -1,0 +1,373 @@
+{
+ "repo": "psf__requests",
+ "commit": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+ "condition": "summary+open",
+ "answerer": "gemini:gemini-3.8-flash",
+ "judge": "groq:openai/gpt-oss-20b",
+ "budget": 2000,
+ "tokens": 1839,
+ "results": {
+  "q1": {
+   "id": "q1",
+   "question": "What versions of Python are officially supported by Requests?",
+   "expected": "Python 3.10+",
+   "answer": "Based on the provided context, Requests requires Python 3.10+.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q2": {
+   "id": "q2",
+   "question": "What is the acceptable version range for chardet enforced in check_compatibility?",
+   "expected": ">= 3.0.2, < 8.0.0",
+   "answer": "The acceptable version range for `chardet` enforced in `check_compatibility()` is $3.0.2 \\le v < 8.0.0$.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q3": {
+   "id": "q3",
+   "question": "What is the value of the __build__ constant defined in this module?",
+   "expected": "0x023402",
+   "answer": "The value of the `__build__` constant defined in `src/requests/__version__.py` is `0x023402`.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q4": {
+   "id": "q4",
+   "question": "What regular expressions are paired together in _HEADER_VALIDATORS_STR?",
+   "expected": "(_VALID_HEADER_NAME_RE_STR, _VALID_HEADER_VALUE_RE_STR)",
+   "answer": "In `_HEADER_VALIDATORS_STR`, the paired regular expressions are `_VALID_HEADER_NAME_RE_STR` (matching `r\"^[^:\\s][^:\\r\\n]*\\Z\"`) and `_VALID_HEADER_VALUE_RE_STR` (matching `r\"^\\S[^\\r\\n]*\\Z|^\\Z\"`).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q5": {
+   "id": "q5",
+   "question": "What condition does the has_read function evaluate to determine if an object supports read?",
+   "expected": "isinstance(obj, SupportsRead) or hasattr(obj, \"read\")",
+   "answer": "The `has_read` function evaluates whether `isinstance(obj, SupportsRead)` or `hasattr(obj, \"read\")`.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q6": {
+   "id": "q6",
+   "question": "What exception is raised when urllib3 SOCKS dependencies are not installed and SOCKSProxyManager is called?",
+   "expected": "InvalidSchema with the message \"Missing dependencies for SOCKS support.\"",
+   "answer": "When the dependencies for SOCKS support are missing, `SOCKSProxyManager` raises an `InvalidSchema` exception with the message \"Missing dependencies for SOCKS support.\" (src/requests/adapters.py).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q7": {
+   "id": "q7",
+   "question": "Under what condition is `chunked` set to True when sending a PreparedRequest?",
+   "expected": "When request.body is not None and \"Content-Length\" is not present in request.headers.",
+   "answer": "Chunked encoding is detected and set when the request has a missing `Content-Length` header and a non-null body (`src/requests/adapters.py:599-748`).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q8": {
+   "id": "q8",
+   "question": "What default value does the head function assign to allow_redirects if it is not provided in kwargs?",
+   "expected": "False",
+   "answer": "Based on the summary for `src/requests/api.py`, the `head` function forces `allow_redirects=False` by default.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q9": {
+   "id": "q9",
+   "question": "Which encoding is used when converting string usernames and passwords to bytes in _basic_auth_str?",
+   "expected": "\"latin1\"",
+   "answer": "In `_basic_auth_str`, string usernames and passwords are converted to bytes using the `\"latin1\"` encoding.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q10": {
+   "id": "q10",
+   "question": "Which package provides the default CA certificate bundle returned by this module?",
+   "expected": "certifi",
+   "answer": "The default CA certificate bundle is provided by the `certifi` package via `requests.certs.where()`.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q11": {
+   "id": "q11",
+   "question": "What fallback value does `is_urllib3_1` receive if urllib3's version cannot be determined?",
+   "expected": "True",
+   "answer": "If urllib3's version cannot be determined (raising a `TypeError` or `AttributeError`), `is_urllib3_1` falls back to `True`.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q12": {
+   "id": "q12",
+   "question": "When reconstructing the full URL in MockRequest, what condition causes MockRequest to return PreparedRequest's URL directly?",
+   "expected": "When the user has not set the Host header.",
+   "answer": "`MockRequest.get_full_url` returns the `PreparedRequest`'s URL directly if the user has not set the `Host` header (`not self._r.headers.get(\"Host\")`).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q13": {
+   "id": "q13",
+   "question": "What exception is raised by merge_cookies if the target cookiejar argument is not an instance of cookielib.CookieJar?",
+   "expected": "ValueError",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q14": {
+   "id": "q14",
+   "question": "How does RequestException populate self.request when the request argument is not supplied but a response is provided?",
+   "expected": "It falls back to response.request if the response object has that attribute.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q15": {
+   "id": "q15",
+   "question": "What value is assigned to the \"using_charset_normalizer\" key in the dictionary returned by info()?",
+   "expected": "chardet is None",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q16": {
+   "id": "q16",
+   "question": "What list of hook events is defined in HOOKS?",
+   "expected": "[\"response\"]",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q17": {
+   "id": "q17",
+   "question": "What is the default integer value of CONTENT_CHUNK_SIZE?",
+   "expected": "10 * 1024",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q18": {
+   "id": "q18",
+   "question": "What exception is raised if `iter_content` is called when response content has already been consumed and `_content` is still a boolean?",
+   "expected": "StreamConsumedError",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q19": {
+   "id": "q19",
+   "question": "Which two package names are imported and mapped to sys.modules under requests.packages for backwards compatibility in the initial loop?",
+   "expected": "(\"urllib3\", \"idna\")",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q20": {
+   "id": "q20",
+   "question": "Which function is selected as preferred_clock when running on Windows (win32)?",
+   "expected": "time.perf_counter",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q21": {
+   "id": "q21",
+   "question": "What error is raised if a caller passes an unprepared Request object to Session.send()?",
+   "expected": "ValueError with the message \"You can only send PreparedRequests.\"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q22": {
+   "id": "q22",
+   "question": "Which class is instantiated to create the `codes` status code lookup object?",
+   "expected": "LookupDict",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q23": {
+   "id": "q23",
+   "question": "What internal collection type does CaseInsensitiveDict use to hold its items?",
+   "expected": "OrderedDict",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q24": {
+   "id": "q24",
+   "question": "Which filenames are searched for netrc configuration if the NETRC environment variable is unset?",
+   "expected": "(\".netrc\", \"_netrc\")",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q25": {
+   "id": "q25",
+   "question": "In which order does select_proxy evaluate potential proxy dictionary keys when selecting a proxy for a URL with a hostname?",
+   "expected": "urlparts.scheme + \"://\" + urlparts.hostname, urlparts.scheme, \"all://\" + urlparts.hostname, \"all\"",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q26": {
+   "id": "q26",
+   "question": "What Git flag may be required when cloning the Requests repository to avoid a bad commit timestamp error?",
+   "expected": "-c fetch.fsck.badTimezone=ignore",
+   "answer": "When cloning the repository, you may need to add the `-c fetch.fsck.badTimezone=ignore` flag. This avoids an error regarding a bad commit timestamp.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q27": {
+   "id": "q27",
+   "question": "What threshold of cryptography version list triggers a slowdown warning?",
+   "expected": "< [1, 3, 4]",
+   "answer": "A slowdown warning is triggered if `cryptography_version_list` is less than `[1, 3, 4]`.",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q28": {
+   "id": "q28",
+   "question": "Which license is specified in the __license__ variable?",
+   "expected": "Apache-2.0",
+   "answer": "The license specified in the `__license__` variable is \"Apache-2.0\".",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q29": {
+   "id": "q29",
+   "question": "What is the default encoding used by to_native_string?",
+   "expected": "\"ascii\"",
+   "answer": "The default encoding used by `to_native_string` is `\"ascii\"`.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q30": {
+   "id": "q30",
+   "question": "Which TypedDict kwargs class serves as the kwargs definition for put() and patch()?",
+   "expected": "DataKwargs",
+   "answer": "The TypedDict class `DataKwargs` serves as the kwargs definition for `put()` and `patch()`.",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  }
+ },
+ "reads": 15,
+ "asked": 30
+}
