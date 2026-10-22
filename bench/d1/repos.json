@@ -80,6 +80,68 @@
       ],
       "readme": "readme.md",
       "agents": "AGENTS.md"
+    },
+    {
+      "name": "expressjs__express",
+      "url": "https://github.com/expressjs/express",
+      "commit": "0dee2c52c7c873498f8ed7d8ee4ddd0a04d3ada8",
+      "language": "JavaScript",
+      "size": "small",
+      "paths": [
+        "lib",
+        "index.js",
+        "Readme.md"
+      ],
+      "readme": "Readme.md",
+      "agents": null,
+      "set": "confirmation"
+    },
+    {
+      "name": "psf__requests",
+      "url": "https://github.com/psf/requests",
+      "commit": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+      "language": "Python",
+      "size": "medium",
+      "paths": [
+        "src",
+        "README.md"
+      ],
+      "readme": "README.md",
+      "agents": null,
+      "set": "confirmation"
+    },
+    {
+      "name": "sirupsen__logrus",
+      "url": "https://github.com/sirupsen/logrus",
+      "commit": "6ef0748d1177dadaeee9aa79ffef604570f487d7",
+      "language": "Go",
+      "size": "small",
+      "paths": [
+        "alt_exit.go",
+        "buffer_pool.go",
+        "doc.go",
+        "entry.go",
+        "exported.go",
+        "formatter.go",
+        "hooks.go",
+        "json_formatter.go",
+        "level.go",
+        "logger.go",
+        "logrus.go",
+        "terminal_check_appengine.go",
+        "terminal_check_bsd.go",
+        "terminal_check_no_terminal.go",
+        "terminal_check_notappengine.go",
+        "terminal_check_solaris.go",
+        "terminal_check_unix.go",
+        "terminal_check_windows.go",
+        "text_formatter.go",
+        "writer.go",
+        "README.md"
+      ],
+      "readme": "README.md",
+      "agents": null,
+      "set": "confirmation"
     }
   ],
   "maxProbes": 30
