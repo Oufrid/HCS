@@ -1,0 +1,2 @@
+hold-out: 11 of 37 probes, never shown to refine
+before: training fidelity 7.7%
