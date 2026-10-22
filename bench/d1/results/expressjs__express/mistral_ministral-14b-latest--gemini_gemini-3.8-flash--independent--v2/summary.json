@@ -1,0 +1,167 @@
+{
+ "repo": "expressjs__express",
+ "commit": "0dee2c52c7c873498f8ed7d8ee4ddd0a04d3ada8",
+ "condition": "summary",
+ "answerer": "mistral:ministral-14b-latest",
+ "judge": "gemini:gemini-3.8-flash",
+ "budget": 2000,
+ "tokens": 1938,
+ "results": {
+  "q1": {
+   "id": "q1",
+   "question": "What is the minimum required version of Node.js for installing Express?",
+   "expected": "Node.js 18 or higher",
+   "answer": "The minimum required version of Node.js for installing Express is **Node.js 18 or higher** (c1).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q2": {
+   "id": "q2",
+   "question": "Which file path is required and exported by this module?",
+   "expected": "./lib/express",
+   "answer": "The module requires **Node.js 18 or higher** (cited in *expressjs__express: Requirements & Rules*) and exports its main functionality via **`./lib/express`** (cited in *expressjs__express: Entry Point*). The entry file (`index.js`) explicitly states it exports `./lib/express` under strict mode. **UNKNOWN** for the exact file path of the exported module (e.g., `lib/express.js`).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q3": {
+   "id": "q3",
+   "question": "What is the default value set for 'subdomain offset' in defaultConfiguration?",
+   "expected": "2",
+   "answer": "The default value for `'subdomain offset'` is **2** (cited from **lib/application.js:1-597**).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q4": {
+   "id": "q4",
+   "question": "What event does `app.listen` attach the wrapped callback to on the server instance?",
+   "expected": "'error'",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q5": {
+   "id": "q5",
+   "question": "What module is used to mix prototypes into the express app instance?",
+   "expected": "merge-descriptors",
+   "answer": "The `express` app instance mixes prototypes using the **`EventEmitter`** (from Node.js) and the **`application` prototype** (defined in `lib/application.js`), as described in `lib/express.js` (c12). The factory `createApplication` combines these via `util.inherits` (implied by standard Node.js patterns, though not explicitly stated in the claims). **UNKNOWN** for the exact module name.",
+   "verdict": "incorrect",
+   "by": "judge",
+   "verdicts": [
+    "incorrect"
+   ],
+   "points": 0
+  },
+  "q6": {
+   "id": "q6",
+   "question": "What error is thrown by req.get when the name argument is omitted?",
+   "expected": "TypeError with the message 'name argument is required to req.get'",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q7": {
+   "id": "q7",
+   "question": "What error type is thrown by res.status if the provided code is not an integer?",
+   "expected": "TypeError",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q8": {
+   "id": "q8",
+   "question": "What error is thrown if a developer attempts to set the Content-Type header to an array using res.set?",
+   "expected": "A TypeError with the message 'Content-Type cannot be set to an Array'",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q9": {
+   "id": "q9",
+   "question": "What default MIME type does normalizeType use if type does not contain a slash and mime.lookup returns falsy?",
+   "expected": "'application/octet-stream'",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q10": {
+   "id": "q10",
+   "question": "What error is thrown when neither a default engine nor an extension is provided to View?",
+   "expected": "No default engine was specified and no extension was provided.",
+   "answer": "UNKNOWN",
+   "verdict": "unknown",
+   "by": "abstain",
+   "verdicts": [
+    "unknown"
+   ],
+   "points": 0
+  },
+  "q11": {
+   "id": "q11",
+   "question": "Which package enables support for over 14 template engines in Express?",
+   "expected": "@ladjs/consolidate",
+   "answer": "The `@ladjs/consolidate` package enables support for over 14 template engines in Express (c1).",
+   "verdict": "correct",
+   "by": "match",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q12": {
+   "id": "q12",
+   "question": "Under what license is this code released?",
+   "expected": "MIT Licensed",
+   "answer": "The code is released under the **MIT** license (c1).",
+   "verdict": "correct",
+   "by": "judge",
+   "verdicts": [
+    "correct"
+   ],
+   "points": 1
+  },
+  "q13": {
+   "id": "q13",
+   "question": "Which header is added to the response in app.handle when 'x-powered-by' is enabled?",
+   "expected": "'X-Powered-By' with the value 'Express'",
+   "answer": "The header added to the response in `app.handle` when `'x-powered-by'` is enabled is **`X-Powered-By`** (c12). This is explicitly mentioned in the description of `app.handle(req, res, callback)` in **lib/application.js:1-597**.",
+   "verdict": "partial",
+   "by": "judge",
+   "verdicts": [
+    "partial"
+   ],
+   "points": 0.5
+  }
+ }
+}
