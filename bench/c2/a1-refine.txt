@@ -12,3 +12,18 @@ hold-out: 11 of 37 probes, never shown to refine
 before: training fidelity 7.7%
 round 1: 25 gaps, 29 claims proposed, 29 new and verified
 round 1: training fidelity 7.7% -> 19.2%
+round 2: 22 gaps, 34 claims proposed, 27 new and verified
+round 2: training fidelity 19.2% -> 19.2% (not kept)
+bench/a1/gemini.hcs: refined with groq:openai/gpt-oss-120b; 11 hold-out probes never shown to refine (@holdout)
+train before     fidelity   7.7% [95% CI 0.0%-17.3%]   misled   0.0%   abstained  88.5%   (26 probes)
+train after      fidelity  19.2% [95% CI 5.8%-34.6%]   misled   0.0%   abstained  76.9%   (26 probes)
+hold-out before  fidelity   4.5% [95% CI 0.0%-13.6%]   misled   0.0%   abstained  90.9%   (11 probes)
+hold-out after   fidelity   4.5% [95% CI 0.0%-13.6%]   misled   0.0%   abstained  90.9%   (11 probes)
+  round 1: 25 gaps, 29 claims proposed, 29 new and verified, training 19.2%
+  round 2: 22 gaps, 34 claims proposed, 27 new and verified, training 19.2% (not kept)
+  stopped: the last round did not improve training fidelity
+  wrote bench/c2/a1-refined.hcs: 29 claims added
+  judge the gain on the hold-out probes only; with few probes the intervals are wide
+usage groq:openai/gpt-oss-120b: 59 requests, 67730 input + 6828 output tokens (as reported by the provider)
+usage groq:qwen/qwen3.8-27b: 6 requests, 1301 input + 1729 output tokens (as reported by the provider)
+exit 0

@@ -252,3 +252,43 @@ remain unneeded: the main source left is classes used as parameter types (`cache
 cannot tell from a use. Three needed events is too few to claim recall is preserved in general. Proposed as an RFC
 (`rfcs/0000-deps-ignore-types-and-keys.md`), since it changes the normative dependency hash; postponed by the
 maintainer until there is more evidence.
+
+## C2. Self-improving compilation (`hcs refine`)
+
+### 2026-10-22: first repository (this one, `bench/a1/gemini.hcs`), budget 1,000 tokens: no held-out gain
+
+Command (output `bench/c2/a1-refine.txt`, model replies `bench/c2/logs/a1-refine.jsonl`, result
+`bench/c2/a1-refined.hcs`):
+
+```
+hcs refine bench/a1/gemini.hcs -o bench/c2/a1-refined.hcs --model groq:openai/gpt-oss-120b \
+  --judge groq:qwen/qwen3.8-27b --budget 1000 --reasoning-effort low --rpm 8 --concurrency 1
+```
+
+gpt-oss-120b wrote the new claims and answered the probes; qwen3.8-27b judged. The file was compiled by Gemini
+(A1). 11 of the 37 probes were held out, never shown to refine. The run was stopped once by Groq's daily token
+quota after round 1 and resumed the next day from its saved results (121 requests in total).
+
+| | Fidelity [95% CI] | Abstained | Probes |
+|---|---|---|---|
+| Training, before | 7.7% [0.0%-17.3%] | 88.5% | 26 |
+| Training, after | 19.2% [5.8%-34.6%] | 76.9% | 26 |
+| **Held-out, before** | **4.5% [0.0%-13.6%]** | 90.9% | 11 |
+| **Held-out, after** | **4.5% [0.0%-13.6%]** | 90.9% | 11 |
+
+- Round 1: 25 failed training probes, 29 claims proposed, all 29 quote-verified and new; training fidelity rose
+  from 7.7% to 19.2%, so the round was kept. Round 2: 27 more verified claims, no training gain, not kept.
+- **Held-out fidelity did not change.** The gain is on the probes refine optimized for, which is what the hold-out
+  is there to expose.
+- Why, in part: under the 1,000-token budget only **3 of the 29 added claims are rendered** (the budget keeps
+  claims by importance, then file order, and 23 of the new claims share the top importance with the existing
+  ones). The answering model never saw the other 26, and the 3 it saw displaced 3 original claims. The training gain
+  comes from those 3 claims.
+- The setting is harsh: at 1,000 tokens the model abstained on about 90% of the probes before refining.
+
+What this says: on this file, at this budget, refine overfits to the training probes and does not generalize.
+It does not say whether the added claims would help without a budget, since most of them were never rendered.
+Next measurements, with the same split: the same file without a budget (about four times the tokens), and the
+second repository (pallets/itsdangerous, once compiled for D1). A possible change, to be measured rather than
+assumed: under a budget, rank claims by how many training probes they help (ablation) instead of by the writer's
+importance.
