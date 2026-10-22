@@ -153,6 +153,29 @@ full context, `groq:qwen/qwen3.8-27b` scored 44.6% (A1). Small local models foll
 from the context, else UNKNOWN" too literally to measure anything. The run took about 25 minutes for 259 requests
 thanks to Ollama's prompt-prefix cache.
 
+### 2026-10-22: Gemini 3.8 Flash, an informative curve
+
+Command: `hcs curve bench/a1/gemini.hcs --model gemini:gemini-3.8-flash --judge groq:openai/gpt-oss-20b --budgets
+250,500,1000,2000,4000 --reasoning-effort low --rpm 8 --concurrency 1 --baseline --write` (paid key; 316,045 input
+tokens). Output: `bench/c1/curve-gemini.txt`; every request and reply: `bench/c1/logs/curve-gemini.jsonl.gz`; the
+five certificates are in `bench/a1/gemini.hcs`.
+
+| Budget | Context tokens | Claims | Fidelity [95% CI] | Misled | Abstained |
+|---|---|---|---|---|---|
+| 250 | 245 | 4 | 0.0% [0.0-0.0] | 0.0% | 100.0% |
+| 500 | 461 | 7 | 1.4% [0.0-4.1] | 2.7% | 94.6% |
+| 1000 | 951 | 18 | 5.4% [0.0-13.5] | 0.0% | 94.6% |
+| 2000 | 1941 | 40 | 9.5% [1.4-18.9] | 2.7% | 86.5% |
+| 4000 | 3906 | 84 | 32.4% [18.9-47.3] | 8.1% | 56.8% |
+| no context | 0 | 0 | 0.0% | | |
+
+Fidelity rises with the budget and is clearly above zero only from 2,000 tokens. The knee is the largest budget
+tested (4,000), which means no plateau was reached: on this file (about 4,300 tokens in full), the model keeps
+gaining from more claims, and the budget selection by importance does not put the claims these probes need first.
+These are the compiler's own probes (see D1 for why that favors the context); the shape, not the level, is the
+result. A second curve with groq:qwen/qwen3.8-27b is still running on Groq's free tier and will be added when it
+completes.
+
 ## C3. Dependency-aware invalidation
 
 ### 2026-10-21: false-positive rate on this repository's history

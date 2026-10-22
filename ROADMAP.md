@@ -101,14 +101,13 @@ tag, and move a `v0` tag for the Action.
 Decision (maintainer, 2026-10-22): do not publish yet. Publish once a stable version has passed every test and the
 pending measurements (C1, C2, D1) have come back favorably; until then the CLI is used from a clone.
 
-### C1. Fidelity-vs-budget curve `[~]`
-Done (2026-10-21): `hcs curve` (budgets scored once per distinct context, shared baseline, resumable), the knee
-(smallest budget within the 95% CI of the best) with a flat-curve warning, certificate fields `curve` and `knee`
-in SPEC 0.3, tests. A real curve with local CPU models is in `bench/REPORT.md`, but it is flat (the 7B model
-abstains even when the answer is in its context), so it does not show a knee. Remaining: the same curve with
-`groq:qwen/qwen3.8-27b` (44.6% at full context in A1). It needs about 360,000 tokens against Groq's 200,000
-tokens per day; the run stopped on the quota after the 250-token budget, its results are saved, and it resumes
-on 2026-10-22.
+### C1. Fidelity-vs-budget curve `[x]`
+Done: `hcs curve` (budgets scored once per distinct context, shared baseline, resumable), the knee (smallest
+budget within the 95% CI of the best) with a flat-curve warning, certificate fields `curve` and `knee` in SPEC 0.3,
+tests. Published curves (`bench/REPORT.md`, C1): local CPU models (flat: the 7B model abstains even with the answer
+in context) and gemini-3.8-flash (informative: 0% at 250 tokens, 9.5% at 2,000, 32.4% at 4,000; the knee is the
+largest budget tested, so no plateau was reached). A second curve with groq:qwen/qwen3.8-27b resumes on Groq's free
+tier and will be added.
 - `hcs curve <file.hcs> --model M --budgets 250,500,1000,2000,4000`: fidelity with CI at each budget, plus the
   "knee" (smallest budget within 1 CI of the best score).
 - Store the curve in the file (certificate per budget, or a `!curve` line; spec it).

@@ -41,7 +41,7 @@ node dist/src/cli.js help
 
 ## Current status and next steps
 
-Phase A, B1–B3, C3–C5 and D3 are done; D2 waits on SPEC 1.0 (after D1) and C1 on free-tier quota (see `bench/REPORT.md`). **The full plan is in
+Phase A, B1–B3, C1, C3–C5 and D3 are done; C2 was measured with a negative result; D1 has its first answering family and independent probes, the second family runs on Groq's free tier; D2 waits on D1 (see `bench/REPORT.md`). **The full plan is in
 `ROADMAP.md`**: phases A–D, each item's status, its "Done when" criterion, and the working rules (order, commits,
 honesty, what needs the maintainer's approval). Continue with the first unfinished item in the order it gives, and
 update `ROADMAP.md` in the same commit that changes an item's status.
