@@ -87,7 +87,9 @@ function compile() {
     }
     const args = [join(repoRoot, "dist", "src", "cli.js"), "compile", ...r.paths.map((p) => join(rootOf(r), p)), "--root", rootOf(r)];
     args.push("--model", model, "-o", out, "--title", r.name, "--chunk-lines", String(config.chunkLines), "--rpm", o.rpm ?? "8");
-    args.push("--max-probes", String(config.maxProbes));
+    // Enough probes per chunk to reach maxProbes on small repositories too (the compiler asks 3 per chunk by default).
+    const chunks = collectSources(rootOf(r), r.paths).reduce((n, f) => n + chunkFile(f, readFileSync(join(rootOf(r), f), "utf8"), config.chunkLines).length, 0);
+    args.push("--max-probes", String(config.maxProbes), "--probes-per-chunk", String(Math.min(10, Math.max(3, Math.ceil(config.maxProbes / chunks)))));
     if (o["reasoning-effort"]) args.push("--reasoning-effort", o["reasoning-effort"]);
     if (existsSync(out)) args.push("--update");
     mkdirSync(join(here, "logs"), { recursive: true });

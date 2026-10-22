@@ -65,7 +65,7 @@ LLM commands (--model provider:model, optional --rpm N to stay under free-tier r
 --reasoning-effort low|medium|high to limit hidden reasoning on models that support it, optional
 --tokenizer M on score and curve to count the context with M's tokenizer instead of estimating it):
   hcs compile [paths...] --model M [-o project.hcs] [--root DIR] [--title T]
-              [--update] [--max-probes N] [--no-synthesize] [--concurrency N]
+              [--update] [--max-probes N] [--probes-per-chunk N] [--no-synthesize] [--concurrency N]
               [--anchors symbols|lines] [--filter-known M1,M2]
                                               (--filter-known: tag [known] the probes every listed model
                                               answers without context)
@@ -265,6 +265,7 @@ async function main(argv: string[]): Promise<number> {
       "keep-stale": { type: "boolean" },
       update: { type: "boolean" },
       "max-probes": { type: "string" },
+      "probes-per-chunk": { type: "string" },
       "no-synthesize": { type: "boolean" },
       concurrency: { type: "string" },
       "chunk-lines": { type: "string" },
@@ -498,6 +499,7 @@ async function main(argv: string[]): Promise<number> {
         title: o.title ?? basename(root),
         previous,
         maxProbes: num(o["max-probes"], "max-probes"),
+        probesPerChunk: num(o["probes-per-chunk"], "probes-per-chunk"),
         synthesize: !o["no-synthesize"],
         anchorMode: anchorMode(o.anchors),
         concurrency: num(o.concurrency, "concurrency"),

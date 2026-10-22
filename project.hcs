@@ -1,7 +1,7 @@
 HCS/0.2
 @title HCS - Holographic Context Standard (reference CLI)
 @root .
-@updated 2026-10-21T23:53:42.889Z
+@updated 2026-10-22T07:35:01.575Z
 @meta license=MIT language=TypeScript
 
 [claims]
@@ -10,7 +10,7 @@ HCS/0.2
 #purpose[manual] HCS is a plain-text format plus a zero-dependency Node.js CLI and MCP server (`hcs`) that makes LLM context traceable (claims cite sources), verifiable (anchors carry hashes) and measured (probes and fidelity certificates).
   > README.md:3-16 #cddd3cef50fb
 #layers[manual] Deterministic commands (init, validate, check, seal, render, stats, audit, serve, impact, keygen, badge) never call an LLM; compile, score, curve, refine, compare and snapshot need a `provider:model` LLM; models only lists a provider's model ids.
-  > src/cli.ts::HELP #03eabca60f40
+  > src/cli.ts::HELP #28f976aa176c
 
 ## Format
 #magic[manual] A file starts with `HCS/0.3` (0.1 and 0.2 are still accepted, and the writer emits 0.2 unless a 0.3 feature is used: probe tags, dependency hashes or the `@parser` header), then `@key value` headers, then optional [claims], [probes] and [certificates] blocks; errors carry line numbers.
