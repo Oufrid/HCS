@@ -34,7 +34,8 @@ judge, so differences are paired:
 
 - `hcs`: the compiled context rendered at a 2,000-token budget;
 - `none`: no context;
-- `readme`: the repository's README, unchanged (its size is reported);
+- `readme`: the repository's README, cut at the last whole line within the same budget when it is longer (ky's is
+  about 22,000 tokens, more than a Groq free-tier request allows); its full size is recorded;
 - `agents`: its AGENTS.md or CLAUDE.md, when there is one (only ky has one);
 - `summary`: a naive summary of the same sources by the compiling model, each chunk summarized in proportion to
   its size, concatenated and cut to the same 2,000-token budget.
@@ -50,4 +51,8 @@ At least two answering model families are used, each judged by a model of anothe
   advantage there.
 - Several free-tier models with different quotas may be needed for one step; the model of each file is recorded in
   its `@generator` header and in the summaries.
-- Few probes per repository (up to 40) give wide intervals; differences are reported with paired bootstrap CIs.
+- Few probes per repository (up to 30, to fit free tiers) give wide intervals; differences are reported with paired
+  bootstrap CIs.
+- Cost on free tiers: about 30 probes x 5 conditions x 2,000 tokens per repository and answerer, roughly 1M tokens
+  per answering model for the five repositories, or about five days of one Groq model's daily quota. The runs are
+  spread over days and resumed.

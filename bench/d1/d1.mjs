@@ -11,8 +11,8 @@
 // are saved one by one (bench/d1/summaries/, bench/d1/results/). Conditions scored with the same probes:
 //   hcs      the compiled context, rendered at the budget
 //   none     no context (what the model knows on its own)
-//   readme   the repository's own README, as is
-//   agents   its AGENTS.md or CLAUDE.md, when it has one
+//   readme   the repository's own README, cut to the budget when longer (its full size is recorded)
+//   agents   its AGENTS.md or CLAUDE.md, when it has one (cut the same way)
 //   summary  a naive summary of the same sources by the compiling model, cut to the same budget
 
 import { execFileSync, spawnSync } from "node:child_process";
@@ -87,6 +87,7 @@ function compile() {
     }
     const args = [join(repoRoot, "dist", "src", "cli.js"), "compile", ...r.paths.map((p) => join(rootOf(r), p)), "--root", rootOf(r)];
     args.push("--model", model, "-o", out, "--title", r.name, "--chunk-lines", String(config.chunkLines), "--rpm", o.rpm ?? "8");
+    args.push("--max-probes", String(config.maxProbes));
     if (o["reasoning-effort"]) args.push("--reasoning-effort", o["reasoning-effort"]);
     if (existsSync(out)) args.push("--update");
     mkdirSync(join(here, "logs"), { recursive: true });
@@ -144,10 +145,22 @@ async function summarize() {
   return 0;
 }
 
+/** A text cut at the last whole line within the budget, so that every condition gets the same room. */
+function cut(text) {
+  if (estimateTokens(text) <= config.budget) return text;
+  const lines = text.split("\n");
+  let out = "";
+  for (const l of lines) {
+    if (estimateTokens(`${out}${l}\n`) > config.budget) break;
+    out += `${l}\n`;
+  }
+  return out;
+}
+
 function conditions(r, doc) {
   const status = new Map(checkDocument(doc, new SourceCache(rootOf(r))).filter((x) => x.kind === "claim").map((x) => [x.id, x.status]));
-  const out = { hcs: renderContext(doc, { status, budget: config.budget }), none: null, readme: readFileSync(join(rootOf(r), r.readme), "utf8") };
-  if (r.agents) out.agents = readFileSync(join(rootOf(r), r.agents), "utf8");
+  const out = { hcs: renderContext(doc, { status, budget: config.budget }), none: null, readme: cut(readFileSync(join(rootOf(r), r.readme), "utf8")) };
+  if (r.agents) out.agents = cut(readFileSync(join(rootOf(r), r.agents), "utf8"));
   const summary = readJSON(join(here, "summaries", `${r.name}.json`), null);
   if (summary?.text) out.summary = summary.text;
   return out;
@@ -171,7 +184,8 @@ async function score() {
     const probes = usableProbes(r, doc);
     for (const [name, context] of Object.entries(conditions(r, doc))) {
       const file = join(here, "results", r.name, `${safe(answerer.id)}--${safe(judge.id)}`, `${name}.json`);
-      const saved = readJSON(file, { repo: r.name, commit: r.commit, condition: name, answerer: answerer.id, judge: judge.id, budget: config.budget, tokens: context === null ? 0 : estimateTokens(context), results: {} });
+      const full = name === "readme" ? estimateTokens(readFileSync(join(rootOf(r), r.readme), "utf8")) : undefined;
+      const saved = readJSON(file, { repo: r.name, commit: r.commit, condition: name, answerer: answerer.id, judge: judge.id, budget: config.budget, tokens: context === null ? 0 : estimateTokens(context), ...(full ? { fullTokens: full } : {}), results: {} });
       if (probes.every((p) => saved.results[p.id])) continue;
       const cache = { get: (id) => saved.results[id], put: (res) => ((saved.results[res.id] = res), writeJSON(file, saved)) };
       try {
