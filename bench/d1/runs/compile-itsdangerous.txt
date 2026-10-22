@@ -1,0 +1,29 @@
+--- 2026-10-22T09:12:02Z compile itsdangerous try 1
+[1/22] README.md:1-50 -> 4 claims, 2 probes
+[2/22] docs/Makefile:1-19 -> 4 claims, 3 probes
+[3/22] docs/changes.rst:1-4 -> 1 claims, 1 probes
+[4/22] docs/concepts.rst:1-154 -> 7 claims, 3 probes
+[5/22] docs/conf.py:1-55 -> 5 claims, 3 probes
+[6/22] docs/encoding.rst:1-8 -> 1 claims, 1 probes
+[7/22] docs/exceptions.rst:1-22 -> 1 claims, 1 probes
+[8/22] docs/index.rst:1-63 -> 6 claims, 3 probes
+[9/22] docs/license.rst:1-5 -> 0 claims, 1 probes
+[10/22] docs/make.bat:1-35 -> 6 claims, 2 probes
+[11/22] docs/serializer.rst:1-112 -> 4 claims, 3 probes
+[12/22] docs/signer.rst:1-49 -> 5 claims, 3 probes
+[13/22] docs/timed.rst:1-28 -> 3 claims, 2 probes
+[14/22] docs/url_safe.rst:1-21 -> 3 claims, 2 probes
+[15/22] src/itsdangerous/__init__.py:1-17 -> 5 claims, 3 probes
+[16/22] src/itsdangerous/_json.py:1-18 -> 3 claims, 3 probes
+[17/22] src/itsdangerous/encoding.py:1-54 -> 3 claims, 3 probes
+[18/22] src/itsdangerous/exc.py:1-106 -> 6 claims, 3 probes
+[19/22] src/itsdangerous/serializer.py:1-404 -> 4 claims, 3 probes
+[20/22] src/itsdangerous/signer.py:1-266 -> 6 claims, 3 probes
+[21/22] src/itsdangerous/timed.py:1-228 -> 7 claims, 3 probes
+[22/22] src/itsdangerous/url_safe.py:1-83 -> 8 claims, 3 probes
+synthesized 6 overview claims
+wrote /home/user/HCS/bench/d1/hcs/pallets__itsdangerous.hcs: 98 claims, 30 probes from 22 files (22 compiled)
+  rejected by quote verification: 13/105 claims, 1/55 probes
+  context ~4417 tokens for ~15838 tokens of source. Next: hcs score /home/user/HCS/bench/d1/hcs/pallets__itsdangerous.hcs --model <answering model> --judge <a model from another family> --write
+usage gemini:gemini-3.8-flash: 23 requests, 34924 input + 15376 output tokens (as reported by the provider)
+exit 0

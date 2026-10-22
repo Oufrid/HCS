@@ -1,0 +1,177 @@
+HCS/0.2
+@title antirez__kilo
+@root ../../.work/d1/antirez__kilo
+@created 2026-10-22T09:11:24.217Z
+@updated 2026-10-22T09:11:30.153Z
+@generator hcs-cli compile (gemini:gemini-3.8-flash)
+@source-files 2
+@source-tokens 12810
+
+[claims]
+
+## Overview
+#c1[overview,i5] Kilo is a lightweight text editor that requires a single filename argument, reading the file or opening a new buffer without external dependencies.
+  > README.md:4 #292daf6ba680
+  > README.md:8 #4c6b68363986
+  > README.md:16-17 #efb6b4eb18e1
+  > kilo.c::editorOpen #a74a759a7b82
+  > kilo.c::main #846ece275c31
+#c2[overview,i5] The core event loop continuously renders the interface with editorRefreshScreen and processes user input via editorProcessKeypress.
+  > kilo.c::main #846ece275c31
+#c3[overview,i5] Terminal raw mode and editorReadKey interpret raw input and multi-byte VT100 escape sequences into distinct editor actions and navigation keys.
+  > README.md:16-17 #efb6b4eb18e1
+  > kilo.c::enableRawMode #cd72cf1e3c04
+  > kilo.c::editorReadKey #1235ba3b05b0
+#c4[overview,i5] Screen rendering aggregates row text and status bars into a single write buffer, reserving space for the status message display.
+  > kilo.c:888-889 #bcf56b296256
+  > kilo.c:976-978 #7130e51edcd1
+  > kilo.c::updateWindowSize #6516dd852835
+#c5[overview,i5] Window resize events handled via SIGWINCH update terminal dimensions, clamp cursor positions, and immediately refresh the screen.
+  > kilo.c::updateWindowSize #6516dd852835
+  > kilo.c::handleSigWinCh #9b64b04397af
+  > kilo.c::initEditor #880014f10916
+#c6[overview,i5] Row modifications insert characters or rows, adjust dirty state tracking, and recursively update syntax highlighting across multiline structures.
+  > kilo.c:513-516 #24cbbc4d8c9d
+  > kilo.c::editorInsertRow #ee0d5fc82d49
+  > kilo.c::editorRowInsertChar #d6c3990144bd
+#c7[overview,i5] Keybindings support saving, searching with dynamic syntax highlighting, and quitting, which requires multiple confirmations if unsaved changes exist.
+  > README.md:12-14 #af9f24d591ea
+  > kilo.c:1022-1028 #19d8a36dbf23
+  > kilo.c::editorProcessKeypress #1164e28a1a02
+#c8[overview,i5] Syntax highlighting patterns are matched against filenames, updating and highlighting row contents during editing and searches.
+  > kilo.c:513-516 #24cbbc4d8c9d
+  > kilo.c::editorSelectSyntaxHighlight #9dc867cf550c
+  > kilo.c:1022-1028 #19d8a36dbf23
+
+## (root)
+#c9[i5] Kilo is a small text editor implemented in fewer than 1,000 lines of code as measured by cloc.
+  > README.md:4 #292daf6ba680
+#c10[i3] Kilo is run from the command line using the syntax kilo <filename>.
+  > README.md:8 #4c6b68363986
+#c11[i4] Keybindings in Kilo include CTRL-S to save, CTRL-Q to quit, and CTRL-F to find a string.
+  > README.md:12-14 #af9f24d591ea
+#c12[i5] Kilo does not depend on any external library, not even curses, and relies on standard VT100 escape sequences.
+  > README.md:16-17 #efb6b4eb18e1
+#c13[i3] Kilo is in alpha stage and incorporates code from the author's previous projects, load81 and linenoise.
+  > README.md:17-19 #0c5274601a06
+#c14[i4] Salvatore Sanfilippo (antirez) wrote Kilo and released it under the BSD 2-clause license.
+  > README.md:25-26 #1738738f099b
+#c15[i3] Terminal raw mode sets a 100 ms read timeout with zero minimum return bytes using VMIN = 0 and VTIME = 1.
+  > kilo.c::enableRawMode #cd72cf1e3c04
+#c16[i4] editorReadKey parses multi-byte VT100 escape sequences, mapping them into KEY_ACTION enum values such as arrow keys, page controls, DEL_KEY, HOME_KEY, and END_KEY.
+  > kilo.c::editorReadKey #1235ba3b05b0
+#c17[i4] editorUpdateSyntax recursively propagates syntax highlighting updates to following rows if a row's multiline open comment state changes.
+  > kilo.c:513-516 #24cbbc4d8c9d
+#c18[i3] editorSelectSyntaxHighlight requires patterns starting with a period to match the end of the filename, whereas other patterns can match anywhere.
+  > kilo.c::editorSelectSyntaxHighlight #9dc867cf550c
+#c19[i4] editorInsertRow inserts an erow at index 'at', shifts subsequent rows, updates their idx fields, and increments E.numrows and E.dirty.
+  > kilo.c::editorInsertRow #ee0d5fc82d49
+#c20[i3] editorRowInsertChar pads the row with space characters up to the target index if 'at' is greater than row->size.
+  > kilo.c::editorRowInsertChar #d6c3990144bd
+#c21[i3] editorOpen exits the program immediately if fopen fails with any errno other than ENOENT.
+  > kilo.c::editorOpen #a74a759a7b82
+#c22[i4] editorRefreshScreen hides the cursor, positions it at home, renders lines and status into an abuf, and sends it in a single write call.
+  > kilo.c:888-889 #bcf56b296256
+#c23[i3] The second status bar row only shows E.statusmsg if the message is set and less than 5 seconds have elapsed since E.statusmsg_time.
+  > kilo.c:976-978 #7130e51edcd1
+#c24[i4] editorFind searches match substrings in row render buffers, temporarily highlights matches with HL_MATCH, and restores original syntax highlighting upon navigation or exit.
+  > kilo.c:1022-1028 #19d8a36dbf23
+#c25[i4] When the editor buffer is modified, Ctrl-Q requires 3 consecutive presses to exit, resetting the counter on any other keypress.
+  > kilo.c::editorProcessKeypress #1164e28a1a02
+#c26[i2] The editor explicitly ignores Ctrl-C keypresses to prevent accidental loss of unsaved changes.
+  > kilo.c::editorProcessKeypress #1164e28a1a02
+#c27[i4] updateWindowSize subtracts 2 from E.screenrows to reserve room for the status bar after querying the terminal dimensions.
+  > kilo.c::updateWindowSize #6516dd852835
+#c28[i3] If getWindowSize fails inside updateWindowSize, the program prints a perror message and exits with status 1.
+  > kilo.c::updateWindowSize #6516dd852835
+#c29[i4] The SIGWINCH signal handler updates the window size, clamps E.cy and E.cx within the new screen boundaries, and refreshes the screen.
+  > kilo.c::handleSigWinCh #9b64b04397af
+#c30[i4] initEditor zeroes cursor and offset states, updates window dimensions, and registers handleSigWinCh for SIGWINCH.
+  > kilo.c::initEditor #880014f10916
+#c31[i3] kilo requires exactly one argument for the filename, otherwise it prints usage instructions to stderr and exits with status 1.
+  > kilo.c::main #846ece275c31
+#c32[i5] The main event loop continuously calls editorRefreshScreen followed by editorProcessKeypress on STDIN_FILENO.
+  > kilo.c::main #846ece275c31
+
+[probes]
+?p1 Which tool was used to verify that Kilo has less than 1K lines of code?
+  = cloc
+  > README.md:4 #292daf6ba680
+?p2 What errno value is set if enableRawMode is called on a file descriptor where isatty returns false?
+  = ENOTTY
+  > kilo.c::enableRawMode #cd72cf1e3c04
+?p3 What heap pointers are freed when editorFreeRow is called on an erow?
+  = row->render, row->chars, and row->hl.
+  > kilo.c::editorFreeRow #001586e3311a
+?p4 What macro defines the number of times Ctrl-Q must be pressed to quit when the file is dirty?
+  = KILO_QUIT_TIMES (set to 3)
+  > kilo.c:1187 #bddc20b86e60
+?p5 What terminal escape sequence standard does Kilo utilize?
+  = VT100
+  > README.md:17 #ce6f8d037e58
+?p6 What escape sequence is transmitted by getCursorPosition to query the terminal's cursor location?
+  = \x1b[6n
+  > kilo.c::getCursorPosition #b704af9a9c92
+?p7 What delimiter separates each row in the buffer allocated by editorRowsToString?
+  = A newline character ('\n').
+  > kilo.c::editorRowsToString #b6f50327574f
+?p8 What does editorProcessKeypress do upon receiving a CTRL_C keypress?
+  = It ignores the keypress and does nothing.
+  > kilo.c::editorProcessKeypress #1164e28a1a02
+?p9 From which two projects did the author take code to write Kilo?
+  = load81 and linenoise
+  > README.md:18-19 #21ed19e0bfb9
+?p10 Which terminal color code is returned by editorSyntaxToColor for HL_KEYWORD1?
+  = 33 (yellow)
+  > kilo.c::editorSyntaxToColor #819747c749b1
+?p11 What occurs in editorDelChar when invoked at column 0 of a line past row 0?
+  = It appends the current row's text to the previous row and deletes the current row via editorDelRow.
+  > kilo.c::editorDelChar #9311d4da2443
+?p12 Which keys trigger editorDelChar in editorProcessKeypress?
+  = BACKSPACE, CTRL_H, and DEL_KEY.
+  > kilo.c::editorProcessKeypress #1164e28a1a02
+?p13 Under which license is Kilo released?
+  = BSD 2 clause license
+  > README.md:26 #fe6c5ed874ed
+?p14 Which terminal color code is assigned to HL_MATCH in editorSyntaxToColor?
+  = 34 (blu)
+  > kilo.c::editorSyntaxToColor #819747c749b1
+?p15 What permissions mask does editorSave pass to open() when creating or opening E.filename?
+  = 0644
+  > kilo.c::editorSave #a9e9709084c7
+?p16 How many rows does updateWindowSize subtract from E.screenrows to make room for the status bar?
+  = 2
+  > kilo.c::updateWindowSize #6516dd852835
+?p17 What key combination is used to find a string in Kilo?
+  = CTRL-F
+  > README.md:14 #a0280e8f56cc
+?p18 What characters define single-line and multi-line comments in the default C/C++ syntax configuration?
+  = "//" for single-line, "/*" and "*/" for multi-line
+  > kilo.c:193 #5493921d29cd
+?p19 When does editorRefreshScreen display the centered welcome message?
+  = When E.numrows is 0 and the current row index y equals E.screenrows/3.
+  > kilo.c:894 #a20d11c728f9
+?p20 Which signal is caught by handleSigWinCh?
+  = SIGWINCH
+  > kilo.c::initEditor #880014f10916
+?p21 What action does editorReadKey take if the read system call returns -1?
+  = It calls exit(1).
+  > kilo.c::editorReadKey #1235ba3b05b0
+?p22 What character representation is displayed when an editor character has highlight type HL_NONPRINT and its value is 26 or less?
+  = '@' plus the character's value.
+  > kilo.c:924-925 #c14df5fcfc38
+?p23 What is the initial status message set in main?
+  = "HELP: Ctrl-S = save | Ctrl-Q = quit | Ctrl-F = find"
+  > kilo.c::main #846ece275c31
+?p24 How are tabs rendered by editorUpdateRow into row->render?
+  = As spaces aligning up to the next multiple-of-8 boundary.
+  > kilo.c::editorUpdateRow #298eb05dee6b
+?p25 What is the maximum query length supported by editorFind?
+  = 256
+  > kilo.c:1012 #f8ea1756a445
+?p26 What does editorFileWasModified return?
+  = E.dirty
+  > kilo.c::editorFileWasModified #f0e785df3c1d
+?p27 If pressing ESC in editorFind exits the search, what coordinates and offsets are restored?
+  = E.cx, E.cy, E.coloff, and E.rowoff are restored to their saved values.
+  > kilo.c:1044-1047 #d9b7d964c0d6

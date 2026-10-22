@@ -1,0 +1,351 @@
+HCS/0.2
+@title dtolnay__anyhow
+@root ../../.work/d1/dtolnay__anyhow
+@created 2026-10-22T09:17:56.273Z
+@updated 2026-10-22T09:18:17.660Z
+@generator hcs-cli compile (gemini:gemini-3.8-flash)
+@source-files 13
+@source-tokens 56298
+
+[claims]
+
+## Overview
+#c1[overview,i5] anyhow::Error is a Send, Sync, and 'static trait object error type wrapping an internal Own<ErrorImpl> pointer.
+  > README.md:9-10 #332995edd222
+  > src/lib.rs:293 #d9266b97adf3
+  > src/lib.rs:389-392 #fed0d9ad69d2
+#c2[overview,i5] ErrorImpl uses a repr(C) layout with a vtable pointer to manage dynamic dispatch, custom dropping, and downcasting to original types or chained context.
+  > README.md:66-67 #e41e0e6ce253
+  > src/error.rs::Drop #448957011036
+  > src/error.rs:906-914 #7ac4a7a061c1
+  > src/error.rs::vtable #2a024b6ce718
+  > src/error.rs::object_drop_front #c37248e3e3cd
+  > src/error.rs::context_chain_downcast #2e9bb3a21077
+#c3[overview,i5] The anyhow! macro constructs errors via autoref specialization across ad-hoc, trait-converted, or boxed kinds, while bail! provides early returns.
+  > README.md:111-112 #f47f319312be
+  > src/kind.rs:65 #0010101a0807
+  > src/kind.rs:87 #7ecb203553be
+  > src/kind.rs:112 #fadad3285958
+  > src/macros.rs:60 #2fdff4de68ec
+  > src/macros.rs:213-217 #e31bce1561a3
+#c4[overview,i5] Backtraces are conditionally captured during error and context construction under the std feature or nightly generic member access APIs.
+  > src/backtrace.rs:2-5 #4045ebfbef81
+  > src/backtrace.rs:10-18 #0008c31a147e
+  > src/backtrace.rs:24-27 #1937b53ed61c
+  > src/backtrace.rs:26 #de4432aeea80
+  > src/context.rs::ext_context #1893e71d283f
+  > src/kind.rs::Boxed.new #7bd61358ca79
+#c5[overview,i5] The Context trait wraps errors into ContextError types to attach contextual messages while preserving the error source chain.
+  > src/context.rs::StdError #07c46c976b95
+  > src/context.rs::ext_context #1893e71d283f
+  > src/context.rs:128-135 #596477ecfe4a
+  > src/lib.rs:472-473 #f9aba36c060a
+  > src/lib.rs::Context.context #345f4a40e0bd
+#c6[overview,i5] Error formatting traverses the cause chain, enumerating nested causes under alternate debug display and appending captured backtraces.
+  > src/chain.rs::next #2da112204c77
+  > src/chain.rs::ExactSizeIterator.len #0a50876f32c7
+  > src/fmt.rs::ErrorImpl.display #7137505ce0e0
+  > src/fmt.rs::ErrorImpl.debug.Some #504931faafd0
+  > src/fmt.rs::ErrorImpl.debug #dfe9d90dac0b
+  > src/lib.rs:508-509 #48d52071d435
+#c7[overview,i5] The ensure! macro parses comparison expressions to dynamically render debug representations of operands or falls back to standard condition formatting.
+  > src/ensure.rs:14-22 #6e15c98f0892
+  > src/ensure.rs:29-33 #e2b0c2c27232
+  > src/ensure.rs:88-97 #1dd6eec65320
+  > src/ensure.rs:893-903 #e209e6fb2c89
+  > src/ensure.rs:891-892 #a23c97169712
+  > src/ensure.rs:913-919 #75181aaafff7
+#c8[overview,i5] Anyhow supports no_std environments using a global allocator, disabling backtrace capture when std and core error features are unavailable.
+  > README.md::"No-std support" #c52f3dc8d20d
+  > src/backtrace.rs:2-5 #4045ebfbef81
+  > src/backtrace.rs:17 #8da9f519eca1
+
+## (root)
+#c9[i5] The Anyhow library provides anyhow::Error, a trait object based error type for error handling in Rust applications.
+  > README.md:9-10 #332995edd222
+#c10[i3] Downcasting of anyhow errors is supported by value, by shared reference, or by mutable reference.
+  > README.md:66-67 #e41e0e6ce253
+#c11[i3] To enable backtraces for only errors, the RUST_LIB_BACKTRACE environment variable must be set to 1.
+  > README.md:85 #e2e2fa1521f8
+#c12[i4] The anyhow! macro constructs one-off anyhow::Error values with string interpolation, and bail! provides a shorthand early return.
+  > README.md:111-112 #f47f319312be
+#c13[i4] Using Anyhow in no_std mode requires disabling the default std feature in Cargo.toml and requires a global allocator.
+  > README.md::"No-std support" #c52f3dc8d20d
+#c14[i3] In Rust versions older than 1.81, no_std mode may require .map_err(Error::msg) when working with non-Anyhow error types.
+  > README.md::"No-std support" #c52f3dc8d20d
+
+## src
+#c15[i5] When the `std` feature is enabled, `Backtrace` is re-exported from `std::backtrace::Backtrace`, whereas without `std` it is defined as an empty enum.
+  > src/backtrace.rs:2-5 #4045ebfbef81
+#c16[i4] The `backtrace!` macro evaluates to `Some(std::backtrace::Backtrace::capture())` under `feature = "std"`, and `None` when `std` is disabled.
+  > src/backtrace.rs:10-18 #0008c31a147e
+#c17[i4] Under `error_generic_member_access`, `backtrace_if_absent!` checks `request_ref_backtrace` on the error, returning `None` if present or calling `backtrace!()` if absent.
+  > src/backtrace.rs:24-27 #1937b53ed61c
+#c18[i3] Without `error_generic_member_access` but with `feature = "std"`, `backtrace_if_absent!` directly invokes `backtrace!()`.
+  > src/backtrace.rs:26 #de4432aeea80
+#c19[i3] When both `anyhow_no_core_error` and `feature = "std"` are disabled, `backtrace_if_absent!` resolves unconditionally to `None`.
+  > src/backtrace.rs:17 #8da9f519eca1
+#c20[i3] The internal function `_assert_send_sync` statically verifies that `Backtrace` implements both `Send` and `Sync`.
+  > src/backtrace.rs::_assert_send_sync #5f81a69db8b9
+#c21[i5] When ChainState is Linked, iterating via next() updates the next field to the error's source and yields the current error reference.
+  > src/chain.rs::next #2da112204c77
+#c22[i4] Under std or core error support, DoubleEndedIterator converts a Linked chain state into Buffered by collecting causes into a Vec.
+  > src/chain.rs::DoubleEndedIterator.next_back #95c585d2e85c
+#c23[i4] ExactSizeIterator computes len() on a Linked state by traversing error causes via error.source() until next is None.
+  > src/chain.rs::ExactSizeIterator.len #0a50876f32c7
+#c24[i3] Chain::new initializes Chain in a Linked state holding the head error reference.
+  > src/chain.rs::new #87c2ee6783ff
+#c25[i2] When std or core error is available, Chain implements Default using a Buffered state with an empty Vec iterator.
+  > src/chain.rs::Default #73824cbbb2a4
+#c26[i3] The internal `ext::StdError` trait defines `ext_context` to wrap errors into an `Error` with associated context.
+  > src/context.rs::StdError #07c46c976b95
+#c27[i4] For types implementing `crate::StdError`, `ext_context` captures backtrace if absent and constructs an `Error` via `construct_from_context`.
+  > src/context.rs::ext_context #1893e71d283f
+#c28[i3] `Result::context` avoids `map_err` to eliminate two useless frames from the captured backtrace.
+  > src/context.rs::context #f36af7f6ccb8
+#c29[i4] `Option<T>` implements `Context<T, Infallible>` by constructing an `Error` via `construct_from_display` and `backtrace!()` when `None`.
+  > src/context.rs:97-100 #236429dfee72
+#c30[i3] `ContextError<C, E>` formats context using `Display` and exposes the underlying error as `source` in `StdError`.
+  > src/context.rs:128-135 #596477ecfe4a
+#c31[i4] `ContextError<C, Error>` extracts the error source by invoking unsafe `ErrorImpl::error(self.error.inner.by_ref())`.
+  > src/context.rs:156-158 #59813fa18647
+#c32[i2] `Quoted<C>` implements `Debug` by writing surrounding double quotes and escaping context strings via `escape_debug`.
+  > src/context.rs::Write #be6704bf613d
+#c33[i4] The `BothDebug` trait provides `__dispatch_ensure` to format error messages via `render` when both comparison operands implement `Debug`.
+  > src/ensure.rs:14-22 #6e15c98f0892
+#c34[i4] The `NotBothDebug` fallback trait implements `__dispatch_ensure` by returning `Error::msg(msg)` without rendering operand values.
+  > src/ensure.rs:29-33 #e2b0c2c27232
+#c35[i3] The internal `Buf` type uses a fixed 40-byte `MaybeUninit<u8>` array to capture formatted debug output without heap allocation.
+  > src/ensure.rs::Buf #4a5b381c47a4
+#c36[i3] When both debug representations fit within `Buf` without whitespace, `render` formats the error message as `{msg} ({lhs} vs {rhs})`.
+  > src/ensure.rs:88-97 #1dd6eec65320
+#c37[i3] If formatting either operand into `Buf` fails, `render` falls back to returning `Error::msg(msg)` directly.
+  > src/ensure.rs:82-100 #9d1638e2357e
+#c38[i2] Low-precedence control flow keywords trigger `__fallback_ensure!` during macro expression parsing.
+  > src/ensure.rs:112-114 #76d586786a64
+#c39[i3] When pat parsing encounters unsupported negative tokens like double dashes or a dash without a literal, __parse_ensure falls back via __fallback_ensure.
+  > src/ensure.rs:671-674 #1c1a91e2dc34
+#c40[i3] Comparison operators in the atom state check if the stack is empty to isolate and capture binary comparison expressions into parse groups.
+  > src/ensure.rs:725-727 #fc9182af4329
+#c41[i4] Unrecognized expressions in __parse_ensure route directly to __fallback_ensure using the captured bail tokens.
+  > src/ensure.rs:879-881 #b879cfda425e
+#c42[i4] __fancy_ensure evaluates binary expressions and returns an Err with a stringified condition message formatted by __dispatch_ensure when the condition fails.
+  > src/ensure.rs:893-903 #e209e6fb2c89
+#c43[i3] __fancy_ensure brings BothDebug and NotBothDebug traits into scope to dynamically format debug representations if available.
+  > src/ensure.rs:891-892 #a23c97169712
+#c44[i4] __fallback_ensure checks if the condition fails using __private::not($cond) and returns an Error containing stringified condition text or formatted anyhow errors.
+  > src/ensure.rs:913-919 #75181aaafff7
+#c45[i3] Error::context wraps an existing Error in a ContextError and sets backtrace to None because the inner Error already carries one.
+  > src/error.rs::Error.context #8b0498e2529c
+#c46[i4] into_boxed_dyn_error performs a pointer cast without allocating or deallocating memory, preserving backtrace access via provider APIs but preventing downcasting to the original type.
+  > src/error.rs:566-567 #ceb8d89fb95e
+#c47[i4] reallocate_into_boxed_dyn_error_without_backtrace reallocates the underlying error to allow downcasting to &E or Box<E>, discarding any captured backtrace.
+  > src/error.rs:615-617 #169358b47979
+#c48[i4] Error implements Drop by delegating destruction to the object_drop function pointer stored in its vtable.
+  > src/error.rs::Drop #448957011036
+#c49[i4] ErrorImpl is marked repr(C) to guarantee that the payload error _object remains in the final struct position.
+  > src/error.rs:906-914 #7ac4a7a061c1
+#c50[i3] Reading the vtable assumes ErrorVTable pointer is the first field of ErrorImpl, accessing it without converting the NonNull pointer into a reference.
+  > src/error.rs::vtable #2a024b6ce718
+#c51[i3] object_drop_front casts to ErrorImpl<ManuallyDrop<E>> to deallocate the Box and drop metadata fields without dropping the E value taken during downcast.
+  > src/error.rs::object_drop_front #c37248e3e3cd
+#c52[i4] context_chain_downcast recurses through nested causes using the inner error vtable's object_downcast if target does not match the context type.
+  > src/error.rs::context_chain_downcast #2e9bb3a21077
+#c53[i2] Error implements UnwindSafe and RefUnwindSafe unconditionally.
+  > src/error.rs:1059-1060 #1fed0d0ee956
+#c54[i4] When alternate formatting is requested in ErrorImpl::display, causes from the error chain beyond the root are appended separated by colons.
+  > src/fmt.rs::ErrorImpl.display #7137505ce0e0
+#c55[i4] In ErrorImpl::debug, if alternate formatting is enabled, it delegates directly to Debug::fmt on the underlying error.
+  > src/fmt.rs::ErrorImpl.debug #dfe9d90dac0b
+#c56[i4] ErrorImpl::debug renders error causes under a 'Caused by:' header, enumerating them with line numbers only if there are multiple causes.
+  > src/fmt.rs::ErrorImpl.debug.Some #504931faafd0
+#c57[i3] Under the std feature, ErrorImpl::debug appends captured backtraces and normalizes backtrace headers to begin with 'Stack backtrace:'.
+  > src/fmt.rs::ErrorImpl.debug #dfe9d90dac0b
+#c58[i3] Indented formats text with a 5-space right-aligned number and colon prefix when a number is set, or a 4-space indent when None.
+  > src/fmt.rs::write_str #60d458fbc0cc
+#c59[i3] For subsequent lines, Indented indents by 7 spaces if a number was specified, or 4 spaces if no number was specified.
+  > src/fmt.rs::write_str #60d458fbc0cc
+#c60[i4] The AdhocKind trait is implemented for reference types &T where T satisfies Display + Debug + Send + Sync + 'static.
+  > src/kind.rs:65 #0010101a0807
+#c61[i4] Adhoc::new constructs an Error from an ad-hoc message alongside a captured backtrace.
+  > src/kind.rs::Adhoc.new #a8a73a767218
+#c62[i4] The TraitKind trait is implemented for any type E that implements Into<Error>.
+  > src/kind.rs:87 #7ecb203553be
+#c63[i4] Trait::new converts an error value directly into an Error via error.into().
+  > src/kind.rs::Trait.new #afc57ce85418
+#c64[i3] When std or core error support is enabled, BoxedKind is implemented for Box<dyn StdError + Send + Sync>.
+  > src/kind.rs:112 #fadad3285958
+#c65[i4] Boxed::new constructs an Error using Error::construct_from_boxed with a backtrace captured via backtrace_if_absent!.
+  > src/kind.rs::Boxed.new #7bd61358ca79
+#c66[i3] The `Context<T, E>` trait is sealed and cannot be implemented for types outside of `anyhow`.
+  > src/lib.rs:472-473 #f9aba36c060a
+#c67[i4] Context attached via `Context` requires types that satisfy `Display + Send + Sync + 'static`.
+  > src/lib.rs::Context.context #345f4a40e0bd
+#c68[i3] When an error with context is printed, the outermost context is displayed first and underlying causes are enumerated below.
+  > src/lib.rs:508-509 #48d52071d435
+#c69[i5] After attaching context of type `C` to an error of type `E`, the resulting `anyhow::Error` can be downcast to either `C` or `E`.
+  > src/lib.rs:527-528 #17c0642eb847
+#c70[i3] The function `anyhow::Ok(value)` produces `Result::Ok(value)` typed as `anyhow::Result<T>` to avoid explicit error type annotations.
+  > src/lib.rs::Ok #4663da1e6a2a
+#c71[i4] `__private::format_err` preserves string literals as `&'static str` for downcasting, otherwise falling back to formatting into a `String`.
+  > src/lib.rs::format_err.Some #86c3fdf256c7
+#c72[i2] The `__private::kind::BoxedKind` re-export is conditionally enabled on `feature = "std"` or when `anyhow_no_core_error` is not set.
+  > src/lib.rs:676-678 #71af8da4cf0b
+#c73[i4] The `bail!` macro returns early with an `Err` containing an error constructed via `$crate::__anyhow!`.
+  > src/macros.rs:60 #2fdff4de68ec
+#c74[i4] Using `bail!` requires the surrounding function or closure return type to be `Result<_, anyhow::Error>`.
+  > src/macros.rs:6-7 #152b20351953
+#c75[i3] In documentation builds (`#[cfg(doc)]`), `ensure!` expands to an explicit `if !$cond` check returning an `Err`.
+  > src/macros.rs:131-135 #b10b395a3c33
+#c76[i3] In non-doc builds (`#[cfg(not(doc))]`), `ensure!` delegates token processing to the internal parser macro `$crate::__parse_ensure!`.
+  > src/macros.rs:161-170 #d67b5896673a
+#c77[i3] Single literal or expression invocations of `anyhow!` wrap the resulting error in `$crate::__private::must_use`.
+  > src/macros.rs:206-209 #08255d53733f
+#c78[i4] When `anyhow!` receives an expression, it resolves error creation through autoref-based specialization via `(&error).anyhow_kind().new(error)`.
+  > src/macros.rs:213-217 #e31bce1561a3
+#c79[i3] Formatting invocations with arguments in `anyhow!` construct an error using `$crate::Error::msg($crate::__private::format!(...))`.
+  > src/macros.rs:221 #741cc204adff
+#c80[i2] The internal `__anyhow!` macro mirrors `anyhow!` logic but omits the `must_use` call since its value is known to be consumed.
+  > src/macros.rs:225-227 #68a8f4497b26
+#c81[i5] The src/nightly.rs file exercises the Error generic member access API to determine if the compiler can support backtraces in anyhow.
+  > src/nightly.rs:1-3 #bf2d64f58eef
+#c82[i4] When anyhow_build_probe is active, the error_generic_member_access feature is enabled.
+  > src/nightly.rs:5 #768689ae1608
+#c83[i5] The public function request_ref_backtrace queries an Error trait object for a reference to a Backtrace using error::request_ref.
+  > src/nightly.rs::request_ref_backtrace #e8b7ef9eb520
+#c84[i4] The public function provide_ref_backtrace delegates to Request::provide_ref to attach a Backtrace reference to a Request.
+  > src/nightly.rs::provide_ref_backtrace #3aa121d2809b
+#c85[i4] The public function provide forwards a Request to an Error's Error::provide implementation.
+  > src/nightly.rs::provide #b8b1aa8c2606
+#c86[i2] The RUSTC_BOOTSTRAP environment variable is captured under anyhow_build_probe to be included in the sccache cache key.
+  > src/nightly.rs:37-40 #9d3e65678861
+#c87[i4] Own wraps a NonNull pointer to an unsized or sized type, implementing Send, Sync, Copy, and Clone.
+  > src/ptr.rs::Own #ad0e5253e712
+#c88[i4] Own::new creates an instance by leaking a Box<T> into a NonNull pointer.
+  > src/ptr.rs::new #e46ede855974
+#c89[i3] Own::boxed safely reconstitutes a Box<T> from the raw pointer using Box::from_raw.
+  > src/ptr.rs::boxed #a70527f251c9
+#c90[i3] Ref<'a, T> represents a pointer bound to lifetime 'a using PhantomData<&'a T> and implements Copy and Clone.
+  > src/ptr.rs::Ref #6948ba8d215b
+#c91[i3] Ref provides an unchecked conversion to a mutable Mut via Ref::by_mut.
+  > src/ptr.rs:108-113 #4623b6824bb7
+#c92[i4] Mut::extend allows changing the lifetime of Mut<'a, T> to an arbitrary lifetime 'b without unsafe.
+  > src/ptr.rs::extend #abaf71dc2b48
+#c93[i3] Mut<T> provides an unsafe read method for sized T to copy out the value using ptr::read.
+  > src/ptr.rs:174-178 #9d050511d674
+#c94[i3] MessageError wraps a value M and delegates Debug and Display formatting directly to M's Debug and Display implementations.
+  > src/wrapper.rs::MessageError #0cf6d8c7a7f5
+#c95[i4] MessageError implements StdError for types M that satisfy Display + Debug + 'static.
+  > src/wrapper.rs:31 #86bde2ff4dc7
+#c96[i3] DisplayError wraps a value M and uses M's Display implementation to format both Debug and Display outputs.
+  > src/wrapper.rs:36-43 #00044773da41
+#c97[i4] DisplayError implements StdError for any type M that implements Display + 'static.
+  > src/wrapper.rs:54 #d77596ebcead
+#c98[i4] When feature 'std' is enabled or 'anyhow_no_core_error' is absent, BoxedError wraps a Box<dyn StdError + Send + Sync>.
+  > src/wrapper.rs::BoxedError #c51f3032e82b
+#c99[i3] BoxedError delegates its StdError::source call directly to the underlying boxed error's source method.
+  > src/wrapper.rs::StdError.source #403616421f8e
+#c100[i3] Under cfg error_generic_member_access, BoxedError forwards provide calls to nightly::provide with its inner error.
+  > src/wrapper.rs::StdError #445fcc9a6053
+#c101[i5] anyhow::Error requires the underlying error to be Send, Sync, and 'static.
+  > src/lib.rs:293 #d9266b97adf3
+#c102[i4] anyhow::Error wraps an inner Own<ErrorImpl> using transparent representation.
+  > src/lib.rs:389-392 #fed0d9ad69d2
+#c103[i5] anyhow::Result is an alias for core::result::Result with a default error parameter of anyhow::Error.
+  > src/lib.rs::Result #0b347f14fe83
+#c104[i3] The anyhow macro is re-exported under the name format_err.
+  > src/lib.rs:286 #0b9e94201abd
+#c105[i2] A build error is triggered if anyhow_nightly_testing and std features are set without error_generic_member_access.
+  > src/lib.rs:244 #7b7cb796dd43
+
+[probes]
+?p1 What is required to depend on Anyhow in no_std mode besides disabling the default "std" feature?
+  = A global allocator is required.
+  > README.md::"No-std support" #c52f3dc8d20d
+?p2 What does the `backtrace!` macro expand to when `feature = "std"` is disabled?
+  = None
+  > src/backtrace.rs:15-19 #8cf3b162206f
+?p3 What does Chain::new set as the initial ChainState?
+  = ChainState::Linked with next set to Some(head).
+  > src/chain.rs::new #87c2ee6783ff
+?p4 Why does `Result::context` use pattern matching instead of `map_err`?
+  = To save 2 useless frames off the captured backtrace in ext_context.
+  > src/context.rs::context #f36af7f6ccb8
+?p5 What is the capacity of the byte buffer used in `Buf` for formatting debug representations?
+  = 40 bytes.
+  > src/ensure.rs::Buf #4a5b381c47a4
+?p6 What traits does __fancy_ensure import to support conditional debug formatting of operands?
+  = BothDebug and NotBothDebug from $crate::__private.
+  > src/ensure.rs:892 #47003f4166b3
+?p7 What type of pointer does Error::construct store inside Error to erase the concrete type?
+  = A thin pointer via Own<ErrorImpl> cast from Box<ErrorImpl<E>>.
+  > src/error.rs::Error.construct #018b71bbe165
+?p8 What happens to the backtrace when converting via reallocate_into_boxed_dyn_error_without_backtrace?
+  = It is discarded.
+  > src/error.rs:617-619 #1c7e5adc18e3
+?p9 What does ErrorImpl::debug output when alternate formatting (f.alternate()) is enabled?
+  = It returns the result of Debug::fmt(error, f).
+  > src/fmt.rs::ErrorImpl.debug #dfe9d90dac0b
+?p10 What constructor does Adhoc::new invoke to generate an Error?
+  = Error::construct_from_adhoc(message, backtrace!())
+  > src/kind.rs::Adhoc.new #a8a73a767218
+?p11 What traits must a context type `C` implement to be passed to `context` or `with_context`?
+  = Display + Send + Sync + 'static
+  > src/lib.rs::Context.context #345f4a40e0bd
+?p12 What does doc-mode `ensure!($cond)` return as the error message when called without a custom message or error?
+  = A message constructed via `concat!("Condition failed: `", stringify!($cond), "`")`.
+  > src/macros.rs:132-134 #727bb3d14c4e
+?p13 Which compiler feature does src/nightly.rs enable under anyhow_build_probe?
+  = error_generic_member_access
+  > src/nightly.rs:5 #768689ae1608
+?p14 What standard library method does Own::new use to obtain a NonNull pointer from a Box<T>?
+  = Box::leak
+  > src/ptr.rs::new #e46ede855974
+?p15 What formatting trait does DisplayError<M>'s Debug implementation delegate to?
+  = Display (via Display::fmt).
+  > src/wrapper.rs:27 #00d202c92b7f
+?p16 Which environment variable settings ensure only panics have backtraces, while errors do not?
+  = RUST_BACKTRACE=1 and RUST_LIB_BACKTRACE=0.
+  > README.md:86-87 #e8e36b2f9c5a
+?p17 How is `Backtrace` declared in src/backtrace.rs when the `std` feature is not enabled?
+  = As an empty enum: pub(crate) enum Backtrace {}
+  > src/backtrace.rs::Backtrace #a2a5bc9272ef
+?p18 What state does next_back transition a Chain into if it was currently Linked?
+  = Buffered holding the remaining iterator.
+  > src/chain.rs::DoubleEndedIterator.next_back #95c585d2e85c
+?p19 How does `ContextError<C, Error>` retrieve its `StdError::source`?
+  = Through `unsafe { crate::ErrorImpl::error(self.error.inner.by_ref()) }`.
+  > src/context.rs:157 #5854e0dee432
+?p20 Which specific characters cause `Buf::write_str` to return `Err(fmt::Error)`?
+  = Spaces (b' ') and newlines (b'\n').
+  > src/ensure.rs::Write.write_str #bd9dd04c4ac4
+?p21 What helper function evaluates negation of the condition in __fallback_ensure?
+  = $crate::__private::not
+  > src/ensure.rs:914 #bdaf1d78d9bf
+?p22 Why is ErrorImpl marked with #[repr(C)]?
+  = To ensure that E remains in the final position.
+  > src/error.rs::Some #bf9085671ef1
+?p23 When Indented has no number set (None), how many spaces are prepended to the start of each line?
+  = 4 spaces.
+  > src/fmt.rs::write_str #60d458fbc0cc
+?p24 What trait bound does TraitKind require for its generic type E?
+  = Into<Error>
+  > src/kind.rs:87 #7ecb203553be
+?p25 What downcast targets are supported on an `anyhow::Error` after attaching context of type `C` onto an error of type `E`?
+  = Either `C` or `E`.
+  > src/lib.rs:527-528 #17c0642eb847
+?p26 Why does the internal `__anyhow!` macro omit `must_use` compared to the public `anyhow!` macro?
+  = Because it is used by other macros where the constructed value is already known to be used.
+  > src/macros.rs:226-227 #44a44cf43c1e
+?p27 What function is invoked internally by request_ref to extract a value from an Error?
+  = error::request_ref::<T>(err)
+  > src/nightly.rs::request_ref #e69698ecbe43
+?p28 What method on Mut<'a, T> allows changing its lifetime parameter to another lifetime 'b?
+  = extend
+  > src/ptr.rs::extend #abaf71dc2b48
+?p29 What traits must M implement for MessageError<M> to implement StdError?
+  = Display + Debug + 'static
+  > src/wrapper.rs:31 #86bde2ff4dc7
+?p30 Under what dual licenses is Anyhow distributed?
+  = Apache License, Version 2.0 or MIT license.
+  > README.md::License #60565c26b7c9

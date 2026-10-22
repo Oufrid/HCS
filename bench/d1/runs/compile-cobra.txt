@@ -1,0 +1,27 @@
+--- 2026-10-22T09:19:20Z compile cobra try 1
+[1/20] README.md:1-133 -> 7 claims, 2 probes
+[2/20] active_help.go:1-60 -> 5 claims, 3 probes
+[3/20] args.go:1-144 -> 6 claims, 3 probes
+[4/20] bash_completions.go:1-592 -> 8 claims, 3 probes
+[5/20] bash_completions.go:593-709 -> 6 claims, 3 probes
+[6/20] bash_completionsV2.go:1-484 -> 7 claims, 3 probes
+[7/20] cobra.go:1-246 -> 8 claims, 3 probes
+[8/20] command.go:1-596 -> 7 claims, 3 probes
+[9/20] command.go:597-1196 -> 8 claims, 3 probes
+[10/20] command.go:1197-1794 -> 6 claims, 3 probes
+[11/20] command.go:1795-2072 -> 5 claims, 3 probes
+[12/20] command_notwin.go:1-20 -> 1 claims, 1 probes
+[13/20] command_win.go:1-41 -> 4 claims, 3 probes
+[14/20] completions.go:1-598 -> 5 claims, 3 probes
+[15/20] completions.go:599-1024 -> 8 claims, 3 probes
+[16/20] fish_completions.go:1-292 -> 5 claims, 3 probes
+[17/20] flag_groups.go:1-290 -> 6 claims, 3 probes
+[18/20] powershell_completions.go:1-350 -> 5 claims, 3 probes
+[19/20] shell_completions.go:1-98 -> 7 claims, 3 probes
+[20/20] zsh_completions.go:1-308 -> 6 claims, 3 probes
+synthesized 8 overview claims
+wrote /home/user/HCS/bench/d1/hcs/spf13__cobra.hcs: 128 claims, 30 probes from 15 files (15 compiled)
+  rejected by quote verification: 23/143 claims, 1/58 probes
+  context ~5785 tokens for ~60748 tokens of source. Next: hcs score /home/user/HCS/bench/d1/hcs/spf13__cobra.hcs --model <answering model> --judge <a model from another family> --write
+usage gemini:gemini-3.8-flash: 21 requests, 104860 input + 23145 output tokens (as reported by the provider)
+exit 0
