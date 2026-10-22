@@ -102,24 +102,42 @@ function compile() {
   return 0;
 }
 
-/** Naive baseline: each chunk summarized in proportion to its size, concatenated, cut to the budget. */
+/**
+ * Naive baseline: the sources summarized in batches of consecutive chunks (small files grouped up to chunkLines
+ * lines, to save requests), each in proportion to its size, concatenated in source order and cut to the budget.
+ */
 async function summarize() {
   const model = need("model");
   const writer = llm(model);
   for (const r of repos) {
     const file = join(here, "summaries", `${r.name}.json`);
-    const saved = readJSON(file, { model, chunks: {} });
+    const saved = readJSON(file, { model, batches: {} });
+    if (saved.model !== model) {
+      console.log(`${r.name}: summary started with ${saved.model}; continue with that model`);
+      continue;
+    }
     const chunks = collectSources(rootOf(r), r.paths).flatMap((f) => chunkFile(f, readFileSync(join(rootOf(r), f), "utf8"), config.chunkLines));
-    const total = chunks.reduce((s, c) => s + estimateTokens(c.lines.join("\n")), 0);
+    const batches = [];
+    for (const c of chunks) {
+      const last = batches.at(-1);
+      if (last && last.lines + c.lines.length <= config.chunkLines) {
+        last.chunks.push(c);
+        last.lines += c.lines.length;
+      } else batches.push({ chunks: [c], lines: c.lines.length });
+    }
+    const tokensOf = (b) => b.chunks.reduce((n, c) => n + estimateTokens(c.lines.join("\n")), 0);
+    const total = batches.reduce((n, b) => n + tokensOf(b), 0);
+    const keyOf = (b) => b.chunks.map((c) => `${c.path}:${c.start}-${c.end}`).join(", ");
     try {
-      await mapLimit(chunks, 1, async (c) => {
-        const key = `${c.path}:${c.start}-${c.end}`;
-        if (saved.chunks[key]) return;
-        const words = Math.max(30, Math.round((config.budget * 0.75 * estimateTokens(c.lines.join("\n"))) / total));
-        saved.chunks[key] = (
+      await mapLimit(batches, 1, async (b) => {
+        const key = keyOf(b);
+        if (saved.batches[key]) return;
+        const words = Math.max(30, Math.round((config.budget * 0.75 * tokensOf(b)) / total));
+        const body = b.chunks.map((c) => `<file path="${c.path}" lines="${c.start}-${c.end}">\n${c.lines.join("\n")}\n</file>`).join("\n\n");
+        saved.batches[key] = (
           await writer.complete({
             system: "You summarize source material for a developer who will work on it. Plain prose or bullet points, no preamble.",
-            prompt: `Summarize this part of ${r.name} (${key}) in at most ${words} words: what it does, its main names, values and rules.\n\n${c.lines.join("\n")}`,
+            prompt: `Summarize this part of ${r.name} (${key}) in at most ${words} words in total: what it does, its main names, values and rules.\n\n${body}`,
             maxTokens: 4096,
           })
         ).trim();
@@ -127,22 +145,22 @@ async function summarize() {
       });
     } catch (e) {
       if (e instanceof QuotaError) {
-        console.log(`${r.name}: summary stopped by the quota (${Object.keys(saved.chunks).length}/${chunks.length} chunks saved): ${e.message}`);
+        console.log(`${r.name}: summary stopped by the quota (${Object.keys(saved.batches).length}/${batches.length} batches saved): ${e.message}`);
         return 3;
       }
       throw e;
     }
     // Assemble in source order and cut at the budget, as a naive summary of the same size as the context.
     let text = `# ${r.name}: summary\n`;
-    for (const c of chunks) {
-      const part = `\n## ${c.path}:${c.start}-${c.end}\n${saved.chunks[`${c.path}:${c.start}-${c.end}`]}\n`;
+    for (const b of batches) {
+      const part = `\n## ${keyOf(b)}\n${saved.batches[keyOf(b)]}\n`;
       if (estimateTokens(text + part) > config.budget) break;
       text += part;
     }
     saved.text = text;
     saved.tokens = estimateTokens(text);
     writeJSON(file, saved);
-    console.log(`${r.name}: summary ~${saved.tokens} tokens from ${chunks.length} chunks by ${saved.model}`);
+    console.log(`${r.name}: summary ~${saved.tokens} tokens from ${batches.length} requests by ${saved.model}`);
   }
   return 0;
 }
