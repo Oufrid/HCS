@@ -80,8 +80,8 @@ the heuristic.
 ## Is there a Python version?
 
 `python/` implements the deterministic part (validate, check, seal, render, signatures) and passes the same
-conformance suite as the TypeScript CLI. LLM commands are only in the TypeScript CLI. Neither is published on a
-package registry yet: install from a clone.
+conformance suite as the TypeScript CLI. LLM commands are only in the TypeScript CLI. Install it with
+`pip install hcs-format` (command `hcs-py`); the TypeScript CLI is `npm install -g @oufrid/hcs-cli`.
 
 ## Is the format stable?
 

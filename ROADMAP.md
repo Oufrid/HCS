@@ -79,13 +79,18 @@ one. Tests cover diff parsing, an end-to-end git repository and the comment upse
 Not done (optional): proposing updated claim text with a model.
 
 ### B4. Distribution `[~]`
-- Publish `hcs-cli` on npm (check that the name is free, or choose another), with provenance. Publish the
+- Publish the CLI on npm (`@oufrid/hcs-cli`), with provenance. Publish the
   Python package on PyPI after B2.
 - Versioned GitHub releases, CHANGELOG.md, and a `v0` tag for the Action.
-- **Done when:** `npx hcs-cli check project.hcs` works from a clean machine, and the maintainer approved the
+- **Done when:** `npx @oufrid/hcs-cli check project.hcs` works from a clean machine, and the maintainer approved the
   publication. Publishing is outward-facing, so ask before doing it.
 
-Prepared, nothing published: the names `hcs-cli` (npm) and `hcs-format` (PyPI) were free on 2026-10-21. The npm
+Update 2026-10-23: the `v0.3.0` tag published `hcs-format` 0.3.0 on PyPI (trusted publishing). npm refused the
+unscoped `hcs-cli` ("too similar to existing packages cp-cli, dts-cli"), so the CLI is renamed `@oufrid/hcs-cli`
+(the command stays `hcs`) and is published by re-running the release workflow by hand; PyPI files already
+uploaded are skipped.
+
+Earlier, prepared: the names `hcs-cli` (npm) and `hcs-format` (PyPI) were free on 2026-10-21. The npm
 tarball (24 files, 87 kB, no runtime dependency) runs `hcs check project.hcs --strict` from a clean checkout with
 no `node_modules` (`npx --package=<tarball> hcs`), and the Python wheel installs in a fresh virtual environment and
 passes the same check with `hcs-py`. `CHANGELOG.md` and every version number say 0.3.0 (approved by the maintainer, experimental); `.github/workflows/release.yml` runs only on a

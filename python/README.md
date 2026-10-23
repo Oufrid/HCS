@@ -15,7 +15,7 @@ for report in check_document(doc, cache):
 print(render_context(doc))
 ```
 
-Command line (`python -m hcs` or `hcs-py` once installed): `validate`, `check [--strict]`, `seal [--rehash]`,
+Install with `pip install hcs-format`. Command line (`python -m hcs` or `hcs-py`): `validate`, `check [--strict]`, `seal [--rehash]`,
 `render [--budget N]`.
 
 Both implementations must pass the same language-agnostic suite in [`conformance/`](../conformance):
