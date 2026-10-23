@@ -41,7 +41,7 @@ node dist/src/cli.js help
 
 ## Current status and next steps
 
-Phase A, B1–B3, C1, C3–C5 and D3 are done; C2 was measured with a negative result; D1 is done (compact profile beats a naive summary of the same budget by 16 to 19 points with two answering families, Gemini and Mistral's ministral-14b, on five design and three pre-registered repositories; see `bench/REPORT.md`); D2 is done (SPEC 1.0, tag `spec-v1.0`); B4 publication is postponed by the maintainer. **The full plan is in
+Phase A, B1–B3, C1, C3–C5 and D3 are done; C2 was measured with a negative result; D1 is done (compact profile beats a naive summary of the same budget by 16 to 19 points with two answering families, Gemini and Mistral's ministral-14b, on five design and three pre-registered repositories; see `bench/REPORT.md`); D2 is done (SPEC 1.0, tag `spec-v1.0`); B4 is done (0.3.0 on npm as `@oufrid/hcs-cli` and on PyPI as `hcs-format`; a `v0` Action tag is optional and not made). Releases follow `.github/workflows/release.yml` and need the maintainer. **The full plan is in
 `ROADMAP.md`**: phases A–D, each item's status, its "Done when" criterion, and the working rules (order, commits,
 honesty, what needs the maintainer's approval). Continue with the first unfinished item in the order it gives, and
 update `ROADMAP.md` in the same commit that changes an item's status.

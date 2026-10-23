@@ -78,7 +78,7 @@ claim with a link to its lines, and after a second push updated the same comment
 one. Tests cover diff parsing, an end-to-end git repository and the comment upsert against a mock API.
 Not done (optional): proposing updated claim text with a model.
 
-### B4. Distribution `[~]`
+### B4. Distribution `[x]`
 - Publish the CLI on npm (`@oufrid/hcs-cli`), with provenance. Publish the
   Python package on PyPI after B2.
 - Versioned GitHub releases, CHANGELOG.md, and a `v0` tag for the Action.
@@ -87,8 +87,11 @@ Not done (optional): proposing updated claim text with a model.
 
 Update 2026-10-23: the `v0.3.0` tag published `hcs-format` 0.3.0 on PyPI (trusted publishing). npm refused the
 unscoped `hcs-cli` ("too similar to existing packages cp-cli, dts-cli"), so the CLI is renamed `@oufrid/hcs-cli`
-(the command stays `hcs`) and is published by re-running the release workflow by hand; PyPI files already
-uploaded are skipped.
+(the command stays `hcs`) and was published by re-running the release workflow by hand (PyPI files already
+uploaded are skipped). Done: `@oufrid/hcs-cli` 0.3.0 is on npm with a provenance attestation; from an empty
+directory with an empty npm cache, `npx @oufrid/hcs-cli check project.hcs --strict` passes, and `pip install
+hcs-format` in a fresh virtual environment passes the same check with `hcs-py`. GitHub releases `v0.3.0` (latest)
+and `spec-v1.0` exist. Not done (optional): a moving `v0` tag for the Action.
 
 Earlier, prepared: the names `hcs-cli` (npm) and `hcs-format` (PyPI) were free on 2026-10-21. The npm
 tarball (24 files, 87 kB, no runtime dependency) runs `hcs check project.hcs --strict` from a clean checkout with
