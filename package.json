@@ -1,5 +1,5 @@
 {
-  "name": "hcs-cli",
+  "name": "@oufrid/hcs-cli",
   "version": "0.3.0",
   "description": "Holographic Context Standard: verifiable, fidelity-scored context files for any LLM.",
   "license": "MIT",

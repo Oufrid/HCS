@@ -39,6 +39,14 @@ FAIL: 1 item(s) no longer match their sources. ...
 Requires Node.js ≥ 18.17. Zero runtime dependencies.
 
 ```bash
+npm install -g @oufrid/hcs-cli     # puts `hcs` on your PATH
+npx @oufrid/hcs-cli check project.hcs   # or run it without installing
+pip install hcs-format             # optional: the Python implementation of the deterministic core (`hcs-py`)
+```
+
+From a clone, for development or the tutorial's example project:
+
+```bash
 git clone https://github.com/Oufrid/HCS.git && cd HCS
 npm install && npm run build
 npm link            # puts `hcs` on your PATH

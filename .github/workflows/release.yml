@@ -74,6 +74,8 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           packages-dir: dist-py
+          # A re-run after a partial release (npm failed, PyPI succeeded) must not fail on files PyPI already has.
+          skip-existing: true
 
   github-release:
     needs: [npm, pypi]

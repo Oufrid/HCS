@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the HCS CLI (`hcs-cli` on npm), the Python package (`hcs-format`) and the format (`SPEC.md`).
+All notable changes to the HCS CLI (`@oufrid/hcs-cli` on npm), the Python package (`hcs-format`) and the format (`SPEC.md`).
 Versions of the CLI and of the format are separate: the CLI reads and writes every format version it lists.
 
 ## SPEC 1.0 (2026-10-22)
@@ -10,7 +10,7 @@ Versions of the CLI and of the format are separate: the CLI reads and writes eve
 
 ## 0.3.0
 
-Experimental: the first release on npm (`hcs-cli`) and PyPI (`hcs-format`). Implements format SPEC 1.0 (identical to 0.3).
+Experimental: the first release on npm (`@oufrid/hcs-cli`: npm refused the unscoped `hcs-cli` as too similar to existing names) and PyPI (`hcs-format`). Implements format SPEC 1.0 (identical to 0.3).
 
 ### Format (SPEC 0.3)
 - Probe tags and the `known` tag; `@known-filter` and `@incomplete` headers.
