@@ -11,15 +11,15 @@ your prompts: only compile code you are allowed to share. The example project he
 ## 1. Install (1 minute)
 
 ```bash
+npm install -g @oufrid/hcs-cli   # puts `hcs` on your PATH
 git clone https://github.com/Oufrid/HCS.git
-cd HCS
-npm install && npm run build
-npm link                 # puts `hcs` on your PATH (if npm link is not allowed, use: alias hcs="node $PWD/dist/src/cli.js")
+cd HCS                           # for the example project used below
 hcs --version
 ```
 
-`npm install` only fetches development tools (TypeScript, optional parsers for the tests): the CLI itself has no
-runtime dependencies.
+The CLI has no runtime dependencies. To build it from the clone instead (for development): `npm install && npm run
+build`, then `npm link` (or, if npm link is not allowed, `alias hcs="node $PWD/dist/src/cli.js"`). `npm install`
+only fetches development tools (TypeScript, optional parsers for the tests).
 
 ## 2. Connect a model (1 minute)
 

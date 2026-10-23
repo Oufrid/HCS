@@ -42,9 +42,10 @@ as soon as `shippingFee` changes.
 
 ## Client setup
 
-Until the package is published (roadmap B4), replace `"command": "hcs"` with `"command": "node"` and put the path
-to the built CLI first in `args`, e.g. `["/path/to/HCS/dist/src/cli.js", "serve", "project.hcs"]`. Add
-`"--allow-write"` to `args` to enable `hcs_record`.
+Install the CLI once with `npm install -g @oufrid/hcs-cli`, which puts `hcs` on your PATH; the configurations below
+assume it. To run a clone instead, replace `"command": "hcs"` with `"command": "node"` and put the path to the built
+CLI first in `args`, e.g. `["/path/to/HCS/dist/src/cli.js", "serve", "project.hcs"]`. Add `"--allow-write"` to
+`args` to enable `hcs_record`.
 
 **Claude Code** (verified, see below). In the project directory:
 

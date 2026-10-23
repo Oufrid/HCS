@@ -85,6 +85,10 @@ Not done (optional): proposing updated claim text with a model.
 - **Done when:** `npx @oufrid/hcs-cli check project.hcs` works from a clean machine, and the maintainer approved the
   publication. Publishing is outward-facing, so ask before doing it.
 
+Update 2026-10-23 (later): `@oufrid/hcs-cli` 0.3.0 is on npm, and `npx -y -p @oufrid/hcs-cli hcs check project.hcs`
+passes from a clean environment with no clone build (44 claims, 10 probes, all ok); `hcs serve` from the npm install
+lists its five tools over MCP. Remaining: move a `v0` tag for the Action.
+
 Update 2026-10-23: the `v0.3.0` tag published `hcs-format` 0.3.0 on PyPI (trusted publishing). npm refused the
 unscoped `hcs-cli` ("too similar to existing packages cp-cli, dts-cli"), so the CLI is renamed `@oufrid/hcs-cli`
 (the command stays `hcs`) and is published by re-running the release workflow by hand; PyPI files already

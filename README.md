@@ -1,5 +1,11 @@
 # HCS: Holographic Context Standard
 
+[![npm](https://img.shields.io/npm/v/@oufrid/hcs-cli?label=npm%20%40oufrid%2Fhcs-cli)](https://www.npmjs.com/package/@oufrid/hcs-cli)
+[![PyPI](https://img.shields.io/pypi/v/hcs-format?label=PyPI%20hcs-format)](https://pypi.org/project/hcs-format/)
+[![CI](https://github.com/Oufrid/HCS/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Oufrid/HCS/actions/workflows/ci.yml)
+[![Spec](https://img.shields.io/badge/format-SPEC%201.0-informational)](SPEC.md)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
 **Context files for LLMs that can prove what they say, notice when they go stale, and measure what they lose.**
 
 Everyone compresses context for language models: `AGENTS.md`, `CLAUDE.md`, session summaries, project briefs. All of these share three blind spots:
@@ -31,6 +37,8 @@ FAIL: 1 item(s) no longer match their sources. ...
 *(Example output.)*
 
 > **Status: format SPEC 1.0 (stable); CLI v0.3, experimental.** The format, the deterministic engine (`check`, `seal`, `render`, `audit`, `impact`) and the MCP server are complete and tested, and a second implementation of the deterministic core in Python passes the same [conformance suite](conformance/) in CI. **Measured** ([bench/REPORT.md](bench/REPORT.md), D1): on eight public repositories, with test questions written apart from the context, an HCS context of 2,000 tokens in the compact profile answered 43.8% of questions on the five design repositories and 46.7% on three new ones (pre-registered), against 24.7% and 27.8% for a naive summary of the same budget, and 10% for the repositories' own README. A second, smaller answering model from another family (ministral-14b) shows the same gap: +18.8 and +16.1 points over the summary. `hcs refine` did not help (same report, C2). Every number here links to its raw results.
+
+Project page, with the story behind the measurements and what did not work: [oufrid.com/ia/hcs](https://oufrid.com/ia/hcs.en.html) (also in [French](https://oufrid.com/ia/hcs.html) and [Arabic](https://oufrid.com/ia/hcs.ar.html)).
 
 ---
 
