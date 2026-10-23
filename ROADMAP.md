@@ -114,8 +114,8 @@ Done: `hcs curve` (budgets scored once per distinct context, shared baseline, re
 budget within the 95% CI of the best) with a flat-curve warning, certificate fields `curve` and `knee` in SPEC 0.3,
 tests. Published curves (`bench/REPORT.md`, C1): local CPU models (flat: the 7B model abstains even with the answer
 in context) and gemini-3.8-flash (informative: 0% at 250 tokens, 9.5% at 2,000, 32.4% at 4,000; the knee is the
-largest budget tested, so no plateau was reached). A second curve with groq:qwen/qwen3.8-27b resumes on Groq's free
-tier and will be added.
+largest budget tested, so no plateau was reached). A second family (groq:qwen/qwen3.8-27b, 2026-10-23) gives the
+same shape: 36.5% [23.0-51.4] at 4,000 tokens, near zero below, knee at the largest budget.
 - `hcs curve <file.hcs> --model M --budgets 250,500,1000,2000,4000`: fidelity with CI at each budget, plus the
   "knee" (smallest budget within 1 CI of the best score).
 - Store the curve in the file (certificate per budget, or a `!curve` line; spec it).

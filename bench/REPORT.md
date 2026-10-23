@@ -173,8 +173,34 @@ Fidelity rises with the budget and is clearly above zero only from 2,000 tokens.
 tested (4,000), which means no plateau was reached: on this file (about 4,300 tokens in full), the model keeps
 gaining from more claims, and the budget selection by importance does not put the claims these probes need first.
 These are the compiler's own probes (see D1 for why that favors the context); the shape, not the level, is the
-result. A second curve with groq:qwen/qwen3.8-27b is still running on Groq's free tier and will be added when it
-completes.
+result.
+
+### 2026-10-23: a second family, groq:qwen/qwen3.8-27b
+
+Command: `hcs curve bench/a1/gemini.hcs --model groq:qwen/qwen3.8-27b --judge groq:openai/gpt-oss-20b --budgets
+250,500,1000,2000,4000 --rpm 8 --concurrency 1 --write`, on Groq's free tier over three days (stopped twice by the
+model's daily token limit, resumed from the per-probe results saved in `bench/a1/.hcs-cache`). Output of the first
+day: `bench/c1/curve-groq-1.txt`; of the final day, with the table: `bench/c1/curve-groq-2.txt`; every request and
+reply: `bench/c1/logs/curve-groq.jsonl.gz`; the five certificates are in `bench/a1/gemini.hcs`.
+
+To keep the curve consistent, the last day ran with the CLI built from commit ae8f2fa, whose source is identical to
+the commit the curve started from: the next commit (fe1e19c) changed the answering instructions and the default
+profile, and resuming with it would have mixed two prompts in one curve. So this curve, like the Gemini one above,
+uses the `full` profile and the pre-0.3-profile instructions, not the `compact` profile D1 measures.
+
+| Budget | Context tokens | Claims | Fidelity [95% CI] | Misled | Abstained |
+|---|---|---|---|---|---|
+| 250 | 245 | 4 | 0.0% [0.0-0.0] | 0.0% | 100.0% |
+| 500 | 461 | 7 | 0.0% [0.0-0.0] | 0.0% | 100.0% |
+| 1000 | 951 | 18 | 2.7% [0.0-8.1] | 2.7% | 94.6% |
+| 2000 | 1941 | 40 | 5.4% [0.0-13.5] | 0.0% | 94.6% |
+| 4000 | 3906 | 84 | 36.5% [23.0-51.4] | 0.0% | 56.8% |
+
+The second family gives the same shape as Gemini: near zero up to 2,000 tokens, then a jump at 4,000 (36.5% here,
+32.4% with Gemini), and the knee is again the largest budget tested, so no plateau. That the two families agree says
+the shape comes from the file and its budget selection (the claims these probes need are not among the most
+important ones), not from one model. The probes are still the compiler's own, and the curve was not re-run with
+the `compact` profile, which covers every file under a budget and may move the knee down; that is not measured.
 
 ## C3. Dependency-aware invalidation
 
